@@ -12,15 +12,42 @@ export const navItems = [
 ] as const;
 
 export const metricTiles = [
-  { label: "Tracked capital", value: "—", status: "not-tracked" as const, detail: "No verified entries" },
-  { label: "Active programmes", value: "—", status: "not-tracked" as const, detail: "No verified entries" },
+  {
+    label: "Tracked capital",
+    value: "—",
+    status: "not-tracked" as const,
+    detail: "No verified entries",
+  },
+  {
+    label: "Active programmes",
+    value: "—",
+    status: "not-tracked" as const,
+    detail: "No verified entries",
+  },
   { label: "System readiness", value: "01", status: "tracked" as const, detail: "Governor online" },
-  { label: "Open decisions", value: "—", status: "not-tracked" as const, detail: "No decisions logged" },
+  {
+    label: "Open decisions",
+    value: "—",
+    status: "not-tracked" as const,
+    detail: "No decisions logged",
+  },
 ];
 
 export const modules = [
-  { name: "Capital Engine", code: "CAP-01", detail: "Pipeline & treasury records", state: "standby", to: "/capital" },
-  { name: "Foundation", code: "FND-01", detail: "Programmes & impact registry", state: "standby", to: "/foundation" },
+  {
+    name: "Capital Engine",
+    code: "CAP-01",
+    detail: "Pipeline & treasury records",
+    state: "standby",
+    to: "/capital",
+  },
+  {
+    name: "Foundation",
+    code: "FND-01",
+    detail: "Programmes & impact registry",
+    state: "standby",
+    to: "/foundation",
+  },
   { name: "IGX AI", code: "AI-01", detail: "Intelligence console", state: "ready", to: "/igx-ai" },
 ];
 
@@ -37,14 +64,48 @@ export const ecosystemNodes = [
 ];
 
 export const vaultItems = [
-  { title: "Architecture charter", type: "GOVERNANCE", access: "ROOT", state: "Available", detail: "Frozen decisions & constraints" },
-  { title: "Capital registry", type: "FINANCE", access: "OPERATOR", state: "Not tracked", detail: "No verified records" },
-  { title: "Foundation programmes", type: "IMPACT", access: "OPERATOR", state: "Not tracked", detail: "No verified programmes" },
-  { title: "Identity manifest", type: "SYSTEM", access: "ROOT", state: "Available", detail: "IJIDI Portal identity" },
+  {
+    title: "Architecture charter",
+    type: "GOVERNANCE",
+    access: "ROOT",
+    state: "Available",
+    detail: "Frozen decisions & constraints",
+  },
+  {
+    title: "Capital registry",
+    type: "FINANCE",
+    access: "OPERATOR",
+    state: "Not tracked",
+    detail: "No verified records",
+  },
+  {
+    title: "Foundation programmes",
+    type: "IMPACT",
+    access: "OPERATOR",
+    state: "Not tracked",
+    detail: "No verified programmes",
+  },
+  {
+    title: "Identity manifest",
+    type: "SYSTEM",
+    access: "ROOT",
+    state: "Available",
+    detail: "IJIDI Portal identity",
+  },
 ];
 
 export const decisions = [
-  { date: "08 AUG 2026", label: "Naming architecture", detail: "Use IJIDI Portal and IGX AI. Retire Nexus language.", state: "FROZEN" },
-  { date: "08 AUG 2026", label: "Data integrity", detail: "Never present invented financial figures as real.", state: "FROZEN" },
+  {
+    date: "08 AUG 2026",
+    label: "Naming architecture",
+    detail: "Use IJIDI Portal and IGX AI. Retire Nexus language.",
+    state: "FROZEN",
+  },
+  {
+    date: "08 AUG 2026",
+    label: "Data integrity",
+    detail: "Never present invented financial figures as real.",
+    state: "FROZEN",
+  },
   { date: "—", label: "Next decision", detail: "No decision has been logged.", state: "OPEN" },
 ];
