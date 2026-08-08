@@ -10,33 +10,128 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CapitalRouteImport } from './routes/capital'
+import { Route as EcosystemRouteImport } from './routes/ecosystem'
+import { Route as FoundationRouteImport } from './routes/foundation'
+import { Route as GovernanceRouteImport } from './routes/governance'
+import { Route as IgxAiRouteImport } from './routes/igx-ai'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as VaultRouteImport } from './routes/vault'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CapitalRoute = CapitalRouteImport.update({
+  id: '/capital',
+  path: '/capital',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EcosystemRoute = EcosystemRouteImport.update({
+  id: '/ecosystem',
+  path: '/ecosystem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoundationRoute = FoundationRouteImport.update({
+  id: '/foundation',
+  path: '/foundation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GovernanceRoute = GovernanceRouteImport.update({
+  id: '/governance',
+  path: '/governance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IgxAiRoute = IgxAiRouteImport.update({
+  id: '/igx-ai',
+  path: '/igx-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/capital': typeof CapitalRoute
+  '/ecosystem': typeof EcosystemRoute
+  '/foundation': typeof FoundationRoute
+  '/governance': typeof GovernanceRoute
+  '/igx-ai': typeof IgxAiRoute
+  '/settings': typeof SettingsRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/capital': typeof CapitalRoute
+  '/ecosystem': typeof EcosystemRoute
+  '/foundation': typeof FoundationRoute
+  '/governance': typeof GovernanceRoute
+  '/igx-ai': typeof IgxAiRoute
+  '/settings': typeof SettingsRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/capital': typeof CapitalRoute
+  '/ecosystem': typeof EcosystemRoute
+  '/foundation': typeof FoundationRoute
+  '/governance': typeof GovernanceRoute
+  '/igx-ai': typeof IgxAiRoute
+  '/settings': typeof SettingsRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/capital'
+    | '/ecosystem'
+    | '/foundation'
+    | '/governance'
+    | '/igx-ai'
+    | '/settings'
+    | '/vault'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/capital'
+    | '/ecosystem'
+    | '/foundation'
+    | '/governance'
+    | '/igx-ai'
+    | '/settings'
+    | '/vault'
+  id:
+    | '__root__'
+    | '/'
+    | '/capital'
+    | '/ecosystem'
+    | '/foundation'
+    | '/governance'
+    | '/igx-ai'
+    | '/settings'
+    | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CapitalRoute: typeof CapitalRoute
+  EcosystemRoute: typeof EcosystemRoute
+  FoundationRoute: typeof FoundationRoute
+  GovernanceRoute: typeof GovernanceRoute
+  IgxAiRoute: typeof IgxAiRoute
+  SettingsRoute: typeof SettingsRoute
+  VaultRoute: typeof VaultRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +143,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/capital': {
+      id: '/capital'
+      path: '/capital'
+      fullPath: '/capital'
+      preLoaderRoute: typeof CapitalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ecosystem': {
+      id: '/ecosystem'
+      path: '/ecosystem'
+      fullPath: '/ecosystem'
+      preLoaderRoute: typeof EcosystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/foundation': {
+      id: '/foundation'
+      path: '/foundation'
+      fullPath: '/foundation'
+      preLoaderRoute: typeof FoundationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/governance': {
+      id: '/governance'
+      path: '/governance'
+      fullPath: '/governance'
+      preLoaderRoute: typeof GovernanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/igx-ai': {
+      id: '/igx-ai'
+      path: '/igx-ai'
+      fullPath: '/igx-ai'
+      preLoaderRoute: typeof IgxAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CapitalRoute: CapitalRoute,
+  EcosystemRoute: EcosystemRoute,
+  FoundationRoute: FoundationRoute,
+  GovernanceRoute: GovernanceRoute,
+  IgxAiRoute: IgxAiRoute,
+  SettingsRoute: SettingsRoute,
+  VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
