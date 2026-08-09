@@ -116,7 +116,7 @@ export function MetricTile({
   status: DataStatus;
 }) {
   return (
-    <div className="panel-bracket relative min-h-[132px] overflow-hidden p-4">
+    <div className="panel-bracket relative min-h-[152px] overflow-hidden p-6">
       <div className="flex items-start justify-between gap-2">
         <Eyebrow>{label}</Eyebrow>
         <span
