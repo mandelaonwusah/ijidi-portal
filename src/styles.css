@@ -72,7 +72,6 @@ body { margin: 0; min-width: 320px; background: var(--background); color: var(--
 button, a { -webkit-tap-highlight-color: transparent; }
 
 .panel-bracket { background: var(--panel); border: 1px solid var(--border); border-radius: 13px; }
-.hex-badge { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
 
 /* Softer geometry: round bordered surfaces while letting utility radii win */
 main :is(section, div, a, article, aside):where([class*="border"]) { border-radius: 12px; }
