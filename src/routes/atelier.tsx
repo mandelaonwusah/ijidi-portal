@@ -48,7 +48,7 @@ function Atelier() {
         />
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="panel-bracket p-7 lg:col-span-2">
+        <div className="panel-bracket p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <Eyebrow className="text-teal">Production registry</Eyebrow>
