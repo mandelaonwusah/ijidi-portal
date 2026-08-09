@@ -155,8 +155,9 @@ export function EmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[140px] flex-col items-center justify-center border border-dashed border-border bg-muted/30 px-5 text-center">
-      <div className="mb-3 flex h-8 w-8 items-center justify-center border border-border text-muted-foreground">
+    <div className="flex min-h-[168px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground">
+
         {icon}
       </div>
       <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-foreground">
