@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles, Send, X, Mic, Paperclip, ChevronRight, ExternalLink } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+
+// TanStack Start / Router export requirement
+export const Route = createFileRoute("/")({
+  component: PortalComplete,
+});
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -30,7 +36,7 @@ const ENTITY_DATA = [
   { id: "personal", name: "Mandela Onwusah", short: "MO", color: C.bone, url: "https://www.mandelaonwusah.com", desc: "Root node · Founder" },
 ];
 
-function Ticker({ items }) {
+function Ticker({ items }: { items: string[] }) {
   return (
     <div style={{
       background: `linear-gradient(90deg, ${C.charcoal}, ${C.ink})`,
@@ -56,7 +62,7 @@ function Ticker({ items }) {
   );
 }
 
-function EntityCard({ entity, onWebsiteClick }) {
+function EntityCard({ entity }: { entity: typeof ENTITY_DATA[0] }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -134,12 +140,12 @@ function EntityCard({ entity, onWebsiteClick }) {
   );
 }
 
-function IGXAIPanel({ open, onClose }) {
+function IGXAIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: "Portal connection established. Ready to assist with ecosystem coordination." },
   ]);
   const [input, setInput] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -343,11 +349,11 @@ function IGXAIPanel({ open, onClose }) {
   );
 }
 
-export default function PortalComplete() {
+function PortalComplete() {
   const [chatOpen, setChatOpen] = useState(false);
-  const [decisions, setDecisions] = useState([]);
-  const [entities, setEntities] = useState([]);
-  const [activity, setActivity] = useState([]);
+  const [decisions, setDecisions] = useState<any[]>([]);
+  const [entities, setEntities] = useState<any[]>([]);
+  const [activity, setActivity] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -564,3 +570,5 @@ export default function PortalComplete() {
     </div>
   );
 }
+
+export default PortalComplete;
