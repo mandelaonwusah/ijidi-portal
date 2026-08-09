@@ -240,10 +240,10 @@ function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
+              className="hidden items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
             >
               <span>Search modules</span>
-              <kbd className="border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+              <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
             </button>
             <div className="flex items-center gap-2 border-l border-border pl-3">
               <HexBadge small />
@@ -254,7 +254,9 @@ function PortalShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
+        <StatusTicker />
+        <main className="min-h-[calc(100vh-146px)] p-6 sm:p-8 xl:p-10">{children}</main>
+
       </div>
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <CommandInput placeholder="Navigate the portal..." />
