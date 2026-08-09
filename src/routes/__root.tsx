@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -127,49 +127,20 @@ function RootComponent() {
   );
 }
 
-const tickerItems = [
-  "GROUP · Build 78% complete",
-  "PORTAL · Stage 1",
-  "ECOSYSTEM · Three arms mapped",
-  "CAPITAL · Not yet tracked",
-  "FOUNDATION · Not yet tracked",
-  "VAULT · Encryption nominal",
-  "IGX AI · Console online",
-  "GOVERNANCE · Decision log active",
-];
-
-function StatusTicker() {
-  return (
-    <div className="ticker-mask overflow-hidden border-b border-border bg-panel/60 py-2">
-      <div className="ticker-track">
-        {[0, 1].map((pass) => (
-          <div key={pass} className="flex shrink-0 items-center" aria-hidden={pass === 1}>
-            {tickerItems.map((item) => (
-              <span
-                key={`${pass}-${item}`}
-                className="flex items-center gap-3 px-6 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
-              >
-                <span className="h-1 w-1 rounded-full bg-gold/70" />
-                {item}
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function PortalShell({ children }: { children: ReactNode }) {
-
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [igxOpen, setIgxOpen] = useState(false);
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setPaletteOpen(true);
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
+        event.preventDefault();
+        setIgxOpen(true);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -274,24 +245,51 @@ function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
+              className="hidden items-center gap-2 border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
             >
               <span>Search modules</span>
-              <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+              <kbd className="border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
             </button>
             <div className="flex items-center gap-2 border-l border-border pl-3">
               <HexBadge small />
               <div className="hidden sm:block">
                 <div className="font-mono text-[10px] font-semibold text-foreground">Mandela Onwusah</div>
-                <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor / root</Eyebrow>
+                <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor</Eyebrow>
               </div>
             </div>
           </div>
         </header>
-        <StatusTicker />
-        <main className="min-h-[calc(100vh-146px)] p-6 sm:p-8 xl:p-10">{children}</main>
-
+        <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
       </div>
+      {/* Global IGX AI — reachable from every screen, not just /igx-ai */}
+      <button
+        onClick={() => setIgxOpen(true)}
+        aria-label="Open IGX AI"
+        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 bg-gold text-background shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
+      >
+        <span className="font-mono text-sm">✦</span>
+      </button>
+      {igxOpen && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-border bg-panel shadow-2xl">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <div>
+              <Eyebrow className="text-teal">IGX AI</Eyebrow>
+              <div className="mt-1 font-display text-sm font-semibold">Quick console</div>
+            </div>
+            <button onClick={() => setIgxOpen(false)} className="font-mono text-xs text-muted-foreground">
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5 font-mono text-xs text-muted-foreground">
+            Reachable from anywhere with ⌘J. Full console with history lives at{" "}
+            <Link to="/igx-ai" className="text-teal underline" onClick={() => setIgxOpen(false)}>
+              /igx-ai
+            </Link>
+            .
+          </div>
+        </div>
+      )}
+
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <CommandInput placeholder="Navigate the portal..." />
         <CommandList>
