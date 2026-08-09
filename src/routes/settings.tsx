@@ -33,7 +33,7 @@ function Settings() {
               <Eyebrow className="text-teal">Root identity</Eyebrow>
               <h2 className="mt-2 font-display text-2xl font-semibold">Mandela Onwusah</h2>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Governor / primary operator
+                @mandelaonwusah1 · Governor / primary operator
               </p>
             </div>
           </div>
@@ -55,7 +55,7 @@ function Settings() {
           </div>
         </section>
         <section className="space-y-4">
-          <div className="panel-bracket p-7">
+          <div className="panel-bracket p-5">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-4 w-4 text-gold" />
               <Eyebrow>Role badges</Eyebrow>
@@ -66,7 +66,7 @@ function Settings() {
               <StatusBadge status="forming" label="SINGLE OPERATOR" />
             </div>
           </div>
-          <div className="panel-bracket p-7">
+          <div className="panel-bracket p-5">
             <div className="flex items-center gap-3">
               <SlidersHorizontal className="h-4 w-4 text-teal" />
               <Eyebrow>Interface controls</Eyebrow>
