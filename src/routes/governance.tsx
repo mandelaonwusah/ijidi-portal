@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { BookOpenCheck, FileCheck2, Scale } from "lucide-react";
 import { decisions } from "@/lib/portal-data";
+import { getEntities } from "@/lib/portal-queries";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
+
 export const Route = createFileRoute("/governance")({
   head: () => ({
     meta: [
@@ -16,7 +19,14 @@ export const Route = createFileRoute("/governance")({
   }),
   component: Governance,
 });
+
 function Governance() {
+  const [entities, setEntities] = useState([]);
+
+  useEffect(() => {
+    getEntities().then(setEntities).catch(console.error);
+  }, []);
+
   return (
     <div>
       <SectionHeader
@@ -84,6 +94,42 @@ function Governance() {
                 </div>
                 <h3 className="mt-4 font-display font-semibold">{decision.label}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{decision.detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="panel-bracket p-7 lg:col-span-2">
+          <div className="mb-6 flex items-center gap-3">
+            <Scale className="h-5 w-5 text-gold" />
+            <div>
+              <Eyebrow>Ecosystem</Eyebrow>
+              <h2 className="mt-1 font-display text-lg font-semibold">Entities</h2>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {entities.map((e) => (
+              <div key={e.entity_name} className="border border-border bg-background/50 p-4">
+                {e.logo_url && (
+                  <img src={e.logo_url} alt={e.entity_name} className="h-8 mb-3" />
+                )}
+                <h3 className="font-display font-semibold">{e.entity_name}</h3>
+                <div className="mt-2">
+                  <StatusBadge
+                    status={e.current_state === "live" ? "active" : "open"}
+                    label={e.current_state}
+                  />
+                </div>
+                {e.website_url && (
+                  
+                    href={e.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 block text-xs text-gold underline"
+                  >
+                    Visit site →
+                  </a>
+                )}
               </div>
             ))}
           </div>
