@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
 });
 function CommandCenter() {
   return (
-    <div className="grid-scan -m-4 min-h-[calc(100vh-108px)] p-4 sm:-m-6 sm:p-6 xl:-m-8 xl:p-8">
+    <div className="grid-scan -m-6 min-h-[calc(100vh-146px)] rounded-none p-6 sm:-m-8 sm:p-8 xl:-m-10 xl:p-10">
       <SectionHeader
         eyebrow="01 / COMMAND CENTER"
         title="The operating picture."
