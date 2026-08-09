@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { navItems } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportLovableError } from "./lib/lovable-error-reporting";
 import { HexBadge, Eyebrow } from "@/components/portal-ui";
 
 function NotFoundComponent() {
