@@ -127,7 +127,41 @@ function RootComponent() {
   );
 }
 
+const tickerItems = [
+  "GROUP · Build 78% complete",
+  "PORTAL · Stage 1",
+  "ECOSYSTEM · Three arms mapped",
+  "CAPITAL · Not yet tracked",
+  "FOUNDATION · Not yet tracked",
+  "VAULT · Encryption nominal",
+  "IGX AI · Console online",
+  "GOVERNANCE · Decision log active",
+];
+
+function StatusTicker() {
+  return (
+    <div className="ticker-mask overflow-hidden border-b border-border bg-panel/60 py-2">
+      <div className="ticker-track">
+        {[0, 1].map((pass) => (
+          <div key={pass} className="flex shrink-0 items-center" aria-hidden={pass === 1}>
+            {tickerItems.map((item) => (
+              <span
+                key={`${pass}-${item}`}
+                className="flex items-center gap-3 px-6 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
+              >
+                <span className="h-1 w-1 rounded-full bg-gold/70" />
+                {item}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PortalShell({ children }: { children: ReactNode }) {
+
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
