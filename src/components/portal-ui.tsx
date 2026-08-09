@@ -140,7 +140,7 @@ export function MetricTile({
         <span className="h-1 w-1 rounded-full bg-border" />
         {detail}
       </div>
-      <div className="absolute bottom-0 left-0 h-px w-1/3 bg-gold/50" />
+      <div className="absolute bottom-0 left-4 h-px w-1/3 bg-gold/50" />
     </div>
   );
 }
