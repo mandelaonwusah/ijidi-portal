@@ -31,7 +31,10 @@ function Governance() {
             <Scale className="h-5 w-5 text-gold" />
             <div>
               <Eyebrow>Governor record</Eyebrow>
-              <h2 className="mt-1 font-display text-lg font-semibold">J. IJIDI</h2>
+              <h2 className="mt-1 font-display text-lg font-semibold">Mandela Onwusah</h2>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                @mandelaonwusah1 · Governor
+              </p>
             </div>
           </div>
           <div className="mt-8 border-t border-border pt-5">
