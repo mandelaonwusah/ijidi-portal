@@ -40,7 +40,7 @@ function CommandCenter() {
         ))}
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="panel-bracket p-5">
+        <section className="panel-bracket p-7">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <Eyebrow className="text-teal">Ecosystem overview</Eyebrow>
@@ -76,7 +76,7 @@ function CommandCenter() {
             ))}
           </div>
         </section>
-        <section className="panel-bracket p-5">
+        <section className="panel-bracket p-7">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <Eyebrow className="text-gold">System activity</Eyebrow>
@@ -105,7 +105,7 @@ function CommandCenter() {
           <Link
             key={module.code}
             to={module.to}
-            className="panel-bracket group p-4 transition-colors hover:border-gold/50"
+            className="panel-bracket group p-6 transition-colors hover:border-gold/50"
           >
             <div className="flex items-center justify-between">
               <span className="flex h-8 w-8 items-center justify-center border border-teal/30 bg-teal/10 font-mono text-xs text-teal">

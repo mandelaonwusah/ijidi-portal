@@ -26,7 +26,7 @@ function Governance() {
         action={<StatusBadge status="active" label="SINGLE GOVERNOR" />}
       />
       <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
-        <section className="panel-bracket p-5">
+        <section className="panel-bracket p-7">
           <div className="flex items-center gap-3">
             <Scale className="h-5 w-5 text-gold" />
             <div>
@@ -53,7 +53,7 @@ function Governance() {
             </p>
           </div>
         </section>
-        <section className="panel-bracket p-5">
+        <section className="panel-bracket p-7">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpenCheck className="h-5 w-5 text-teal" />

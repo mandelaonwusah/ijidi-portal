@@ -40,7 +40,7 @@ function Vault() {
         {vaultItems.map((item) => (
           <div
             key={item.title}
-            className="panel-bracket group relative overflow-hidden p-5 transition-colors hover:border-gold/50"
+            className="panel-bracket group relative overflow-hidden p-7 transition-colors hover:border-gold/50"
           >
             <div className="absolute right-4 top-4 text-muted-foreground/50">
               <LockKeyhole className="h-4 w-4" />
