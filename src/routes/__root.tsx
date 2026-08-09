@@ -248,8 +248,8 @@ function PortalShell({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2 border-l border-border pl-3">
               <HexBadge small />
               <div className="hidden sm:block">
-                <div className="font-mono text-[10px] font-semibold text-foreground">J. IJIDI</div>
-                <Eyebrow className="text-[8px] text-teal">Governor / root</Eyebrow>
+                <div className="font-mono text-[10px] font-semibold text-foreground">Mandela Onwusah</div>
+                <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor / root</Eyebrow>
               </div>
             </div>
           </div>

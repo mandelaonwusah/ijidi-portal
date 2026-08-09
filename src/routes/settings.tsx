@@ -31,7 +31,7 @@ function Settings() {
             <HexBadge />
             <div>
               <Eyebrow className="text-teal">Root identity</Eyebrow>
-              <h2 className="mt-2 font-display text-2xl font-semibold">J. IJIDI</h2>
+              <h2 className="mt-2 font-display text-2xl font-semibold">Mandela Onwusah</h2>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 Governor / primary operator
               </p>
