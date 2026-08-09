@@ -25,7 +25,7 @@ function Ecosystem() {
         detail="A visual registry of the operating arms. Forming means intentionally untracked, not fictional."
         action={<StatusBadge status="active" label="ROOT ONLINE" />}
       />
-      <div className="panel-bracket scanline overflow-hidden p-4 sm:p-8">
+      <div className="panel-bracket scanline overflow-hidden p-6 sm:p-8">
         <div className="mb-8 flex items-center justify-between border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <GitBranch className="h-4 w-4 text-gold" />
@@ -57,7 +57,7 @@ function Ecosystem() {
               style={{ left: `${node.x}%` }}
             >
               <div className="h-4 w-4 -translate-y-1/2 rounded-full border-2 border-teal bg-background shadow-[0_0_15px_var(--teal)]" />
-              <div className="panel-bracket mt-5 w-full max-w-[210px] p-4 text-center">
+              <div className="panel-bracket mt-5 w-full max-w-[210px] p-6 text-center">
                 <Eyebrow className="text-teal">
                   {node.code} / {node.kind}
                 </Eyebrow>

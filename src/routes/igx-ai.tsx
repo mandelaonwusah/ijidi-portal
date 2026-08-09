@@ -113,7 +113,7 @@ function IgxAi() {
           </div>
         </section>
         <aside className="space-y-4">
-          <div className="panel-bracket p-5">
+          <div className="panel-bracket p-7">
             <div className="flex items-center gap-2">
               <Cpu className="h-4 w-4 text-gold" />
               <Eyebrow>Capabilities</Eyebrow>

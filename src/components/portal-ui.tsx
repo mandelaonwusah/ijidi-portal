@@ -116,7 +116,7 @@ export function MetricTile({
   status: DataStatus;
 }) {
   return (
-    <div className="panel-bracket relative min-h-[132px] overflow-hidden p-4">
+    <div className="panel-bracket relative min-h-[152px] overflow-hidden p-6">
       <div className="flex items-start justify-between gap-2">
         <Eyebrow>{label}</Eyebrow>
         <span
@@ -140,7 +140,7 @@ export function MetricTile({
         <span className="h-1 w-1 rounded-full bg-border" />
         {detail}
       </div>
-      <div className="absolute bottom-0 left-0 h-px w-1/3 bg-gold/50" />
+      <div className="absolute bottom-0 left-4 h-px w-1/3 bg-gold/50" />
     </div>
   );
 }
@@ -155,8 +155,9 @@ export function EmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[140px] flex-col items-center justify-center border border-dashed border-border bg-muted/30 px-5 text-center">
-      <div className="mb-3 flex h-8 w-8 items-center justify-center border border-border text-muted-foreground">
+    <div className="flex min-h-[168px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground">
+
         {icon}
       </div>
       <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-foreground">

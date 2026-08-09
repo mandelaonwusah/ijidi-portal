@@ -127,7 +127,41 @@ function RootComponent() {
   );
 }
 
+const tickerItems = [
+  "GROUP · Build 78% complete",
+  "PORTAL · Stage 1",
+  "ECOSYSTEM · Three arms mapped",
+  "CAPITAL · Not yet tracked",
+  "FOUNDATION · Not yet tracked",
+  "VAULT · Encryption nominal",
+  "IGX AI · Console online",
+  "GOVERNANCE · Decision log active",
+];
+
+function StatusTicker() {
+  return (
+    <div className="ticker-mask overflow-hidden border-b border-border bg-panel/60 py-2">
+      <div className="ticker-track">
+        {[0, 1].map((pass) => (
+          <div key={pass} className="flex shrink-0 items-center" aria-hidden={pass === 1}>
+            {tickerItems.map((item) => (
+              <span
+                key={`${pass}-${item}`}
+                className="flex items-center gap-3 px-6 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
+              >
+                <span className="h-1 w-1 rounded-full bg-gold/70" />
+                {item}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PortalShell({ children }: { children: ReactNode }) {
+
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
@@ -240,10 +274,10 @@ function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
+              className="hidden items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
             >
               <span>Search modules</span>
-              <kbd className="border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+              <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
             </button>
             <div className="flex items-center gap-2 border-l border-border pl-3">
               <HexBadge small />
@@ -254,7 +288,9 @@ function PortalShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
+        <StatusTicker />
+        <main className="min-h-[calc(100vh-146px)] p-6 sm:p-8 xl:p-10">{children}</main>
+
       </div>
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <CommandInput placeholder="Navigate the portal..." />
