@@ -118,10 +118,13 @@ function CommandCenter() {
             <div className="mt-4 flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
               <Database className="h-3 w-3" />
               {module.state === "ready" ? "Ready" : "Awaiting records"}
-            </div>
+            </div>}import { createFileRoute } from '@tanstack/react-router'
+           >import PortalComplete from './portal-final'
+          >export const Route = createFileRoute('/')({
+           >component: PortalComplete,
+            })
           </Link>
         ))}
       </div>
     </div>
-  );
-}
+  
