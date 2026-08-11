@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Blocks, CircleDot, Database, ShieldCheck } from "lucide-react";
-import { activity, metricTiles, modules } from "@/lib/portal-data";
+import { metricTiles, modules } from "@/lib/portal-data";
+import { getActivity } from "@/lib/portal-queries";
 import {
   ActionLabel,
   Eyebrow,
@@ -25,7 +27,68 @@ export const Route = createFileRoute("/")({
   }),
   component: CommandCenter,
 });
+
+type ActivityRow = {
+  id: number;
+  timestamp: string;
+  actor: string;
+  action: string;
+  entity_id: string | null;
+};
+
+type ActivityItem = {
+  time: string;
+  tone: "teal" | "gold";
+  tag: string;
+  text: string;
+};
+
+function formatTimeAgo(timestamp: string) {
+  const then = new Date(timestamp).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) return `${diffDays}d ago`;
+  if (diffHours > 0) return `${diffHours}h ago`;
+  if (diffMins > 0) return `${diffMins}m ago`;
+  return "just now";
+}
+
+function mapRowToActivityItem(row: ActivityRow): ActivityItem {
+  const isHuman = row.actor === "Mandela";
+  return {
+    time: formatTimeAgo(row.timestamp),
+    tone: isHuman ? "gold" : "teal",
+    tag: row.entity_id ?? row.actor,
+    text: row.action,
+  };
+}
+
 function CommandCenter() {
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [activityState, setActivityState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    getActivity()
+      .then((rows) => {
+        if (cancelled) return;
+        setActivity((rows as ActivityRow[]).map(mapRowToActivityItem));
+        setActivityState("ready");
+      })
+      .catch((err) => {
+        console.error("Failed to load activity_log:", err);
+        if (cancelled) return;
+        setActivityState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="grid-scan -m-4 min-h-[calc(100vh-108px)] p-4 sm:-m-6 sm:p-6 xl:-m-8 xl:p-8">
       <SectionHeader
@@ -85,18 +148,32 @@ function CommandCenter() {
             <CircleDot className="h-4 w-4 text-teal" />
           </div>
           <div className="space-y-1">
-            {activity.map((item) => (
-              <div key={item.text} className="border-b border-border py-4 last:border-0">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-[9px] text-muted-foreground">{item.time}</span>
-                  <StatusBadge
-                    status={item.tone === "teal" ? "active" : "not-tracked"}
-                    label={item.tag}
-                  />
+            {activityState === "loading" && (
+              <p className="py-4 font-mono text-[10px] text-muted-foreground">Loading signals…</p>
+            )}
+            {activityState === "error" && (
+              <p className="py-4 font-mono text-[10px] text-muted-foreground">
+                Unable to load activity right now.
+              </p>
+            )}
+            {activityState === "ready" && activity.length === 0 && (
+              <p className="py-4 font-mono text-[10px] text-muted-foreground">
+                No signals recorded yet.
+              </p>
+            )}
+            {activityState === "ready" &&
+              activity.map((item, i) => (
+                <div key={i} className="border-b border-border py-4 last:border-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-[9px] text-muted-foreground">{item.time}</span>
+                    <StatusBadge
+                      status={item.tone === "teal" ? "active" : "not-tracked"}
+                      label={item.tag}
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-foreground">{item.text}</p>
                 </div>
-                <p className="mt-2 text-sm text-foreground">{item.text}</p>
-              </div>
-            ))}
+              ))}
           </div>
         </section>
       </div>
