@@ -19,10 +19,10 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { navItems } from "@/lib/portal-data";
+import { navItems, activity } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "./lib/lovable-error-reporting";
+import { reportLovableError } from "../lib/lovable-error-reporting";
 import { HexBadge, Eyebrow } from "@/components/portal-ui";
 
 function NotFoundComponent() {
@@ -127,6 +127,25 @@ function RootComponent() {
   );
 }
 
+function TickerBar() {
+  const items = activity.length > 0 ? activity.map((a) => `${a.tag} · ${a.text}`) : ["NO VERIFIED ENTRIES"];
+  const loop = [...items, ...items];
+  return (
+    <div className="fixed inset-x-0 top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel">
+      <div className="ticker-track flex h-8 items-center">
+        {loop.map((item, i) => (
+          <span
+            key={i}
+            className="mx-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground"
+          >
+            <span className="text-gold">◆</span> {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PortalShell({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
@@ -148,9 +167,10 @@ function PortalShell({ children }: { children: ReactNode }) {
   }, []);
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <TickerBar />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel transition-transform duration-200 lg:translate-x-0",
+          "fixed left-0 top-8 bottom-0 z-40 w-[244px] border-r border-border bg-panel transition-transform duration-200 lg:translate-x-0",
           railOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -184,7 +204,7 @@ function PortalShell({ children }: { children: ReactNode }) {
                 to={item.to}
                 onClick={() => setRailOpen(false)}
                 className={cn(
-                  "group mb-1 flex items-center gap-3 border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
+                  "group mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
                   currentPath === item.to && "border-gold/30 bg-gold/10 text-gold",
                 )}
               >
@@ -201,7 +221,7 @@ function PortalShell({ children }: { children: ReactNode }) {
               className="flex w-full items-center gap-2 text-left"
               onClick={() => setPaletteOpen(true)}
             >
-              <div className="flex h-8 w-8 items-center justify-center border border-border font-mono text-xs text-teal">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border font-mono text-xs text-teal">
                 ⌘K
               </div>
               <div>
@@ -212,7 +232,7 @@ function PortalShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </aside>
-      <div className="lg:pl-[244px]">
+      <div className="pt-8 lg:pl-[244px]">
         <div className="flex h-8 items-center justify-between border-b border-border bg-panel px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-teal">
@@ -245,10 +265,10 @@ function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
+              className="hidden items-center gap-2 rounded-md border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
             >
               <span>Search modules</span>
-              <kbd className="border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+              <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
             </button>
             <div className="flex items-center gap-2 border-l border-border pl-3">
               <HexBadge small />
@@ -259,7 +279,7 @@ function PortalShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
+        <main className="min-h-[calc(100vh-140px)] p-4 sm:p-6 xl:p-8">{children}</main>
       </div>
       {/* Global IGX AI — reachable from every screen, not just /igx-ai */}
       <button
@@ -270,7 +290,7 @@ function PortalShell({ children }: { children: ReactNode }) {
         <span className="font-mono text-sm">✦</span>
       </button>
       {igxOpen && (
-        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-border bg-panel shadow-2xl">
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col rounded-l-2xl border-l border-border bg-panel shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div>
               <Eyebrow className="text-teal">IGX AI</Eyebrow>
