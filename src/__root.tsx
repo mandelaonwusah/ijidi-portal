@@ -131,7 +131,7 @@ function TickerBar() {
   const items = activity.length > 0 ? activity.map((a) => `${a.tag} · ${a.text}`) : ["NO VERIFIED ENTRIES"];
   const loop = [...items, ...items];
   return (
-    <div className="fixed inset-x-0 top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel">
+    <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel">
       <div className="ticker-track flex h-8 items-center">
         {loop.map((item, i) => (
           <span
@@ -168,118 +168,121 @@ function PortalShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TickerBar />
-      <aside
-        className={cn(
-          "fixed left-0 top-8 bottom-0 z-40 w-[244px] border-r border-border bg-panel transition-transform duration-200 lg:translate-x-0",
-          railOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex h-[76px] items-center gap-3 border-b border-border px-5">
-            <HexBadge small />
-            <div>
-              <div className="font-display text-sm font-semibold tracking-wide text-foreground">
-                IJIDI <span className="text-gold">PORTAL</span>
-              </div>
-              <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
-            </div>
-          </div>
-          <div className="border-b border-border px-5 py-4">
-            <div className="flex items-center justify-between">
-              <Eyebrow>ACCESS TIER</Eyebrow>
-              <span className="font-mono text-[9px] font-bold text-gold">ROOT</span>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-teal" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-teal">
-                Governor online
-              </span>
-            </div>
-          </div>
-          <nav className="flex-1 overflow-y-auto px-3 py-5">
-            <Eyebrow className="px-3 pb-3">Modules / 08</Eyebrow>
-            {navItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setRailOpen(false)}
-                className={cn(
-                  "group mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
-                  currentPath === item.to && "border-gold/30 bg-gold/10 text-gold",
-                )}
-              >
-                <span className="flex h-5 w-5 items-center justify-center text-xs text-gold/80">
-                  {item.icon}
-                </span>
-                <span className="flex-1">{item.label}</span>
-                <span className="text-[9px] text-muted-foreground/60">{item.key}</span>
-              </Link>
-            ))}
-          </nav>
-          <div className="border-t border-border p-4">
-            <button
-              className="flex w-full items-center gap-2 text-left"
-              onClick={() => setPaletteOpen(true)}
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border font-mono text-xs text-teal">
-                ⌘K
-              </div>
-              <div>
-                <Eyebrow className="text-[8px]">Quick navigation</Eyebrow>
-                <span className="text-xs text-muted-foreground">Open command palette</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </aside>
-      <div className="pt-8 lg:pl-[244px]">
-        <div className="flex h-8 items-center justify-between border-b border-border bg-panel px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-teal">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal" />
-              System nominal
-            </span>
-            <span className="hidden sm:inline">Build / 01</span>
-            <span className="hidden md:inline">Data / honest-state protocol</span>
-          </div>
-          <span>UTC 15:03 · 08 AUG 2026</span>
-        </div>
-        <header className="flex h-[76px] items-center justify-between border-b border-border bg-background/95 px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setRailOpen(!railOpen)}
-              aria-label="Open navigation"
-            >
-              ☰
-            </Button>
-            <div>
-              <Eyebrow className="text-gold">IJIDI OPERATING SYSTEM</Eyebrow>
-              <div className="mt-1 text-sm font-medium text-foreground">
-                Operational clarity over theatre
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 rounded-md border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
-            >
-              <span>Search modules</span>
-              <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
-            </button>
-            <div className="flex items-center gap-2 border-l border-border pl-3">
+      <div className="lg:flex">
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel transition-transform duration-200",
+            "lg:sticky lg:top-8 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0",
+            railOpen ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <div className="flex h-full flex-col">
+            <div className="flex h-[76px] items-center gap-3 border-b border-border px-5">
               <HexBadge small />
-              <div className="hidden sm:block">
-                <div className="font-mono text-[10px] font-semibold text-foreground">Mandela Onwusah</div>
-                <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor</Eyebrow>
+              <div>
+                <div className="font-display text-sm font-semibold tracking-wide text-foreground">
+                  IJIDI <span className="text-gold">PORTAL</span>
+                </div>
+                <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
               </div>
             </div>
+            <div className="border-b border-border px-5 py-4">
+              <div className="flex items-center justify-between">
+                <Eyebrow>ACCESS TIER</Eyebrow>
+                <span className="font-mono text-[9px] font-bold text-gold">ROOT</span>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-teal" />
+                <span className="font-mono text-[10px] uppercase tracking-widest text-teal">
+                  Governor online
+                </span>
+              </div>
+            </div>
+            <nav className="flex-1 overflow-y-auto px-3 py-5">
+              <Eyebrow className="px-3 pb-3">Modules / 08</Eyebrow>
+              {navItems.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setRailOpen(false)}
+                  className={cn(
+                    "group mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
+                    currentPath === item.to && "border-gold/30 bg-gold/10 text-gold",
+                  )}
+                >
+                  <span className="flex h-5 w-5 items-center justify-center text-xs text-gold/80">
+                    {item.icon}
+                  </span>
+                  <span className="flex-1">{item.label}</span>
+                  <span className="text-[9px] text-muted-foreground/60">{item.key}</span>
+                </Link>
+              ))}
+            </nav>
+            <div className="border-t border-border p-4">
+              <button
+                className="flex w-full items-center gap-2 text-left"
+                onClick={() => setPaletteOpen(true)}
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border font-mono text-xs text-teal">
+                  ⌘K
+                </div>
+                <div>
+                  <Eyebrow className="text-[8px]">Quick navigation</Eyebrow>
+                  <span className="text-xs text-muted-foreground">Open command palette</span>
+                </div>
+              </button>
+            </div>
           </div>
-        </header>
-        <main className="min-h-[calc(100vh-140px)] p-4 sm:p-6 xl:p-8">{children}</main>
+        </aside>
+        <div className="flex-1">
+          <div className="flex h-8 items-center justify-between border-b border-border bg-panel px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5 text-teal">
+                <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+                System nominal
+              </span>
+              <span className="hidden sm:inline">Build / 01</span>
+              <span className="hidden md:inline">Data / honest-state protocol</span>
+            </div>
+            <span>UTC 15:03 · 08 AUG 2026</span>
+          </div>
+          <header className="flex h-[76px] items-center justify-between border-b border-border bg-background/95 px-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setRailOpen(!railOpen)}
+                aria-label="Open navigation"
+              >
+                ☰
+              </Button>
+              <div>
+                <Eyebrow className="text-gold">IJIDI OPERATING SYSTEM</Eyebrow>
+                <div className="mt-1 text-sm font-medium text-foreground">
+                  Operational clarity over theatre
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="hidden items-center gap-2 rounded-md border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold sm:flex"
+              >
+                <span>Search modules</span>
+                <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+              </button>
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <HexBadge small />
+                <div className="hidden sm:block">
+                  <div className="font-mono text-[10px] font-semibold text-foreground">Mandela Onwusah</div>
+                  <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor</Eyebrow>
+                </div>
+              </div>
+            </div>
+          </header>
+          <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
+        </div>
       </div>
       {/* Global IGX AI — reachable from every screen, not just /igx-ai */}
       <button
