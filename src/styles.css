@@ -3,9 +3,9 @@
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
   --font-display: "Fraunces", serif;
   --font-sans: "Karla", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -65,10 +65,10 @@
 html { background: var(--background); }
 body { margin: 0; min-width: 320px; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
 button, a { -webkit-tap-highlight-color: transparent; }
-.panel-bracket { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-.panel-bracket::before, .panel-bracket::after { content: ""; position: absolute; width: 10px; height: 10px; border-color: var(--gold); opacity: .8; pointer-events: none; }
-.panel-bracket::before { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; border-top-left-radius: 4px; }
-.panel-bracket::after { right: 5px; bottom: 5px; border-right: 1px solid; border-bottom: 1px solid; border-bottom-right-radius: 4px; }
+.panel-bracket { position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(0,0,0,0.35), 0 14px 36px -16px rgba(0,0,0,0.55); transition: border-color 200ms ease, box-shadow 200ms ease; }
+.panel-bracket::before, .panel-bracket::after { content: ""; position: absolute; width: 14px; height: 14px; border-color: var(--gold); opacity: .5; pointer-events: none; }
+.panel-bracket::before { top: 8px; left: 8px; border-top: 1px solid; border-left: 1px solid; border-top-left-radius: 8px; }
+.panel-bracket::after { right: 8px; bottom: 8px; border-right: 1px solid; border-bottom: 1px solid; border-bottom-right-radius: 8px; }
 .hex-badge { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
 .grid-scan { background-image: linear-gradient(to right, color-mix(in oklab, var(--border) 22%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklab, var(--border) 18%, transparent) 1px, transparent 1px); background-size: 34px 34px; }
 .scanline { position: relative; overflow: hidden; }
