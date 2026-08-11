@@ -57,7 +57,7 @@
   --panel: #141414;
   --panel-elevated: #1c1c1c;
   --gold: #D4AF37;
-  --teal: #1A1F4D;
+  --teal: #C9C2AE;
   --danger: oklch(0.64 0.17 25);
   --gold-glow: rgba(212,175,55,0.2);
 }
@@ -65,6 +65,11 @@
 html { background: var(--background); }
 body { margin: 0; min-width: 320px; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
 button, a { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--panel); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+* { scrollbar-width: thin; scrollbar-color: var(--border) var(--panel); }
 .panel-bracket { position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(0,0,0,0.35), 0 14px 36px -16px rgba(0,0,0,0.55); transition: border-color 200ms ease, box-shadow 200ms ease; }
 .panel-bracket::before, .panel-bracket::after { content: ""; position: absolute; width: 14px; height: 14px; border-color: var(--gold); opacity: .5; pointer-events: none; }
 .panel-bracket::before { top: 8px; left: 8px; border-top: 1px solid; border-left: 1px solid; border-top-left-radius: 8px; }
