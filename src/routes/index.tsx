@@ -3,16 +3,47 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
-import { Eyebrow, HexBadge } from "@/components/portal-ui";
-import { sounds } from "@/lib/sound-engine";
-import { cn, formatTacticalTime } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: CommandCenterOverview,
 });
 
+// Build-safe timestamp formatter
+function formatTacticalTime(isoString?: string): string {
+  if (!isoString) return "00:00:00";
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return "00:00:00";
+  }
+}
+
+// Inline build-safe HexBadge component
+function HexBadge({ label }: { label: string }) {
+  return (
+    <div className="flex h-8 w-8 items-center justify-center rounded border border-amber-400/40 bg-amber-400/10 font-mono text-xs font-bold text-amber-400">
+      {label}
+    </div>
+  );
+}
+
+// Inline build-safe Eyebrow component
+function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${className}`}>
+      {children}
+    </span>
+  );
+}
+
 function CommandCenterOverview() {
-  // 1. Ecosystem Top-Level Metrics (TanStack Query Polling)
+  // 1. Ecosystem Top-Level Metrics
   const {
     data: metrics,
     isLoading: metricsLoading,
@@ -24,22 +55,22 @@ function CommandCenterOverview() {
     staleTime: 5000,
   });
 
-  // 2. Real-Time Telemetry Audit Stream (Supabase WebSocket Channel)
+  // 2. Real-Time Telemetry Audit Stream
   const { logs: activity, isLoading: activityLoading } = useLiveActivityLog();
 
   return (
     <div className="space-y-8">
       {/* Tactical Header Banner */}
-      <section aria-label="Command Overview Header" className="panel-bracket grid-scan scanline relative p-6">
+      <section aria-label="Command Overview Header" className="relative p-6 border border-border bg-card/40 rounded-lg">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <HexBadge label="01" />
             <div>
               <div className="flex items-center gap-2">
-                <Eyebrow className="text-gold">COMMAND MODULE / 01</Eyebrow>
-                <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
+                <Eyebrow className="text-amber-400">COMMAND MODULE / 01</Eyebrow>
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <h1 className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Ecosystem Overview & Telemetry
               </h1>
               <p className="mt-1 font-mono text-xs text-muted-foreground">
@@ -50,7 +81,7 @@ function CommandCenterOverview() {
           <div className="flex items-center gap-3 font-mono text-xs">
             <div className="rounded border border-border bg-background/80 px-3 py-2 text-right shadow-inner">
               <Eyebrow className="text-[8px]">PRIMARY GATEWAY</Eyebrow>
-              <div className="font-semibold text-teal">NODE_01 :: ONLINE</div>
+              <div className="font-semibold text-emerald-400">NODE_01 :: ONLINE</div>
             </div>
           </div>
         </div>
@@ -58,46 +89,46 @@ function CommandCenterOverview() {
 
       {/* Primary Metrics Grid */}
       <section aria-label="Ecosystem Metrics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="panel-bracket p-5">
+        <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">TOTAL VAULT ASSETS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+          <div className="mt-3 font-sans text-2xl font-bold text-foreground">
             {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "$12.48M"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">+4.2% THIS EPOCH</span>
+            <span className="text-emerald-400">+4.2% THIS EPOCH</span>
             <span className="text-muted-foreground/60">AUDITED</span>
           </div>
         </div>
 
-        <div className="panel-bracket p-5">
+        <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">ACTIVE PROPOSALS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-gold">
+          <div className="mt-3 font-sans text-2xl font-bold text-amber-400">
             {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "03"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-gold">2 PENDING QUORUM</span>
+            <span className="text-amber-400">2 PENDING QUORUM</span>
             <span className="text-muted-foreground/60">TIER 1</span>
           </div>
         </div>
 
-        <div className="panel-bracket p-5">
+        <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">GOVERNANCE STATUS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+          <div className="mt-3 font-sans text-2xl font-bold text-foreground">
             {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "NOMINAL"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">FULL CONSENSUS</span>
+            <span className="text-emerald-400">FULL CONSENSUS</span>
             <span className="text-muted-foreground/60">ROOT</span>
           </div>
         </div>
 
-        <div className="panel-bracket p-5">
+        <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">SYSTEM UPTIME</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+          <div className="mt-3 font-sans text-2xl font-bold text-foreground">
             {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "99.98%"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">0 FAULTS</span>
+            <span className="text-emerald-400">0 FAULTS</span>
             <span className="text-muted-foreground/60">24H</span>
           </div>
         </div>
@@ -107,15 +138,15 @@ function CommandCenterOverview() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Real-Time Audit Telemetry Feed */}
         <section aria-label="Telemetry Stream" className="lg:col-span-2">
-          <div className="panel-bracket h-full p-6">
+          <div className="h-full p-6 border border-border bg-card/30 rounded-lg">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <Eyebrow className="text-gold">SYSTEM TELEMETRY</Eyebrow>
-                <div className="mt-1 font-display text-base font-semibold">Real-Time Audit Stream</div>
+                <Eyebrow className="text-amber-400">SYSTEM TELEMETRY</Eyebrow>
+                <div className="mt-1 font-sans text-base font-semibold">Real-Time Audit Stream</div>
               </div>
               <div className="flex items-center gap-2 font-mono text-[10px]">
-                <span className="h-2 w-2 rounded-full bg-teal live-pulse" />
-                <span className="text-teal">LIVE WEBSOCKET</span>
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-emerald-400">LIVE WEBSOCKET</span>
               </div>
             </div>
 
@@ -128,10 +159,10 @@ function CommandCenterOverview() {
                 activity.map((log) => (
                   <div
                     key={log.id}
-                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-amber-400/30 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-gold">◆</span>
+                      <span className="text-amber-400">◆</span>
                       <span className="font-semibold text-foreground">
                         {log.actor?.toUpperCase() ?? "SYSTEM"}
                       </span>
@@ -153,18 +184,16 @@ function CommandCenterOverview() {
 
         {/* Tactical Fast Access Console */}
         <section aria-label="Navigation Matrix">
-          <div className="panel-bracket h-full p-6">
-            <Eyebrow className="text-gold">NAVIGATION MATRIX</Eyebrow>
-            <div className="mt-1 font-display text-base font-semibold">Primary Modules</div>
+          <div className="h-full p-6 border border-border bg-card/30 rounded-lg">
+            <Eyebrow className="text-amber-400">NAVIGATION MATRIX</Eyebrow>
+            <div className="mt-1 font-sans text-base font-semibold">Primary Modules</div>
 
             <div className="mt-5 space-y-3">
               <Link
                 to="/governance"
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => sounds.playClick()}
-                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-gold/50 hover:bg-gold/5"
+                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-400/5"
               >
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-gold">
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-amber-400">
                   <span>[07] GOVERNANCE CONSOLE</span>
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
@@ -175,11 +204,9 @@ function CommandCenterOverview() {
 
               <Link
                 to="/igx-ai"
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => sounds.playClick()}
-                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-teal/50 hover:bg-teal/5"
+                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-emerald-400/50 hover:bg-emerald-400/5"
               >
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-teal">
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-emerald-400">
                   <span>[08] IGX INTELLIGENCE</span>
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
@@ -192,7 +219,7 @@ function CommandCenterOverview() {
             <div className="mt-6 border-t border-border pt-4">
               <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                 <span>PROTOCOL BUILD</span>
-                <span className="text-gold">v2026.08.11</span>
+                <span className="text-amber-400">v2026.08.11</span>
               </div>
             </div>
           </div>
