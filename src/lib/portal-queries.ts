@@ -7,3 +7,13 @@ export async function getEntities() {
   if (error) throw error;
   return data;
 }
+
+export async function getActivity() {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('id, timestamp, actor, action, entity_id')
+    .order('timestamp', { ascending: false })
+    .limit(10);
+  if (error) throw error;
+  return data;
+}
