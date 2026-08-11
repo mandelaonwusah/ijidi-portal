@@ -69,7 +69,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 border px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.13em]",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.13em]",
         tone === "teal" && "border-teal/30 bg-teal/10 text-teal",
         tone === "gold" && "border-gold/30 bg-gold/10 text-gold",
         tone === "red" && "border-danger/30 bg-danger/10 text-danger",
