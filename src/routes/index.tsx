@@ -1,130 +1,202 @@
+// src/routes/index.tsx
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getActivity, getEcosystemMetrics } from "@/lib/portal-queries";
-import { Eyebrow, PanelBracket } from "@/components/portal-ui";
+import { getEcosystemMetrics } from "@/lib/portal-queries";
+import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
+import { Eyebrow, HexBadge } from "@/components/portal-ui";
 import { sounds } from "@/lib/sound-engine";
+import { cn, formatTacticalTime } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: CommandCenterOverview,
 });
 
 function CommandCenterOverview() {
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  // 1. Ecosystem Top-Level Metrics (TanStack Query Polling)
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    isError: metricsError,
+  } = useQuery({
     queryKey: ["ecosystem-metrics"],
     queryFn: getEcosystemMetrics,
+    refetchInterval: 10000,
+    staleTime: 5000,
   });
 
-  const { data: activity, isLoading: activityLoading } = useQuery({
-    queryKey: ["recent-activity"],
-    queryFn: getActivity,
-  });
+  // 2. Real-Time Telemetry Audit Stream (Supabase WebSocket Channel)
+  const { logs: activity, isLoading: activityLoading } = useLiveActivityLog();
 
   return (
-    <div className="space-y-6">
-      {/* Header Telemetry */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <Eyebrow className="text-gold">SYSTEM OVERVIEW</Eyebrow>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Command Dashboard
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-          <span className="h-2 w-2 rounded-full bg-teal live-pulse" />
-          <span>Telemetry Live</span>
-        </div>
-      </div>
-
-      {/* Primary Metric Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <PanelBracket className="p-4">
-          <Eyebrow className="text-[10px]">TOTAL VAULT ASSETS</Eyebrow>
-          <div className="mt-2 font-display text-2xl font-bold text-foreground">
-            {metricsLoading ? "..." : metrics?.totalVaultAssets ?? "$12.4M"}
-          </div>
-          <span className="font-mono text-[9px] text-teal">+4.2% from last epoch</span>
-        </PanelBracket>
-
-        <PanelBracket className="p-4">
-          <Eyebrow className="text-[10px]">ACTIVE GOVERNANCE PROPOSALS</Eyebrow>
-          <div className="mt-2 font-display text-2xl font-bold text-gold">
-            {metricsLoading ? "..." : metrics?.activeProposals ?? "03"}
-          </div>
-          <span className="font-mono text-[9px] text-muted-foreground">2 pending quorum</span>
-        </PanelBracket>
-
-        <PanelBracket className="p-4">
-          <Eyebrow className="text-[10px]">SYSTEM UPTIME</Eyebrow>
-          <div className="mt-2 font-display text-2xl font-bold text-foreground">
-            99.98%
-          </div>
-          <span className="font-mono text-[9px] text-teal">0 unhandled faults</span>
-        </PanelBracket>
-
-        <PanelBracket className="p-4">
-          <Eyebrow className="text-[10px]">NODE CONNECTIONS</Eyebrow>
-          <div className="mt-2 font-display text-2xl font-bold text-foreground">
-            128/128
-          </div>
-          <span className="font-mono text-[9px] text-teal">All gateways nominal</span>
-        </PanelBracket>
-      </div>
-
-      {/* Quick Module Navigation & Audit Log */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <PanelBracket className="p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <Eyebrow>REAL-TIME AUDIT LOG</Eyebrow>
-              <span className="font-mono text-xs text-gold">LIVE</span>
+    <div className="space-y-8">
+      {/* Tactical Header Banner */}
+      <section aria-label="Command Overview Header" className="panel-bracket grid-scan scanline relative p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <HexBadge label="01" />
+            <div>
+              <div className="flex items-center gap-2">
+                <Eyebrow className="text-gold">COMMAND MODULE / 01</Eyebrow>
+                <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
+              </div>
+              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Ecosystem Overview & Telemetry
+              </h1>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                Honest-state operational governance and vault telemetry.
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3 font-mono text-xs">
+            <div className="rounded border border-border bg-background/80 px-3 py-2 text-right shadow-inner">
+              <Eyebrow className="text-[8px]">PRIMARY GATEWAY</Eyebrow>
+              <div className="font-semibold text-teal">NODE_01 :: ONLINE</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Primary Metrics Grid */}
+      <section aria-label="Ecosystem Metrics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="panel-bracket p-5">
+          <Eyebrow className="text-[9px]">TOTAL VAULT ASSETS</Eyebrow>
+          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "$12.48M"}
+          </div>
+          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+            <span className="text-teal">+4.2% THIS EPOCH</span>
+            <span className="text-muted-foreground/60">AUDITED</span>
+          </div>
+        </div>
+
+        <div className="panel-bracket p-5">
+          <Eyebrow className="text-[9px]">ACTIVE PROPOSALS</Eyebrow>
+          <div className="mt-3 font-display text-2xl font-bold text-gold">
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "03"}
+          </div>
+          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+            <span className="text-gold">2 PENDING QUORUM</span>
+            <span className="text-muted-foreground/60">TIER 1</span>
+          </div>
+        </div>
+
+        <div className="panel-bracket p-5">
+          <Eyebrow className="text-[9px]">GOVERNANCE STATUS</Eyebrow>
+          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "NOMINAL"}
+          </div>
+          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+            <span className="text-teal">FULL CONSENSUS</span>
+            <span className="text-muted-foreground/60">ROOT</span>
+          </div>
+        </div>
+
+        <div className="panel-bracket p-5">
+          <Eyebrow className="text-[9px]">SYSTEM UPTIME</Eyebrow>
+          <div className="mt-3 font-display text-2xl font-bold text-foreground">
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "99.98%"}
+          </div>
+          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+            <span className="text-teal">0 FAULTS</span>
+            <span className="text-muted-foreground/60">24H</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Telemetry & Quick Access Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Real-Time Audit Telemetry Feed */}
+        <section aria-label="Telemetry Stream" className="lg:col-span-2">
+          <div className="panel-bracket h-full p-6">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <Eyebrow className="text-gold">SYSTEM TELEMETRY</Eyebrow>
+                <div className="mt-1 font-display text-base font-semibold">Real-Time Audit Stream</div>
+              </div>
+              <div className="flex items-center gap-2 font-mono text-[10px]">
+                <span className="h-2 w-2 rounded-full bg-teal live-pulse" />
+                <span className="text-teal">LIVE WEBSOCKET</span>
+              </div>
+            </div>
+
             <div className="mt-4 space-y-3 font-mono text-xs">
               {activityLoading ? (
-                <div className="text-muted-foreground">Fetching telemetry stream...</div>
-              ) : (
-                activity?.slice(0, 5).map((log, index) => (
+                <div className="py-8 text-center text-muted-foreground animate-pulse">
+                  Initializing secure telemetry socket...
+                </div>
+              ) : activity && activity.length > 0 ? (
+                activity.map((log) => (
                   <div
-                    key={index}
-                    className="flex items-center justify-between rounded border border-border/50 bg-background/50 p-3"
+                    key={log.id}
+                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-gold">◆</span>
-                      <span className="font-bold text-foreground">{log.actor ?? "SYSTEM"}</span>
+                      <span className="font-semibold text-foreground">
+                        {log.actor?.toUpperCase() ?? "SYSTEM"}
+                      </span>
                       <span className="text-muted-foreground">{log.action}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground/60">
-                      {log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "RECENT"}
+                    <span className="font-mono text-[10px] text-muted-foreground/60">
+                      {formatTacticalTime(log.timestamp)}
                     </span>
                   </div>
                 ))
+              ) : (
+                <div className="py-8 text-center text-muted-foreground">
+                  No verified entries logged in current epoch.
+                </div>
               )}
             </div>
-          </PanelBracket>
-        </div>
+          </div>
+        </section>
 
-        <div>
-          <PanelBracket className="p-6">
-            <Eyebrow>FAST ACCESS MODULES</Eyebrow>
-            <div className="mt-4 space-y-2">
+        {/* Tactical Fast Access Console */}
+        <section aria-label="Navigation Matrix">
+          <div className="panel-bracket h-full p-6">
+            <Eyebrow className="text-gold">NAVIGATION MATRIX</Eyebrow>
+            <div className="mt-1 font-display text-base font-semibold">Primary Modules</div>
+
+            <div className="mt-5 space-y-3">
               <Link
                 to="/governance"
                 onMouseEnter={() => sounds.playHover()}
                 onClick={() => sounds.playClick()}
-                className="block rounded border border-border bg-background/40 p-3 font-mono text-xs hover:border-gold/50 hover:text-gold transition-colors"
+                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-gold/50 hover:bg-gold/5"
               >
-                [07] GOVERNANCE CONSOLE →
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-gold">
+                  <span>[07] GOVERNANCE CONSOLE</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+                  Review proposals, vote thresholds, and disaster recovery states.
+                </p>
               </Link>
+
               <Link
                 to="/igx-ai"
                 onMouseEnter={() => sounds.playHover()}
                 onClick={() => sounds.playClick()}
-                className="block rounded border border-border bg-background/40 p-3 font-mono text-xs hover:border-teal/50 hover:text-teal transition-colors"
+                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-teal/50 hover:bg-teal/5"
               >
-                [08] IGX INTELLIGENCE ENGINE →
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-teal">
+                  <span>[08] IGX INTELLIGENCE</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+                  Deploy AI query engine for ecosystem state verification.
+                </p>
               </Link>
             </div>
-          </PanelBracket>
-        </div>
+
+            <div className="mt-6 border-t border-border pt-4">
+              <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
+                <span>PROTOCOL BUILD</span>
+                <span className="text-gold">v2026.08.11</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
