@@ -1,18 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Checks both standard Node environment variables and Vite client environment variables
-const supabaseUrl = 
-  process.env.SUPABASE_URL || 
-  process.env.VITE_SUPABASE_URL || 
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL);
-
-const supabaseAnonKey = 
-  process.env.SUPABASE_ANON_KEY || 
-  process.env.VITE_SUPABASE_ANON_KEY || 
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY);
+// Read Vite client-side environment variables safely
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Anon Key is missing from environment variables.');
+  console.warn('Supabase URL or Anon Key is missing. Check your Vercel Environment Variables.');
 }
 
 export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
@@ -28,5 +21,3 @@ export async function logActivity(action: string, entity: string, details: Recor
   }
   return data;
 }
-// Test trigger
-logActivity('IGX_AI_SYSTEM_INIT', 'ijidiportal.com', { status: 'active' });
