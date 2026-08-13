@@ -28,3 +28,5 @@ export async function logActivity(action: string, entity: string, details: Recor
   }
   return data;
 }
+// Test trigger
+logActivity('IGX_AI_SYSTEM_INIT', 'ijidiportal.com', { status: 'active' });
