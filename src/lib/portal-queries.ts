@@ -34,7 +34,7 @@ export interface EcosystemMetrics {
   uptime: string;
 }
 
-// 1. Live Activity Log (Real + Fallback)
+// 1. Live Activity Log (Real data only — honest empty state if none exists)
 export async function getActivity(): Promise<ActivityEntry[]> {
   try {
     const { data, error } = await supabase
@@ -43,102 +43,83 @@ export async function getActivity(): Promise<ActivityEntry[]> {
       .order("created_at", { ascending: false })
       .limit(10);
 
-    if (!error && data && data.length > 0) {
-      return data.map((d) => ({
-        id: d.id,
-        actor: d.actor || "GOVERNOR",
-        action: d.action || "Executed system command",
-        timestamp: d.created_at || new Date().toISOString(),
-        type: d.type || "SYSTEM",
-      }));
+    if (error) {
+      console.error("Failed to load activity_log:", error);
+      return [];
     }
-  } catch (err) {
-    console.warn("Supabase fetch failed for activity_log, using fallback telemetry.", err);
-  }
 
-  // Dynamic live fallback telemetry
-  const now = Date.now();
-  return [
-    { id: "1", actor: "GOVERNOR", action: "Validated cross-domain SSO tokens", timestamp: new Date(now - 120000).toISOString() },
-    { id: "2", actor: "NODE_ALPHA", action: "Rebalanced treasury liquidity pool #04", timestamp: new Date(now - 450000).toISOString() },
-    { id: "3", actor: "VAULT_GUARD", action: "Executed automated cold storage health check", timestamp: new Date(now - 900000).toISOString() },
-    { id: "4", actor: "IGX_AGENT", action: "Ingested intelligence feed v2.4", timestamp: new Date(now - 1400000).toISOString() },
-  ];
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data.map((d) => ({
+      id: d.id,
+      actor: d.actor || "GOVERNOR",
+      action: d.action || "Executed system command",
+      timestamp: d.created_at || new Date().toISOString(),
+      type: d.type || "SYSTEM",
+    }));
+  } catch (err) {
+    console.error("getActivity failed:", err);
+    return [];
+  }
 }
 
-// 2. Live Governance Proposals (Real + Fallback)
+// 2. Governance Proposals — honest stub until a real `proposals` table exists
 export async function getProposals(): Promise<GovernanceProposal[]> {
   try {
     const { data, error } = await supabase.from("proposals").select("*").limit(5);
 
-    if (!error && data && data.length > 0) {
-      return data as GovernanceProposal[];
+    if (error) {
+      // Table likely doesn't exist yet — not an error state, just NOT TRACKED
+      return [];
     }
+
+    return (data as GovernanceProposal[]) ?? [];
   } catch (err) {
-    console.warn("Supabase fetch failed for proposals, using fallback data.", err);
+    console.error("getProposals failed:", err);
+    return [];
   }
-
-  return [
-    {
-      id: "PROP-081",
-      title: "Allocate 15% Capital Reserve to Yield Vault Delta",
-      status: "ACTIVE",
-      votesFor: 1420,
-      votesAgainst: 110,
-      quorumPct: 88,
-      endsIn: "14h 22m",
-    },
-    {
-      id: "PROP-080",
-      title: "Upgrade Node Telemetry Subsystem to v3.1",
-      status: "ACTIVE",
-      votesFor: 2890,
-      votesAgainst: 45,
-      quorumPct: 96,
-      endsIn: "02h 05m",
-    },
-    {
-      id: "PROP-079",
-      title: "Establish Emergency Liquidity Protocol Guardrails",
-      status: "PASSED",
-      votesFor: 4100,
-      votesAgainst: 320,
-      quorumPct: 100,
-      endsIn: "CLOSED",
-    },
-  ];
 }
 
-// 3. Live Ecosystem Node Telemetry (Simulated Hardware Matrix)
+// 3. Node Telemetry — honest stub until real infrastructure monitoring exists
 export async function getNodeTelemetry(): Promise<NodeStatus[]> {
-  return [
-    { id: "N-01", name: "US-EAST-PRIMARY", region: "N. Virginia", latencyMs: Math.floor(18 + Math.random() * 8), status: "ONLINE", loadPct: Math.floor(42 + Math.random() * 15) },
-    { id: "N-02", name: "EU-CENTRAL-NODE", region: "Frankfurt", latencyMs: Math.floor(82 + Math.random() * 12), status: "ONLINE", loadPct: Math.floor(58 + Math.random() * 20) },
-    { id: "N-03", name: "AP-SOUTH-EDGE", region: "Singapore", latencyMs: Math.floor(140 + Math.random() * 25), status: "DEGRADED", loadPct: Math.floor(88 + Math.random() * 8) },
-  ];
+  // No real node/infra monitoring wired up yet. Return empty rather than
+  // simulated/random data, per Honest-State Protocol.
+  return [];
 }
 
-// 4. Ecosystem Top-Level Metrics (Required by index.tsx Command Dashboard)
+// 4. Ecosystem Top-Level Metrics — real data from `decisions`, honest NOT TRACKED elsewhere
 export async function getEcosystemMetrics(): Promise<EcosystemMetrics> {
   try {
-    const { count: activePropCount } = await supabase
-      .from("proposals")
+    const { count: openDecisionCount, error } = await supabase
+      .from("decisions")
       .select("*", { count: "exact", head: true })
-      .eq("status", "ACTIVE");
+      .eq("state", "OPEN");
+
+    if (error) {
+      console.error("Failed to load decisions for metrics:", error);
+      return {
+        totalVaultAssets: "NOT TRACKED",
+        activeProposals: "NOT TRACKED",
+        governanceStatus: "NOT TRACKED",
+        uptime: "NOT TRACKED",
+      };
+    }
 
     return {
-      totalVaultAssets: "$12.48M",
-      activeProposals: activePropCount ? String(activePropCount).padStart(2, "0") : "03",
-      governanceStatus: "NOMINAL",
-      uptime: "99.98%",
+      totalVaultAssets: "NOT TRACKED", // no vault/finance table exists yet
+      activeProposals: String(openDecisionCount ?? 0).padStart(2, "0"),
+      governanceStatus: "NOT TRACKED", // no real governance-state source yet
+      uptime: "NOT TRACKED", // no real uptime monitoring wired up yet
     };
   } catch (err) {
-    console.warn("Supabase fetch failed for metrics, using fallback constants.", err);
+    console.error("getEcosystemMetrics failed:", err);
     return {
-      totalVaultAssets: "$12.48M",
-      activeProposals: "03",
-      governanceStatus: "NOMINAL",
-      uptime: "99.98%",
+      totalVaultAssets: "NOT TRACKED",
+      activeProposals: "NOT TRACKED",
+      governanceStatus: "NOT TRACKED",
+      uptime: "NOT TRACKED",
     };
   }
 }
