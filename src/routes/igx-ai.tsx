@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Bot, ChevronRight, Cpu, Send, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, SectionHeader, Signal, StatusBadge } from "@/components/portal-ui";
+import { supabase } from "@/lib/supabase";
+
 export const Route = createFileRoute("/igx-ai")({
   head: () => ({
     meta: [
@@ -17,9 +19,12 @@ export const Route = createFileRoute("/igx-ai")({
   }),
   component: IgxAi,
 });
+
 type Message = { role: "system" | "operator"; text: string };
+
 function IgxAi() {
   const [input, setInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "system",
@@ -30,19 +35,42 @@ function IgxAi() {
       text: "I can help structure decisions, inspect portal records, and identify what is not yet tracked.",
     },
   ]);
-  const submit = () => {
+
+  const submit = async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSubmitting) return;
+
+    setMessages((prev) => [...prev, { role: "operator", text: trimmed }]);
+    setInput("");
+    setIsSubmitting(true);
+
+    const newProposal = {
+      actor_type: "IGX_AI",
+      source: "igx-ai-console",
+      intent: trimmed,
+      suggested_action: `Evaluate and process request: "${trimmed}"`,
+      reasoning: "Pending intelligence routing (Step A plumbing test, no reasoning yet).",
+      status: "pending_review",
+    };
+
+    const { data, error } = await supabase
+      .from("proposals")
+      .insert([newProposal])
+      .select()
+      .single();
+
     setMessages((prev) => [
       ...prev,
-      { role: "operator", text: trimmed },
-      {
-        role: "system",
-        text: "Acknowledged. This local prototype is ready for a governed AI connection; no action was taken.",
-      },
+      error
+        ? { role: "system", text: `Error writing to queue: ${error.message}` }
+        : {
+            role: "system",
+            text: `Proposal [${data.id.slice(0, 8)}] written to queue. Status: PENDING_REVIEW.`,
+          },
     ]);
-    setInput("");
+    setIsSubmitting(false);
   };
+
   return (
     <div>
       <SectionHeader
@@ -106,8 +134,9 @@ function IgxAi() {
               }}
               placeholder="Ask IGX AI to inspect the current state..."
               className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground"
+              disabled={isSubmitting}
             />
-            <Button size="icon" onClick={submit} aria-label="Send prompt">
+            <Button size="icon" onClick={submit} aria-label="Send prompt" disabled={isSubmitting}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
