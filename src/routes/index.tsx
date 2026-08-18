@@ -92,44 +92,44 @@ function CommandCenterOverview() {
         <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">TOTAL VAULT ASSETS</Eyebrow>
           <div className="mt-3 font-sans text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "$12.48M"}
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "NOT TRACKED"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-emerald-400">+4.2% THIS EPOCH</span>
-            <span className="text-muted-foreground/60">AUDITED</span>
+            <span className="text-muted-foreground/60">NOT TRACKED</span>
+            <span className="text-muted-foreground/60">AWAITING RECORDS</span>
           </div>
         </div>
 
         <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">ACTIVE PROPOSALS</Eyebrow>
           <div className="mt-3 font-sans text-2xl font-bold text-amber-400">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "03"}
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "—"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-amber-400">2 PENDING QUORUM</span>
-            <span className="text-muted-foreground/60">TIER 1</span>
+            <span className="text-muted-foreground/60">NOT TRACKED</span>
+            <span className="text-muted-foreground/60">AWAITING RECORDS</span>
           </div>
         </div>
 
         <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">GOVERNANCE STATUS</Eyebrow>
           <div className="mt-3 font-sans text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "NOMINAL"}
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "NOT TRACKED"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-emerald-400">FULL CONSENSUS</span>
-            <span className="text-muted-foreground/60">ROOT</span>
+            <span className="text-muted-foreground/60">NOT TRACKED</span>
+            <span className="text-muted-foreground/60">AWAITING RECORDS</span>
           </div>
         </div>
 
         <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">SYSTEM UPTIME</Eyebrow>
           <div className="mt-3 font-sans text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "99.98%"}
+            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "—"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-emerald-400">0 FAULTS</span>
-            <span className="text-muted-foreground/60">24H</span>
+            <span className="text-muted-foreground/60">NOT TRACKED</span>
+            <span className="text-muted-foreground/60">AWAITING RECORDS</span>
           </div>
         </div>
       </section>
@@ -190,7 +190,7 @@ function CommandCenterOverview() {
 
             <div className="mt-5 space-y-3">
               <Link
-                to="/governance"
+                to="/vault"
                 className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-400/5"
               >
                 <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-amber-400">
