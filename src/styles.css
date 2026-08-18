@@ -1,215 +1,251 @@
-// src/routes/index.tsx
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { getActivity, getEcosystemMetrics } from "@/lib/portal-queries";
-import { Eyebrow, HexBadge } from "@/components/portal-ui";
-import { sounds } from "@/lib/sound-engine";
-import { cn } from "@/lib/utils";
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
 
-export const Route = createFileRoute("/")({
-  component: CommandCenterOverview,
-});
+@custom-variant dark (&:is(.dark *));
 
-function CommandCenterOverview() {
-  const {
-    data: metrics,
-    isLoading: metricsLoading,
-    isError: metricsError,
-  } = useQuery({
-    queryKey: ["ecosystem-metrics"],
-    queryFn: getEcosystemMetrics,
-    refetchInterval: 10000,
-    staleTime: 5000,
-  });
+@theme inline {
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --font-display: "Fraunces", serif;
+  --font-sans: "Karla", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-panel: var(--panel);
+  --color-panel-elevated: var(--panel-elevated);
+  --color-gold: var(--gold);
+  --color-teal: var(--teal);
+  --color-danger: var(--danger);
+}
 
-  const {
-    data: activity,
-    isLoading: activityLoading,
-    isError: activityError,
-  } = useQuery({
-    queryKey: ["recent-activity"],
-    queryFn: getActivity,
-    refetchInterval: 5000,
-    staleTime: 2500,
-  });
+:root {
+  --background: #0e0e0e;
+  --foreground: #F5F2EB;
+  --card: #161616;
+  --card-foreground: #F5F2EB;
+  --popover: #141414;
+  --popover-foreground: #F5F2EB;
+  --primary: #D4AF37;
+  --primary-foreground: oklch(0.13 0.02 80);
+  --secondary: oklch(0.18 0.016 168);
+  --secondary-foreground: oklch(0.86 0.02 87);
+  --muted: oklch(0.17 0.015 168);
+  --muted-foreground: oklch(0.58 0.018 168);
+  --accent: oklch(0.2 0.025 178);
+  --accent-foreground: oklch(0.86 0.08 174);
+  --destructive: oklch(0.62 0.16 25);
+  --destructive-foreground: oklch(0.96 0.02 87);
+  --border: #2e2e2e;
+  --input: #2a2a2a;
+  --ring: #D4AF37;
+  --panel: #141414;
+  --panel-elevated: #1c1c1c;
+  --gold: #D4AF37;
+  --teal: #C9C2AE;
+  --danger: oklch(0.64 0.17 25);
+  --gold-glow: rgba(212, 175, 55, 0.2);
+}
 
-  return (
-    <div className="space-y-8">
-      {/* Tactical Header Banner */}
-      <section aria-label="Command Overview Header" className="panel-bracket grid-scan scanline relative p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <HexBadge label="01" />
-            <div>
-              <div className="flex items-center gap-2">
-                <Eyebrow className="text-gold">COMMAND MODULE / 01</Eyebrow>
-                <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
-              </div>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Ecosystem Overview & Telemetry
-              </h1>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">
-                Honest-state operational governance and vault telemetry.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 font-mono text-xs">
-            <div className="rounded border border-border bg-background/80 px-3 py-2 text-right shadow-inner">
-              <Eyebrow className="text-[8px]">PRIMARY GATEWAY</Eyebrow>
-              <div className="font-semibold text-teal">NODE_01 :: ONLINE</div>
-            </div>
-          </div>
-        </div>
-      </section>
+/* Base resets & global styles */
+* {
+  border-color: var(--color-border);
+}
 
-      {/* Primary Metrics Grid */}
-      <section aria-label="Ecosystem Metrics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="panel-bracket p-5">
-          <Eyebrow className="text-[9px]">TOTAL VAULT ASSETS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "$12.48M"}
-          </div>
-          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">+4.2% THIS EPOCH</span>
-            <span className="text-muted-foreground/60">AUDITED</span>
-          </div>
-        </div>
+html {
+  background: var(--background);
+}
 
-        <div className="panel-bracket p-5">
-          <Eyebrow className="text-[9px]">ACTIVE PROPOSALS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-gold">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "03"}
-          </div>
-          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-gold">2 PENDING QUORUM</span>
-            <span className="text-muted-foreground/60">TIER 1</span>
-          </div>
-        </div>
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
 
-        <div className="panel-bracket p-5">
-          <Eyebrow className="text-[9px]">GOVERNANCE STATUS</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "NOMINAL"}
-          </div>
-          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">FULL CONSENSUS</span>
-            <span className="text-muted-foreground/60">ROOT</span>
-          </div>
-        </div>
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
 
-        <div className="panel-bracket p-5">
-          <Eyebrow className="text-[9px]">SYSTEM UPTIME</Eyebrow>
-          <div className="mt-3 font-display text-2xl font-bold text-foreground">
-            {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "99.98%"}
-          </div>
-          <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span className="text-teal">0 FAULTS</span>
-            <span className="text-muted-foreground/60">24H</span>
-          </div>
-        </div>
-      </section>
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-      {/* Main Telemetry & Quick Access Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Real-Time Audit Telemetry Feed */}
-        <section aria-label="Telemetry Stream" className="lg:col-span-2">
-          <div className="panel-bracket h-full p-6">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div>
-                <Eyebrow className="text-gold">SYSTEM TELEMETRY</Eyebrow>
-                <div className="mt-1 font-display text-base font-semibold">Real-Time Audit Stream</div>
-              </div>
-              <div className="flex items-center gap-2 font-mono text-[10px]">
-                <span className={cn("h-2 w-2 rounded-full", activityError ? "bg-danger" : "bg-teal live-pulse")} />
-                <span className={activityError ? "text-danger" : "text-teal"}>
-                  {activityError ? "DISCONNECTED" : "SYNCING"}
-                </span>
-              </div>
-            </div>
+::-webkit-scrollbar-track {
+  background: var(--panel);
+}
 
-            <div className="mt-4 space-y-3 font-mono text-xs">
-              {activityLoading ? (
-                <div className="py-8 text-center text-muted-foreground animate-pulse">
-                  Initializing secure telemetry socket...
-                </div>
-              ) : activityError ? (
-                <div className="py-8 text-center text-danger">
-                  Failed to synchronize telemetry socket. Retrying...
-                </div>
-              ) : activity && activity.length > 0 ? (
-                activity.map((log, index) => (
-                  <div
-                    key={log.id ?? index}
-                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-gold/30 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-gold">◆</span>
-                      <span className="font-semibold text-foreground">
-                        {log.actor?.toUpperCase() ?? "SYSTEM"}
-                      </span>
-                      <span className="text-muted-foreground">{log.action}</span>
-                    </div>
-                    <span className="font-mono text-[10px] text-muted-foreground/60">
-                      {log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "JUST NOW"}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-muted-foreground">
-                  No verified entries logged in current epoch.
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
 
-        {/* Tactical Fast Access Console */}
-        <section aria-label="Navigation Matrix">
-          <div className="panel-bracket h-full p-6">
-            <Eyebrow className="text-gold">NAVIGATION MATRIX</Eyebrow>
-            <div className="mt-1 font-display text-base font-semibold">Primary Modules</div>
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
 
-            <div className="mt-5 space-y-3">
-              <Link
-                to="/governance"
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => sounds.playClick()}
-                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-gold/50 hover:bg-gold/5"
-              >
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-gold">
-                  <span>[07] GOVERNANCE CONSOLE</span>
-                  <span className="transition-transform group-hover:translate-x-1">→</span>
-                </div>
-                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
-                  Review proposals, vote thresholds, and disaster recovery states.
-                </p>
-              </Link>
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--panel);
+}
 
-              <Link
-                to="/igx-ai"
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => sounds.playClick()}
-                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-teal/50 hover:bg-teal/5"
-              >
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-teal">
-                  <span>[08] IGX INTELLIGENCE</span>
-                  <span className="transition-transform group-hover:translate-x-1">→</span>
-                </div>
-                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
-                  Deploy AI query engine for ecosystem state verification.
-                </p>
-              </Link>
-            </div>
+/* Portal UI & Tactical Framing Components */
+.panel-bracket {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 14px 36px -16px rgba(0, 0, 0, 0.55);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
 
-            <div className="mt-6 border-t border-border pt-4">
-              <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
-                <span>PROTOCOL BUILD</span>
-                <span className="text-gold">v2026.08.11</span>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
+.panel-bracket::before,
+.panel-bracket::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.panel-bracket::before {
+  top: 8px;
+  left: 8px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-top-left-radius: 8px;
+}
+
+.panel-bracket::after {
+  right: 8px;
+  bottom: 8px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-bottom-right-radius: 8px;
+}
+
+.hex-badge {
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+
+.grid-scan {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--border) 22%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--border) 18%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 34px 34px;
+}
+
+.tactical-grid {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Scanline visual overlay */
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--teal) 7%, transparent),
+    transparent
   );
+  height: 40%;
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-120%);
+  }
+  to {
+    transform: translateY(280%);
+  }
+}
+
+/* Infinite Scrolling Ticker Track */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 28s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Live System Telemetry Pulse */
+.live-pulse {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.2);
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
