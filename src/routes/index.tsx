@@ -81,7 +81,21 @@ function CommandCenterOverview() {
           <div className="flex items-center gap-3 font-mono text-xs">
             <div className="rounded border border-border bg-background/80 px-3 py-2 text-right shadow-inner">
               <Eyebrow className="text-[8px]">PRIMARY GATEWAY</Eyebrow>
-              <div className="font-semibold text-emerald-400">NODE_01 :: ONLINE</div>
+              <div
+                className={`font-semibold ${
+                  metricsLoading
+                    ? "text-muted-foreground"
+                    : metricsError
+                    ? "text-red-400"
+                    : "text-emerald-400"
+                }`}
+              >
+                {metricsLoading
+                  ? "NODE_01 :: CHECKING"
+                  : metricsError
+                  ? "NODE_01 :: OFFLINE"
+                  : "NODE_01 :: ONLINE"}
+              </div>
             </div>
           </div>
         </div>
