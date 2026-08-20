@@ -234,7 +234,7 @@ function PortalShell({ children }: { children: ReactNode }) {
                 </div>
               </div>
               <nav className="flex-1 overflow-y-auto px-3 py-5">
-                <Eyebrow className="px-3 pb-3">Modules / 08</Eyebrow>
+                <Eyebrow className="px-3 pb-3">NAVIGATION</Eyebrow>
                 {navItems.map((item) => (
                   <Link
                     key={item.to}
