@@ -11,7 +11,8 @@ export const navItems = [
   { label: "IGX AI", to: "/igx-ai", icon: "›_", key: "08" },
   { label: "Proposals", to: "/proposals", icon: "☑", key: "09" },
   { label: "Governance", to: "/governance", icon: "◎", key: "10" },
-  { label: "Identity", to: "/settings", icon: "◌", key: "11" },
+  { label: "Directory", to: "/directory", icon: "⊞", key: "11" },
+  { label: "Identity", to: "/settings", icon: "◌", key: "12" },
 ] as const;
 
 export const metricTiles = [
@@ -36,6 +37,9 @@ export const metricTiles = [
   },
 ];
 
+// `handle` / `siteUrl` are optional and only set when confirmed real — omitted
+// (not empty-stringed) fields render as "Not tracked" / "Not deployed" in the
+// Directory view rather than a fake or dead value. See Directory route.
 export const modules = [
   {
     name: "IJIDI Group",
@@ -43,6 +47,8 @@ export const modules = [
     detail: "Professional services & holding",
     state: "standby",
     to: "/ecosystem", // no dedicated Group page yet — open item, see reconciliation notes
+    handle: "@ijidigroup",
+    siteUrl: "https://ijidigroup.com",
   },
   {
     name: "IJIDI Foundation",
@@ -50,14 +56,25 @@ export const modules = [
     detail: "Programmes & impact registry",
     state: "standby",
     to: "/foundation",
+    handle: "@ijidifoundation",
+    siteUrl: "https://ijidi.org",
   },
-  { name: "IGX AI", code: "IGX-01", detail: "Intelligence console", state: "ready", to: "/igx-ai" },
+  {
+    name: "IGX AI",
+    code: "IGX-01",
+    detail: "Intelligence console",
+    state: "ready",
+    to: "/igx-ai",
+    // internal console only — no external site, no social handle
+  },
   {
     name: "IJIDI Atelier",
     code: "ATL-01",
     detail: "Luxury fashion house",
     state: "forming",
     to: "/atelier",
+    handle: "@ijidiatelier",
+    // siteUrl intentionally omitted — atelier.ijidigroup.com agreed but not yet deployed
   },
   {
     name: "IJIDI Media",
@@ -65,8 +82,21 @@ export const modules = [
     detail: "AI-generated content studio",
     state: "forming",
     to: "/media",
+    // handle not yet confirmed — omitted rather than guessed
+    // siteUrl intentionally omitted — media.ijidigroup.com agreed but not yet deployed
   },
-];
+] as const;
+
+// Personal brand is not an operating arm (see ecosystemNodes note below) but is
+// a real, live, confirmed entity — included here so the Directory view can show
+// all three actually-deployed sites honestly in one place.
+export const personalBrand = {
+  name: "Mandela Onwusah",
+  code: "MDL-01",
+  detail: "Founder & sole governor — personal brand",
+  handle: "@mandelaonwusah1",
+  siteUrl: "https://mandelaonwusah.com",
+} as const;
 
 export const activity = [
   { time: "NOW", text: "Portal session established", tag: "SYSTEM", tone: "teal" },
