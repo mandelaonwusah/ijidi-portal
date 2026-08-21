@@ -163,6 +163,13 @@ export const decisions = [
     label: "Brand reconciliation",
     detail:
       "Fraunces + Karla primary type, IBM Plex Mono for data only. Gold locked to #D4AF37. Indigo replaces teal accent. Governor identity corrected to Mandela Onwusah.",
+    state: "SUPERSEDED",
+  },
+  {
+    date: "21 AUG 2026",
+    label: "IJIDI Brand & Design System v1.0",
+    detail:
+      "Full 5-identity system adopted: Mandela (Midnight #141414 / Ivory #F4EFE6 / Terracotta #A6533B), IJIDI Group (Obsidian #111111 / Ivory #F5F1E8 / Champagne Gold #C6A15B), IJIDI Foundation (Deep Forest #173F35 / Ivory / Muted Gold #B99A5A), IJIDI Portal (Deep Navy #101C36 / Soft White #FCFBF8 / Electric Blue #356AE6), IJIDI Atelier (Black #0C0C0C / Bone #EEE8DC / Antique Gold #A8874A). Namespaced tokens (--mandela-*, --ijidi-group-*, --ijidi-foundation-*, --ijidi-portal-*, --ijidi-atelier-*), no decorative gradients, gold restrained. Supersedes the 08 AUG 2026 Brand reconciliation entry.",
     state: "FROZEN",
   },
   { date: "—", label: "Next decision", detail: "No decision has been logged.", state: "OPEN" },
