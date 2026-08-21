@@ -4,7 +4,7 @@ import { modules, personalBrand } from "@/lib/portal-data";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
 
 export const Route = createFileRoute("/directory")({
-  head: () => ({ 
+  head: () => ({
     meta: [
       { title: "Directory · IJIDI Portal" },
       {
@@ -18,17 +18,8 @@ export const Route = createFileRoute("/directory")({
   component: Directory,
 });
 
-type Entry = {
-  name: string;
-  code: string;
-  detail: string;
-  state?: string;
-  handle?: string;
-  siteUrl?: string;
-};
-
 function Directory() {
-  const entries: Entry[] = [...modules, personalBrand];
+  const entries = [...modules, personalBrand];
 
   return (
     <div>
@@ -43,12 +34,10 @@ function Directory() {
           <div key={entry.code} className="panel-bracket p-6">
             <div className="flex items-center justify-between">
               <Eyebrow>{entry.code}</Eyebrow>
-              {entry.state && <StatusBadge status={entry.state} />}
+              {"state" in entry && entry.state && <StatusBadge status={entry.state} />}
             </div>
-
             <h3 className="mt-3 font-display text-lg font-semibold">{entry.name}</h3>
             <p className="mt-1 text-[11px] text-muted-foreground">{entry.detail}</p>
-
             <div className="mt-5 space-y-2 border-t border-border pt-4">
               <div className="flex items-center gap-2 font-mono text-[11px]">
                 <AtSign className="h-3 w-3 text-teal" />
