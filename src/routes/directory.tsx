@@ -4,7 +4,7 @@ import { modules, personalBrand } from "@/lib/portal-data";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
 
 export const Route = createFileRoute("/directory")({
-  head: () => ({
+  head: () => ({ 
     meta: [
       { title: "Directory · IJIDI Portal" },
       {
