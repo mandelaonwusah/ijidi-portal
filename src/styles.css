@@ -5,11 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --font-display: "Fraunces", serif;
-  --font-sans: "Karla", sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-display: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -32,37 +32,38 @@
   --color-ring: var(--ring);
   --color-panel: var(--panel);
   --color-panel-elevated: var(--panel-elevated);
-  --color-gold: var(--gold);
-  --color-teal: var(--teal);
+  --color-blue: var(--blue);
+  --color-slate: var(--slate);
   --color-danger: var(--danger);
 }
 
 :root {
-  --background: #0e0e0e;
-  --foreground: #F5F2EB;
-  --card: #161616;
-  --card-foreground: #F5F2EB;
-  --popover: #141414;
-  --popover-foreground: #F5F2EB;
-  --primary: #D4AF37;
-  --primary-foreground: oklch(0.13 0.02 80);
-  --secondary: oklch(0.18 0.016 168);
-  --secondary-foreground: oklch(0.86 0.02 87);
-  --muted: oklch(0.17 0.015 168);
-  --muted-foreground: oklch(0.58 0.018 168);
-  --accent: oklch(0.2 0.025 178);
-  --accent-foreground: oklch(0.86 0.08 174);
+  /* IJIDI Portal — Deep Navy / Soft White / Electric Blue / Slate (locked 2026-08-21) */
+  --background: #101C36;
+  --foreground: #FCFBF8;
+  --card: #16213F;
+  --card-foreground: #FCFBF8;
+  --popover: #131F3A;
+  --popover-foreground: #FCFBF8;
+  --primary: #356AE6;
+  --primary-foreground: #FCFBF8;
+  --secondary: #16213F;
+  --secondary-foreground: #FCFBF8;
+  --muted: #1A2748;
+  --muted-foreground: #667085;
+  --accent: #4C7FEF;
+  --accent-foreground: #FCFBF8;
   --destructive: oklch(0.62 0.16 25);
   --destructive-foreground: oklch(0.96 0.02 87);
-  --border: #2e2e2e;
-  --input: #2a2a2a;
-  --ring: #D4AF37;
-  --panel: #141414;
-  --panel-elevated: #1c1c1c;
-  --gold: #D4AF37;
-  --teal: #C9C2AE;
+  --border: #22304F;
+  --input: #1C2842;
+  --ring: #356AE6;
+  --panel: #131F3A;
+  --panel-elevated: #1A2748;
+  --blue: #356AE6;
+  --slate: #667085;
   --danger: oklch(0.64 0.17 25);
-  --gold-glow: rgba(212, 175, 55, 0.2);
+  --blue-glow: rgba(53, 106, 230, 0.15);
 }
 
 /* Base resets & global styles */
@@ -103,7 +104,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold);
+  background: var(--blue);
 }
 
 * {
@@ -127,7 +128,7 @@ a {
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--gold);
+  border-color: var(--blue);
   opacity: 0.5;
   pointer-events: none;
 }
@@ -167,7 +168,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(rgba(53, 106, 230, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -184,7 +185,7 @@ a {
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in oklab, var(--teal) 7%, transparent),
+    color-mix(in oklab, var(--slate) 7%, transparent),
     transparent
   );
   height: 40%;
