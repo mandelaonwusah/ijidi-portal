@@ -27,7 +27,7 @@ function formatTacticalTime(isoString?: string): string {
 // Inline build-safe HexBadge component
 function HexBadge({ label }: { label: string }) {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded border border-amber-400/40 bg-amber-400/10 font-mono text-xs font-bold text-amber-400">
+    <div className="flex h-8 w-8 items-center justify-center rounded border border-primary/40 bg-primary/10 font-mono text-xs font-bold text-primary">
       {label}
     </div>
   );
@@ -67,7 +67,7 @@ function CommandCenterOverview() {
             <HexBadge label="01" />
             <div>
               <div className="flex items-center gap-2">
-                <Eyebrow className="text-amber-400">COMMAND MODULE / 01</Eyebrow>
+                <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
               <h1 className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
@@ -116,7 +116,7 @@ function CommandCenterOverview() {
 
         <div className="p-5 border border-border bg-card/30 rounded-lg">
           <Eyebrow className="text-[9px]">ACTIVE PROPOSALS</Eyebrow>
-          <div className="mt-3 font-sans text-2xl font-bold text-amber-400">
+          <div className="mt-3 font-sans text-2xl font-bold text-primary">
             {metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "—"}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
@@ -155,7 +155,7 @@ function CommandCenterOverview() {
           <div className="h-full p-6 border border-border bg-card/30 rounded-lg">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <Eyebrow className="text-amber-400">SYSTEM TELEMETRY</Eyebrow>
+                <Eyebrow className="text-primary">SYSTEM TELEMETRY</Eyebrow>
                 <div className="mt-1 font-sans text-base font-semibold">Real-Time Audit Stream</div>
               </div>
               <div className="flex items-center gap-2 font-mono text-[10px]">
@@ -173,10 +173,10 @@ function CommandCenterOverview() {
                 activity.map((log) => (
                   <div
                     key={log.id}
-                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-amber-400/30 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-2 rounded border border-border/60 bg-background/60 p-3 transition-colors hover:border-primary/30 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-amber-400">◆</span>
+                      <span className="text-primary">◆</span>
                       <span className="font-semibold text-foreground">
                         {log.actor?.toUpperCase() ?? "SYSTEM"}
                       </span>
@@ -199,15 +199,15 @@ function CommandCenterOverview() {
         {/* Tactical Fast Access Console */}
         <section aria-label="Navigation Matrix">
           <div className="h-full p-6 border border-border bg-card/30 rounded-lg">
-            <Eyebrow className="text-amber-400">NAVIGATION MATRIX</Eyebrow>
+            <Eyebrow className="text-primary">NAVIGATION MATRIX</Eyebrow>
             <div className="mt-1 font-sans text-base font-semibold">Primary Modules</div>
 
             <div className="mt-5 space-y-3">
               <Link
                 to="/vault"
-                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-amber-400/50 hover:bg-amber-400/5"
+                className="group block rounded border border-border bg-background/50 p-4 transition-all hover:border-primary/50 hover:bg-primary/5"
               >
-                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-amber-400">
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-foreground group-hover:text-primary">
                   <span>[07] GOVERNANCE CONSOLE</span>
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </div>
@@ -233,7 +233,7 @@ function CommandCenterOverview() {
             <div className="mt-6 border-t border-border pt-4">
               <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                 <span>PROTOCOL BUILD</span>
-                <span className="text-amber-400">v2026.08.11</span>
+                <span className="text-primary">v2026.08.11</span>
               </div>
             </div>
           </div>
