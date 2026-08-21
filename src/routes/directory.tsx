@@ -50,8 +50,7 @@ function Directory() {
               <div className="flex items-center gap-2 font-mono text-[11px]">
                 <Globe2 className="h-3 w-3 text-gold" />
                 {entry.siteUrl ? (
-                  
-                    href={entry.siteUrl}
+                  <a href={entry.siteUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 text-gold underline-offset-4 hover:underline"
