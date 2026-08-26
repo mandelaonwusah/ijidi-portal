@@ -36,56 +36,157 @@
   --color-blue: var(--blue);
   --color-slate: var(--slate);
   --color-danger: var(--danger);
-  --color-gold: var(--primary);
-  --color-teal: var(--accent);
+  --color-gold: var(--amber-bright);
+  --color-teal: var(--line);
+  /* Blueprint brand tokens, exposed as their own Tailwind classes
+     (bg-navy, text-amber, etc.) per the MAM Realty palette. */
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-line: var(--line);
+  --color-line-dim: var(--line-dim);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-steel: var(--steel);
+  --color-charcoal: var(--charcoal);
+  --color-amber: var(--amber);
+  --color-amber-bright: var(--amber-bright);
+  --color-blueprint-ok: var(--blueprint-ok);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
-  /* IJIDI Portal — adopted the IGX_Ecosystem_AI_Interface_V0 mockup
-     palette in full (confirmed 26 AUG 2026, supersedes the 26 AUG
-     gold/purple/orange :root pass): gold #D4AF37 / teal #5DCAA5 /
-     orange #D85A30 / success green #639922 on indigo bg #0C0E2E,
-     deep bg #07081C, card indigo #1A1F4D, bone text #F5F2EB.
-     Teal is real again here (not aliased to purple) — the mockup's
-     own accent, restored as --accent directly. --color-gold and
-     --color-teal above still alias --primary/--accent so any
-     text-gold / bg-gold / text-teal classes already in the codebase
-     resolve correctly with no further find-and-replace needed.
-     --blue (used by scrollbar hover, panel-bracket corners, and the
-     tactical-grid dot pattern) is repointed to the same teal, since
-     the mockup has no separate purple/blue accent — recommendation,
-     flag if a distinct "system" color is wanted back.
-     --success is new: the approve button in igx-ai.tsx currently
-     hardcodes #639922 inline rather than reading a token — added
-     here so that can be wired to var(--success) later instead of a
-     magic hex. */
-  --background: #0C0E2E;
-  --foreground: #F5F2EB;
-  --card: #1A1F4D;
-  --card-foreground: #F5F2EB;
-  --popover: #07081C;
-  --popover-foreground: #F5F2EB;
-  --primary: #D4AF37;
-  --primary-foreground: #0C0E2E;
-  --secondary: #1A1F4D;
-  --secondary-foreground: #F5F2EB;
-  --muted: #191B44;
-  --muted-foreground: #8B879C;
-  --accent: #5DCAA5;
-  --accent-foreground: #07081C;
-  --destructive: #D85A30;
-  --destructive-foreground: #0C0E2E;
-  --success: #639922;
-  --success-foreground: #F5F2EB;
-  --border: #262952;
-  --input: #1D1F49;
-  --ring: #D4AF37;
-  --panel: #07081C;
-  --panel-elevated: #1A1F4D;
-  --blue: #5DCAA5;
-  --slate: #8B879C;
-  --danger: #D85A30;
-  --blue-glow: rgba(93, 202, 165, 0.18);
+  /* IJIDI Portal — adopted the MAM Realty "blueprint" palette in full
+     (confirmed 26 AUG 2026, supersedes the 26 AUG gold/teal/orange
+     mockup pass). Per request, the Portal runs the DARK-mode token
+     set as its single always-on theme — same posture the Portal has
+     always had (one dark surface, no light/dark toggle in the
+     codebase) — so :root below carries the .dark values directly
+     rather than the light-mode table. A .dark block is still
+     included beneath with the same values, so nothing breaks if a
+     toggle is ever added later.
+
+     "As-is" was chosen over the amber-kept variant we mocked up:
+     --primary is the near-white/gray #EBEBF0 from the source table,
+     not amber — the gold-forward look from the previous palette is
+     gone in this exact mode. Amber only survives as the standalone
+     --amber / --amber-bright blueprint tokens (bg-amber, text-amber
+     classes), used deliberately rather than as the default primary.
+
+     --color-gold now aliases --amber-bright (closest equivalent to
+     the old gold accent) and --color-teal aliases --line (the sky-
+     blue "blueprint line" tone, closest cool accent available) —
+     flagging both since neither is an exact match for the prior
+     gold/teal and any leftover text-gold/bg-teal classes in the
+     codebase will render these substitutes, not the old hexes. */
+  --background: #11131A;
+  --foreground: #FAFAFA;
+  --card: #222633;
+  --card-foreground: #FAFAFA;
+  --popover: #222633;
+  --popover-foreground: #FAFAFA;
+  --primary: #EBEBF0;
+  --primary-foreground: #222633;
+  --secondary: #3B4252;
+  --secondary-foreground: #FAFAFA;
+  --muted: #3B4252;
+  --muted-foreground: #A8ACB8;
+  --accent: #3B4252;
+  --accent-foreground: #FAFAFA;
+  --destructive: #E06B5A;
+  --destructive-foreground: #FAFAFA;
+  --success: #7FBBA0;
+  --success-foreground: #12291F;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #6F7A8E;
+
+  /* Blueprint brand tokens (theme-invariant per the source table) */
+  --navy: #1C2435;
+  --navy-deep: #12192A;
+  --line: #8FBFD4;
+  --line-dim: #5B7A8A;
+  --paper: #EAE8E3;
+  --paper-dim: #D9D6CE;
+  --steel: #5F6875;
+  --charcoal: #24262B;
+  --amber: #C68A2E;
+  --amber-bright: #E0A344;
+  --blueprint-ok: #7FBBA0;
+
+  /* Chart / sidebar tokens (dark values — unused until chart or
+     sidebar components are added, per the source doc) */
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #222633;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #3B4252;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #6F7A8E;
+
+  /* Legacy names still referenced by .panel-bracket, the scrollbar,
+     and .tactical-grid below — repointed to the closest blueprint
+     equivalents (line = sky-blue accent, steel = mid-gray, destructive
+     = coral-red) instead of the old purple/teal. */
+  --panel: #222633;
+  --panel-elevated: #3B4252;
+  --blue: #8FBFD4;
+  --slate: #5F6875;
+  --danger: #E06B5A;
+  --blue-glow: rgba(143, 191, 212, 0.18);
+
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
+}
+
+.dark {
+  /* Same dark values, duplicated under .dark for forward-compat if a
+     theme toggle is ever added — :root above is the active source of
+     truth today. */
+  --background: #11131A;
+  --foreground: #FAFAFA;
+  --card: #222633;
+  --card-foreground: #FAFAFA;
+  --popover: #222633;
+  --popover-foreground: #FAFAFA;
+  --primary: #EBEBF0;
+  --primary-foreground: #222633;
+  --secondary: #3B4252;
+  --secondary-foreground: #FAFAFA;
+  --muted: #3B4252;
+  --muted-foreground: #A8ACB8;
+  --accent: #3B4252;
+  --accent-foreground: #FAFAFA;
+  --destructive: #E06B5A;
+  --destructive-foreground: #FAFAFA;
+  --success: #7FBBA0;
+  --success-foreground: #12291F;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #6F7A8E;
+  --panel: #222633;
+  --panel-elevated: #3B4252;
+  --blue: #8FBFD4;
+  --slate: #5F6875;
+  --danger: #E06B5A;
+  --blue-glow: rgba(143, 191, 212, 0.18);
 }
 
 /* Base resets & global styles */
@@ -140,7 +241,7 @@ a {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 14px 36px -16px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-sheet);
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
@@ -190,7 +291,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(93, 202, 165, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(rgba(143, 191, 212, 0.08) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
