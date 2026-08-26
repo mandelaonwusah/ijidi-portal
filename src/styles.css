@@ -38,32 +38,39 @@
 }
 
 :root {
-  /* IJIDI Portal — Deep Navy / Soft White / Electric Blue / Slate (locked 2026-08-21) */
-  --background: #101C36;
-  --foreground: #FCFBF8;
-  --card: #16213F;
-  --card-foreground: #FCFBF8;
-  --popover: #131F3A;
-  --popover-foreground: #FCFBF8;
-  --primary: #356AE6;
-  --primary-foreground: #FCFBF8;
-  --secondary: #16213F;
-  --secondary-foreground: #FCFBF8;
-  --muted: #1A2748;
-  --muted-foreground: #667085;
-  --accent: #4C7FEF;
-  --accent-foreground: #FCFBF8;
-  --destructive: oklch(0.62 0.16 25);
-  --destructive-foreground: oklch(0.96 0.02 87);
-  --border: #22304F;
-  --input: #1C2842;
-  --ring: #356AE6;
-  --panel: #131F3A;
-  --panel-elevated: #1A2748;
-  --blue: #356AE6;
-  --slate: #667085;
-  --danger: oklch(0.64 0.17 25);
-  --blue-glow: rgba(53, 106, 230, 0.15);
+  /* IJIDI Portal — adopted IGX AI console palette (confirmed 26 AUG 2026):
+     gold #C6A15B / deep purple #5C3D8C / orange #D97B3F on
+     bg #0C0E2E–#07081C / bone #F5F2EB. Replaces the 21 AUG 2026
+     Deep Navy #101C36 / Electric Blue #356AE6 Portal identity.
+     Variable NAMES kept unchanged (--blue, --slate, --danger, etc.)
+     so any component or Tailwind class already referencing them
+     (text-blue, bg-blue/10, etc.) repaints automatically without
+     needing a find-and-replace across the codebase. */
+  --background: #0C0E2E;
+  --foreground: #F5F2EB;
+  --card: #14163A;
+  --card-foreground: #F5F2EB;
+  --popover: #11132E;
+  --popover-foreground: #F5F2EB;
+  --primary: #C6A15B;
+  --primary-foreground: #0C0E2E;
+  --secondary: #14163A;
+  --secondary-foreground: #F5F2EB;
+  --muted: #191B44;
+  --muted-foreground: #8B879C;
+  --accent: #5C3D8C;
+  --accent-foreground: #F5F2EB;
+  --destructive: #D97B3F;
+  --destructive-foreground: #0C0E2E;
+  --border: #262952;
+  --input: #1D1F49;
+  --ring: #C6A15B;
+  --panel: #11132E;
+  --panel-elevated: #191B44;
+  --blue: #5C3D8C;
+  --slate: #8B879C;
+  --danger: #D97B3F;
+  --blue-glow: rgba(92, 61, 140, 0.18);
 }
 
 /* Base resets & global styles */
@@ -168,7 +175,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(53, 106, 230, 0.06) 1px, transparent 0);
+  background-image: radial-gradient(rgba(92, 61, 140, 0.08) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -238,26 +245,6 @@ a {
     opacity: 0.35;
     transform: scale(1.2);
   }
-}
-
-/* ============================================================
-   IGX AI CONSOLE — scoped accent tokens (confirmed 26 AUG 2026)
-   Gold #C6A15B / deep purple #5C3D8C / orange #D97B3F on
-   bg #0C0E2E–#07081C / bone #F5F2EB. Scoped under [data-igx-console]
-   only — does NOT alter the :root Portal tokens above (Deep Navy
-   #101C36 / Electric Blue #356AE6, locked 2026-08-21). If/when the
-   whole Portal repo moves to this palette, that's Mandela's own
-   migration, not done here.
-   ============================================================ */
-[data-igx-console] {
-  --igx-bg: #0C0E2E;
-  --igx-bg-deep: #07081C;
-  --igx-bone: #F5F2EB;
-  --igx-gold: #C6A15B;
-  --igx-purple: #5C3D8C;
-  --igx-orange: #D97B3F;
-  --igx-border: rgba(245, 242, 235, 0.22);
-  --igx-border-soft: rgba(245, 242, 235, 0.12);
 }
 
 /* Reduced Motion Override */
