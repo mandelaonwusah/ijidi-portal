@@ -1,7 +1,6 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Brightened Dashboard Theme
-   Slightly lighter background (#11151E) with significantly
-   brighter cards for clear contrast and readability.
+   IJIDI OPERATING SYSTEM — Brand Color Palette
+   Maintaining IJIDI identity with brightened dark theme
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -47,7 +46,7 @@
   --color-gold              : var(--amber-bright);
   --color-teal              : var(--line);
 
-  /* Blueprint brand tokens */
+  /* IJIDI Blueprint brand tokens */
   --color-navy              : var(--navy);
   --color-navy-deep         : var(--navy-deep);
   --color-line              : var(--line);
@@ -77,111 +76,111 @@
 }
 
 /* ============================================================
-   :ROOT — IJIDI BRIGHTENED DARK PALETTE
-   Background: slightly lighter (#11151E)
-   Cards: significantly brighter for contrast
-   Demarcation lines: clear and visible
+   :ROOT — IJIDI BRAND COLOR PALETTE
+   Preserving IJIDI's signature colors while brightening
+   the dark theme for better readability and contrast.
    ============================================================ */
 :root {
-  /* --- Main background: slightly lighter than before --- */
-  --background: #11151E;        /* Brightened from #0E121B */
-  --foreground: #F0F2F7;        /* Slightly brighter text */
+  /* --- IJIDI Background: signature dark navy --- */
+  --background: #11151E;        /* IJIDI dark navy base */
+  --foreground: #F0F2F7;        /* IJIDI off-white text */
 
-  /* --- CARDS: significantly brighter for contrast --- */
-  --card: #1E2639;              /* Much brighter than background */
+  /* --- IJIDI Cards: brightened for contrast --- */
+  --card: #1E2639;              /* IJIDI navy-lighter */
   --card-foreground: #F0F2F7;
 
-  --popover: #262F47;           /* Even brighter for popovers */
+  --popover: #28324A;           /* IJIDI navy-popover */
   --popover-foreground: #F0F2F7;
 
-  /* --- Primary & secondary --- */
-  --primary: #E8EBF2;
+  /* --- IJIDI Primary brand colors --- */
+  --primary: #E8EBF2;           /* IJIDI off-white primary */
   --primary-foreground: #1E2639;
 
-  --secondary: #33405A;
+  --secondary: #3A4865;         /* IJIDI muted navy */
   --secondary-foreground: #F0F2F7;
 
-  --muted: #33405A;
-  --muted-foreground: #A8B1C5;
+  --muted: #3A4865;
+  --muted-foreground: #A8B4C8;  /* IJIDI muted text */
 
-  --accent: #33405A;
+  --accent: #3A4865;
   --accent-foreground: #F0F2F7;
 
-  /* --- Status colours --- */
-  --destructive: #E07A6B;
+  /* --- IJIDI Status colours --- */
+  --destructive: #E07A6B;       /* IJIDI coral-red */
   --destructive-foreground: #F0F2F7;
 
-  --success: #8BC8AD;
+  --success: #8BC8AD;           /* IJIDI teal-green */
   --success-foreground: #12291F;
 
-  /* --- BORDERS & DEMARCATION LINES (clear and visible) --- */
-  --border: rgba(255, 255, 255, 0.10);        /* subtle base line */
-  --border-strong: rgba(255, 255, 255, 0.20); /* obvious demarcation */
-  --border-accent: rgba(143, 191, 212, 0.30); /* highlighted accent line */
+  /* --- IJIDI Borders & Demarcation --- */
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-accent: rgba(143, 191, 212, 0.30); /* IJIDI teal accent */
 
   --input: rgba(255, 255, 255, 0.12);
   --ring: #7A8AA2;
 
-  /* --- Panel variants --- */
-  --panel: #1E2639;             /* Matches card */
-  --panel-elevated: #28334B;    /* Brighter for elevated elements */
+  /* --- IJIDI Panel variants --- */
+  --panel: #1E2639;
+  --panel-elevated: #2A3550;
 
-  /* --- Blueprint brand tokens --- */
-  --navy: #1C2435;
-  --navy-deep: #12192A;
-  --line: #8FBFD4;
-  --line-dim: #5B7A8A;
-  --paper: #EAE8E3;
-  --paper-dim: #D9D6CE;
-  --steel: #5F6875;
-  --charcoal: #24262B;
-  --amber: #C68A2E;
-  --amber-bright: #E0A344;
-  --blueprint-ok: #7FBBA0;
+  /* --- IJIDI Blueprint brand tokens (MAM Realty palette) --- */
+  --navy: #1C2435;              /* IJIDI signature navy */
+  --navy-deep: #12192A;         /* IJIDI deep navy */
+  --line: #8FBFD4;              /* IJIDI teal-line */
+  --line-dim: #5B7A8A;          /* IJIDI muted teal */
+  --paper: #EAE8E3;             /* IJIDI warm off-white */
+  --paper-dim: #D9D6CE;         /* IJIDI muted paper */
+  --steel: #5F6875;             /* IJIDI steel gray */
+  --charcoal: #24262B;          /* IJIDI charcoal */
+  --amber: #C68A2E;             /* IJIDI gold-amber */
+  --amber-bright: #E0A344;      /* IJIDI bright amber */
+  --blueprint-ok: #8BC8AD;      /* IJIDI success teal */
 
-  /* --- Charts / sidebar --- */
+  /* --- IJIDI Charts --- */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
+  /* --- IJIDI Sidebar --- */
   --sidebar: #1E2639;
   --sidebar-foreground: #F0F2F7;
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: #F0F2F7;
-  --sidebar-accent: #33405A;
+  --sidebar-accent: #3A4865;
   --sidebar-accent-foreground: #F0F2F7;
   --sidebar-border: rgba(255, 255, 255, 0.10);
   --sidebar-ring: #7A8AA2;
 
-  /* --- Legacy / component-specific --- */
-  --blue: #8FBFD4;
-  --slate: #5F6875;
-  --danger: #E07A6B;
+  /* --- IJIDI Legacy / component-specific --- */
+  --blue: #8FBFD4;              /* IJIDI primary blue-teal */
+  --slate: #5F6875;             /* IJIDI slate */
+  --danger: #E07A6B;            /* IJIDI danger coral */
   --blue-glow: rgba(143, 191, 212, 0.15);
 
-  /* --- Shadows (premium depth) --- */
+  /* --- IJIDI Shadows --- */
   --shadow-sheet: 0 8px 32px -12px rgba(0, 0, 0, 0.6);
   --shadow-lift: 0 20px 48px -20px rgba(0, 0, 0, 0.7);
   --shadow-card: 0 4px 20px -8px rgba(0, 0, 0, 0.45);
 }
 
-/* --- Forward‑compat .dark block --- */
+/* --- Dark block for forward compatibility --- */
 .dark {
   --background: #11151E;
   --foreground: #F0F2F7;
   --card: #1E2639;
   --card-foreground: #F0F2F7;
-  --popover: #262F47;
+  --popover: #28324A;
   --popover-foreground: #F0F2F7;
   --primary: #E8EBF2;
   --primary-foreground: #1E2639;
-  --secondary: #33405A;
+  --secondary: #3A4865;
   --secondary-foreground: #F0F2F7;
-  --muted: #33405A;
-  --muted-foreground: #A8B1C5;
-  --accent: #33405A;
+  --muted: #3A4865;
+  --muted-foreground: #A8B4C8;
+  --accent: #3A4865;
   --accent-foreground: #F0F2F7;
   --destructive: #E07A6B;
   --destructive-foreground: #F0F2F7;
@@ -193,7 +192,7 @@
   --input: rgba(255, 255, 255, 0.12);
   --ring: #7A8AA2;
   --panel: #1E2639;
-  --panel-elevated: #28334B;
+  --panel-elevated: #2A3550;
   --blue: #8FBFD4;
   --slate: #5F6875;
   --danger: #E07A6B;
@@ -222,13 +221,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
 /* ============================================================
-   DEMARCATION LINES — clear and visible separation
+   IJIDI DEMARCATION LINES — with brand accent colors
    ============================================================ */
 
 /* --- Horizontal dividers --- */
@@ -244,7 +238,7 @@ a {
   border-top: 1px solid var(--border-accent);
 }
 
-/* --- Section divider with gradient glow (highly visible) --- */
+/* --- Section divider with IJIDI teal glow --- */
 .section-divider {
   height: 1px;
   background: linear-gradient(
@@ -260,20 +254,20 @@ a {
   position: relative;
 }
 
-/* Glow effect for section divider */
+/* IJIDI glow effect for section divider */
 .section-divider::after {
   content: '';
   position: absolute;
   top: -4px;
-  left: 30%;
-  right: 30%;
+  left: 25%;
+  right: 25%;
   height: 8px;
   background: radial-gradient(ellipse, rgba(143, 191, 212, 0.10), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
 
-/* --- Vertical divider (for side-by-side content) --- */
+/* --- Vertical divider --- */
 .divider-vertical {
   border-left: 1px solid var(--border-strong);
   height: 100%;
@@ -281,12 +275,12 @@ a {
   margin: 0 1rem;
 }
 
-/* --- Dashed divider (alternative style) --- */
+/* --- Dashed divider --- */
 .divider-dashed {
   border-top: 1px dashed var(--border-strong);
 }
 
-/* --- Card separator (internal divider within cards) --- */
+/* --- Card separator --- */
 .card-divider {
   border-top: 1px solid var(--border);
   margin: 1rem 0;
@@ -322,7 +316,7 @@ a {
 }
 
 /* ============================================================
-   PANEL BRACKET — matches dashboard card style
+   IJIDI PANEL BRACKET — with brand corner accents
    ============================================================ */
 .panel-bracket {
   position: relative;
@@ -333,7 +327,7 @@ a {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* Corner brackets with accent color */
+/* IJIDI corner brackets with teal accent */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
@@ -368,7 +362,7 @@ a {
 }
 
 /* ============================================================
-   PREMIUM CARD — bright dashboard-style cards
+   IJIDI PREMIUM CARDS — with brand accent borders
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -385,17 +379,21 @@ a {
   border-color: var(--border-accent);
 }
 
-/* Card accent variants with strong top border */
+/* IJIDI card accent variants */
 .premium-card-accent {
-  border-top: 2.5px solid var(--blue);
+  border-top: 2.5px solid var(--blue);        /* IJIDI teal */
 }
 
 .premium-card-success {
-  border-top: 2.5px solid var(--success);
+  border-top: 2.5px solid var(--success);     /* IJIDI teal-green */
 }
 
 .premium-card-warning {
-  border-top: 2.5px solid var(--amber-bright);
+  border-top: 2.5px solid var(--amber-bright);/* IJIDI amber */
+}
+
+.premium-card-gold {
+  border-top: 2.5px solid var(--amber);       /* IJIDI gold */
 }
 
 /* Card with internal divider */
@@ -405,7 +403,7 @@ a {
 }
 
 /* ============================================================
-   METRIC TILE — bright, with clear demarcation
+   IJIDI METRIC TILE — with brand demarcation
    ============================================================ */
 .metric-tile {
   background: var(--card);
@@ -416,7 +414,7 @@ a {
   position: relative;
 }
 
-/* Metric tile with bottom demarcation line */
+/* IJIDI metric tile with bottom demarcation */
 .metric-tile::after {
   content: '';
   position: absolute;
@@ -462,6 +460,7 @@ a {
   letter-spacing: 0.02em;
 }
 
+/* IJIDI status indicator */
 .metric-tile .status-indicator {
   display: inline-block;
   width: 6px;
@@ -472,16 +471,16 @@ a {
 
 .metric-tile .status-indicator.online {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(127, 187, 160, 0.4);
+  box-shadow: 0 0 8px rgba(139, 200, 173, 0.4);
 }
 
 .metric-tile .status-indicator.offline {
   background: var(--destructive);
-  box-shadow: 0 0 8px rgba(217, 122, 107, 0.3);
+  box-shadow: 0 0 8px rgba(224, 122, 107, 0.3);
 }
 
 /* ============================================================
-   NODE STATUS BADGE
+   IJIDI NODE STATUS BADGE
    ============================================================ */
 .node-badge {
   display: inline-flex;
@@ -503,7 +502,7 @@ a {
   height: 5px;
   border-radius: 50%;
   background: var(--success);
-  box-shadow: 0 0 10px rgba(127, 187, 160, 0.5);
+  box-shadow: 0 0 10px rgba(139, 200, 173, 0.5);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -513,7 +512,7 @@ a {
 }
 
 /* ============================================================
-   TABLE STYLING — with clear row demarcation
+   IJIDI TABLE STYLING
    ============================================================ */
 .table-demarcated {
   width: 100%;
@@ -542,6 +541,22 @@ a {
 
 .table-demarcated tr:hover td {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* ============================================================
+   IJIDI BRAND GLOW EFFECTS
+   ============================================================ */
+.brand-glow {
+  box-shadow: 0 0 30px -8px rgba(143, 191, 212, 0.08);
+}
+
+.brand-glow-strong {
+  box-shadow: 0 0 40px -8px rgba(143, 191, 212, 0.15);
+}
+
+/* IJIDI amber glow */
+.amber-glow {
+  box-shadow: 0 0 30px -8px rgba(192, 138, 46, 0.08);
 }
 
 /* ============================================================
@@ -607,7 +622,7 @@ a {
 }
 
 /* ============================================================
-   LIVE PULSE
+   IJIDI LIVE PULSE
    ============================================================ */
 .live-pulse {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
