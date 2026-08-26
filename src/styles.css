@@ -27,6 +27,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -40,46 +41,51 @@
 }
 
 :root {
-  /* IJIDI Portal — adopted IGX AI console palette (confirmed 26 AUG 2026):
-     gold #C6A15B / deep purple #5C3D8C / orange #D97B3F on
-     bg #0C0E2E–#07081C / bone #F5F2EB. Replaces the 21 AUG 2026
-     Deep Navy #101C36 / Electric Blue #356AE6 Portal identity.
-     Variable NAMES kept unchanged (--blue, --slate, --danger, etc.)
-     so any component or Tailwind class already referencing them
-     (text-blue, bg-blue/10, etc.) repaints automatically without
-     needing a find-and-replace across the codebase.
-
-     Teal decision (26 AUG 2026): teal collapses into this same
-     purple rather than staying a separate accent — --color-gold and
-     --color-teal above alias to --primary/--accent so the previously
-     dead text-gold / bg-gold / text-teal classes across the codebase
-     resolve to real color again, with "ready/active/tracked" state
-     now reading as the same purple used for "system voice". */
+  /* IJIDI Portal — adopted the IGX_Ecosystem_AI_Interface_V0 mockup
+     palette in full (confirmed 26 AUG 2026, supersedes the 26 AUG
+     gold/purple/orange :root pass): gold #D4AF37 / teal #5DCAA5 /
+     orange #D85A30 / success green #639922 on indigo bg #0C0E2E,
+     deep bg #07081C, card indigo #1A1F4D, bone text #F5F2EB.
+     Teal is real again here (not aliased to purple) — the mockup's
+     own accent, restored as --accent directly. --color-gold and
+     --color-teal above still alias --primary/--accent so any
+     text-gold / bg-gold / text-teal classes already in the codebase
+     resolve correctly with no further find-and-replace needed.
+     --blue (used by scrollbar hover, panel-bracket corners, and the
+     tactical-grid dot pattern) is repointed to the same teal, since
+     the mockup has no separate purple/blue accent — recommendation,
+     flag if a distinct "system" color is wanted back.
+     --success is new: the approve button in igx-ai.tsx currently
+     hardcodes #639922 inline rather than reading a token — added
+     here so that can be wired to var(--success) later instead of a
+     magic hex. */
   --background: #0C0E2E;
   --foreground: #F5F2EB;
-  --card: #14163A;
+  --card: #1A1F4D;
   --card-foreground: #F5F2EB;
-  --popover: #11132E;
+  --popover: #07081C;
   --popover-foreground: #F5F2EB;
-  --primary: #C6A15B;
+  --primary: #D4AF37;
   --primary-foreground: #0C0E2E;
-  --secondary: #14163A;
+  --secondary: #1A1F4D;
   --secondary-foreground: #F5F2EB;
   --muted: #191B44;
   --muted-foreground: #8B879C;
-  --accent: #5C3D8C;
-  --accent-foreground: #F5F2EB;
-  --destructive: #D97B3F;
+  --accent: #5DCAA5;
+  --accent-foreground: #07081C;
+  --destructive: #D85A30;
   --destructive-foreground: #0C0E2E;
+  --success: #639922;
+  --success-foreground: #F5F2EB;
   --border: #262952;
   --input: #1D1F49;
-  --ring: #C6A15B;
-  --panel: #11132E;
-  --panel-elevated: #191B44;
-  --blue: #5C3D8C;
+  --ring: #D4AF37;
+  --panel: #07081C;
+  --panel-elevated: #1A1F4D;
+  --blue: #5DCAA5;
   --slate: #8B879C;
-  --danger: #D97B3F;
-  --blue-glow: rgba(92, 61, 140, 0.18);
+  --danger: #D85A30;
+  --blue-glow: rgba(93, 202, 165, 0.18);
 }
 
 /* Base resets & global styles */
@@ -184,7 +190,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(92, 61, 140, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(rgba(93, 202, 165, 0.08) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
