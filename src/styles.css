@@ -1,7 +1,7 @@
 /* ============================================================
    IJIDI OPERATING SYSTEM — Dashboard Dark Theme
-   Matches the operational dashboard aesthetic with navy/charcoal
-   backgrounds and premium card styling.
+   Background matches dashboard exactly (#0E121B) with minimal
+   differentiation. Demarcation lines are clearly visible.
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -77,26 +77,26 @@
 }
 
 /* ============================================================
-   :ROOT — IJIDI DARK PALETTE (matches dashboard aesthetic)
-   Background: deep navy‑charcoal (#0E121B)
-   Cards: subtly lighter with blue undertone (#171D2B)
-   Demarcation lines: subtle, semi‑transparent borders
+   :ROOT — IJIDI DARK PALETTE (matches dashboard exactly)
+   Background: #0E121B (same as dashboard)
+   Cards: slightly lighter for differentiation
+   Demarcation lines: clear, visible, with hierarchy
    ============================================================ */
 :root {
-  /* --- Main background: deep navy-charcoal (premium dark) --- */
+  /* --- Main background: EXACTLY matches dashboard (#0E121B) --- */
   --background: #0E121B;
   --foreground: #EDEFF2;
 
-  /* --- Cards & elevated surfaces --- */
-  --card: #171D2B;              /* Slightly lighter than bg, blue undertone */
+  /* --- Cards & elevated surfaces (slightly lighter for depth) --- */
+  --card: #161C2A;              /* Only slightly lighter than bg */
   --card-foreground: #EDEFF2;
 
-  --popover: #1E2636;           /* Lighter still for popovers */
+  --popover: #1B2333;           /* Slightly lighter for popovers */
   --popover-foreground: #EDEFF2;
 
   /* --- Primary & secondary --- */
   --primary: #E4E7ED;
-  --primary-foreground: #171D2B;
+  --primary-foreground: #161C2A;
 
   --secondary: #2A3347;
   --secondary-foreground: #EDEFF2;
@@ -114,17 +114,17 @@
   --success: #7FBBA0;
   --success-foreground: #12291F;
 
-  /* --- Borders & demarcation lines --- */
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(143, 191, 212, 0.2);
+  /* --- BORDERS & DEMARCATION LINES (clear and visible) --- */
+  --border: rgba(255, 255, 255, 0.08);        /* subtle base line */
+  --border-strong: rgba(255, 255, 255, 0.15); /* obvious demarcation */
+  --border-accent: rgba(143, 191, 212, 0.25); /* highlighted accent line */
 
   --input: rgba(255, 255, 255, 0.08);
   --ring: #6F7A8E;
 
   /* --- Panel variants --- */
-  --panel: #171D2B;
-  --panel-elevated: #212A3D;
+  --panel: #161C2A;
+  --panel-elevated: #1E2639;
 
   /* --- Blueprint brand tokens --- */
   --navy: #1C2435;
@@ -146,13 +146,13 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  --sidebar: #171D2B;
+  --sidebar: #161C2A;
   --sidebar-foreground: #EDEFF2;
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: #EDEFF2;
   --sidebar-accent: #2A3347;
   --sidebar-accent-foreground: #EDEFF2;
-  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: #6F7A8E;
 
   /* --- Legacy / component-specific --- */
@@ -171,12 +171,12 @@
 .dark {
   --background: #0E121B;
   --foreground: #EDEFF2;
-  --card: #171D2B;
+  --card: #161C2A;
   --card-foreground: #EDEFF2;
-  --popover: #1E2636;
+  --popover: #1B2333;
   --popover-foreground: #EDEFF2;
   --primary: #E4E7ED;
-  --primary-foreground: #171D2B;
+  --primary-foreground: #161C2A;
   --secondary: #2A3347;
   --secondary-foreground: #EDEFF2;
   --muted: #2A3347;
@@ -187,13 +187,13 @@
   --destructive-foreground: #EDEFF2;
   --success: #7FBBA0;
   --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(143, 191, 212, 0.2);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(143, 191, 212, 0.25);
   --input: rgba(255, 255, 255, 0.08);
   --ring: #6F7A8E;
-  --panel: #171D2B;
-  --panel-elevated: #212A3D;
+  --panel: #161C2A;
+  --panel-elevated: #1E2639;
   --blue: #8FBFD4;
   --slate: #5F6875;
   --danger: #D97A6B;
@@ -228,8 +228,10 @@ a {
 }
 
 /* ============================================================
-   DEMARCATION LINES — for visual separation
+   DEMARCATION LINES — clear and visible separation
    ============================================================ */
+
+/* --- Horizontal dividers --- */
 .divider-light {
   border-top: 1px solid var(--border);
 }
@@ -242,23 +244,53 @@ a {
   border-top: 1px solid var(--border-accent);
 }
 
-.divider-vertical {
-  border-left: 1px solid var(--border);
-  height: 100%;
-}
-
+/* --- Section divider with gradient glow (highly visible) --- */
 .section-divider {
   height: 1px;
   background: linear-gradient(
     to right,
     transparent,
-    var(--border-strong) 20%,
+    var(--border-strong) 15%,
     var(--border-accent) 50%,
-    var(--border-strong) 80%,
+    var(--border-strong) 85%,
     transparent
   );
   margin: 2rem 0;
   border: none;
+  position: relative;
+}
+
+/* Glow effect for section divider */
+.section-divider::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 30%;
+  right: 30%;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.08), transparent);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+/* --- Vertical divider (for side-by-side content) --- */
+.divider-vertical {
+  border-left: 1px solid var(--border-strong);
+  height: 100%;
+  min-height: 3rem;
+  margin: 0 1rem;
+}
+
+/* --- Dashed divider (alternative style) --- */
+.divider-dashed {
+  border-top: 1px dashed var(--border-strong);
+}
+
+/* --- Card separator (internal divider within cards) --- */
+.card-divider {
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+  padding-top: 1rem;
 }
 
 /* ============================================================
@@ -301,6 +333,7 @@ a {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
+/* Corner brackets with accent color */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
@@ -308,7 +341,7 @@ a {
   width: 14px;
   height: 14px;
   border-color: var(--blue);
-  opacity: 0.4;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -335,7 +368,7 @@ a {
 }
 
 /* ============================================================
-   PREMIUM CARD — dashboard-style cards
+   PREMIUM CARD — dashboard-style cards with clear borders
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -352,7 +385,7 @@ a {
   border-color: var(--border-accent);
 }
 
-/* Card accent variants */
+/* Card accent variants with strong top border */
 .premium-card-accent {
   border-top: 2.5px solid var(--blue);
 }
@@ -365,15 +398,39 @@ a {
   border-top: 2.5px solid var(--amber-bright);
 }
 
+/* Card with internal divider */
+.premium-card .card-divider {
+  border-top: 1px solid var(--border-strong);
+  margin: 1.25rem 0;
+}
+
 /* ============================================================
    METRIC TILE — for dashboard statistics
    ============================================================ */
 .metric-tile {
   background: var(--card);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   padding: 1.25rem 1.5rem;
   transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+
+/* Metric tile with bottom demarcation line */
+.metric-tile::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: var(--border-accent);
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.metric-tile:hover::after {
+  opacity: 1;
 }
 
 .metric-tile:hover {
@@ -429,7 +486,7 @@ a {
   color: var(--muted-foreground);
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   background: var(--panel);
 }
 
@@ -448,10 +505,35 @@ a {
 }
 
 /* ============================================================
-   HEX BADGE
+   TABLE STYLING — with clear row demarcation
    ============================================================ */
-.hex-badge {
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+.table-demarcated {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-demarcated th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-strong);
+  font-weight: 600;
+}
+
+.table-demarcated td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-demarcated tr:last-child td {
+  border-bottom: none;
+}
+
+.table-demarcated tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* ============================================================
