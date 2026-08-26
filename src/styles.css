@@ -1,3 +1,9 @@
+/* ============================================================
+   PREMIUM DARK THEME — elevated palette with depth & hierarchy
+   Replaces flat black with rich, layered dark tones.
+   Demarcation lines added for clear visual separation.
+   ============================================================ */
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -11,111 +17,119 @@
   --font-display: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
+
+  /* --- semantic color variables (mapped to CSS custom props) --- */
+  --color-background        : var(--background);
+  --color-foreground        : var(--foreground);
+  --color-card              : var(--card);
+  --color-card-foreground   : var(--card-foreground);
+  --color-popover           : var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
+  --color-primary           : var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
+  --color-secondary         : var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
+  --color-muted             : var(--muted);
+  --color-muted-foreground  : var(--muted-foreground);
+  --color-accent            : var(--accent);
+  --color-accent-foreground : var(--accent-foreground);
+  --color-destructive       : var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-panel: var(--panel);
-  --color-panel-elevated: var(--panel-elevated);
-  --color-blue: var(--blue);
-  --color-slate: var(--slate);
-  --color-danger: var(--danger);
-  --color-gold: var(--amber-bright);
-  --color-teal: var(--line);
-  /* Blueprint brand tokens, exposed as their own Tailwind classes
-     (bg-navy, text-amber, etc.) per the MAM Realty palette. */
-  --color-navy: var(--navy);
-  --color-navy-deep: var(--navy-deep);
-  --color-line: var(--line);
-  --color-line-dim: var(--line-dim);
-  --color-paper: var(--paper);
-  --color-paper-dim: var(--paper-dim);
-  --color-steel: var(--steel);
-  --color-charcoal: var(--charcoal);
-  --color-amber: var(--amber);
-  --color-amber-bright: var(--amber-bright);
-  --color-blueprint-ok: var(--blueprint-ok);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
+  --color-success           : var(--success);
+  --color-border            : var(--border);
+  --color-input             : var(--input);
+  --color-ring              : var(--ring);
+  --color-panel             : var(--panel);
+  --color-panel-elevated    : var(--panel-elevated);
+  --color-blue              : var(--blue);
+  --color-slate             : var(--slate);
+  --color-danger            : var(--danger);
+  --color-gold              : var(--amber-bright);
+  --color-teal              : var(--line);
+
+  /* Blueprint brand tokens (MAM Realty palette) */
+  --color-navy              : var(--navy);
+  --color-navy-deep         : var(--navy-deep);
+  --color-line              : var(--line);
+  --color-line-dim          : var(--line-dim);
+  --color-paper             : var(--paper);
+  --color-paper-dim         : var(--paper-dim);
+  --color-steel             : var(--steel);
+  --color-charcoal          : var(--charcoal);
+  --color-amber             : var(--amber);
+  --color-amber-bright      : var(--amber-bright);
+  --color-blueprint-ok      : var(--blueprint-ok);
+
+  /* chart / sidebar (unused but defined) */
+  --color-chart-1           : var(--chart-1);
+  --color-chart-2           : var(--chart-2);
+  --color-chart-3           : var(--chart-3);
+  --color-chart-4           : var(--chart-4);
+  --color-chart-5           : var(--chart-5);
+  --color-sidebar           : var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary   : var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent    : var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border    : var(--sidebar-border);
+  --color-sidebar-ring      : var(--sidebar-ring);
 }
 
+/* ============================================================
+   :ROOT — PREMIUM DARK PALETTE (always‑on dark mode)
+   Background: deep charcoal-blue (not flat black)
+   Cards & panels: layered with distinct elevations
+   Demarcation lines: subtle, semi‑transparent borders + dividers
+   ============================================================ */
 :root {
-  /* IJIDI Portal — adopted the MAM Realty "blueprint" palette in full
-     (confirmed 26 AUG 2026, supersedes the 26 AUG gold/teal/orange
-     mockup pass). Per request, the Portal runs the DARK-mode token
-     set as its single always-on theme — same posture the Portal has
-     always had (one dark surface, no light/dark toggle in the
-     codebase) — so :root below carries the .dark values directly
-     rather than the light-mode table. A .dark block is still
-     included beneath with the same values, so nothing breaks if a
-     toggle is ever added later.
+  /* --- main background: rich dark blue‑grey (premium alternative to #000) --- */
+  --background: #0E121B;          /* deep navy‑charcoal */
+  --foreground: #F2F3F7;          /* off‑white with warmth */
 
-     "As-is" was chosen over the amber-kept variant we mocked up:
-     --primary is the near-white/gray #EBEBF0 from the source table,
-     not amber — the gold-forward look from the previous palette is
-     gone in this exact mode. Amber only survives as the standalone
-     --amber / --amber-bright blueprint tokens (bg-amber, text-amber
-     classes), used deliberately rather than as the default primary.
+  /* --- cards & elevated surfaces (lighter than background, distinct) --- */
+  --card: #1A1F2D;               /* dark slate with blue undertone */
+  --card-foreground: #F2F3F7;
 
-     --color-gold now aliases --amber-bright (closest equivalent to
-     the old gold accent) and --color-teal aliases --line (the sky-
-     blue "blueprint line" tone, closest cool accent available) —
-     flagging both since neither is an exact match for the prior
-     gold/teal and any leftover text-gold/bg-teal classes in the
-     codebase will render these substitutes, not the old hexes. */
-  --background: #11131A;
-  --foreground: #FAFAFA;
-  --card: #222633;
-  --card-foreground: #FAFAFA;
-  --popover: #222633;
-  --popover-foreground: #FAFAFA;
-  --primary: #EBEBF0;
-  --primary-foreground: #222633;
-  --secondary: #3B4252;
-  --secondary-foreground: #FAFAFA;
-  --muted: #3B4252;
-  --muted-foreground: #A8ACB8;
-  --accent: #3B4252;
-  --accent-foreground: #FAFAFA;
-  --destructive: #E06B5A;
-  --destructive-foreground: #FAFAFA;
+  --popover: #222838;            /* slightly lighter than card */
+  --popover-foreground: #F2F3F7;
+
+  /* --- primary & secondary (refined contrasts) --- */
+  --primary: #E8EAF0;            /* near‑white with soft grey */
+  --primary-foreground: #1A1F2D;
+
+  --secondary: #2D3445;          /* muted blue‑grey */
+  --secondary-foreground: #F2F3F7;
+
+  --muted: #2D3445;
+  --muted-foreground: #A5ACBB;   /* soft, readable grey */
+
+  --accent: #2D3445;
+  --accent-foreground: #F2F3F7;
+
+  /* --- status colours (kept from original, refined) --- */
+  --destructive: #D97A6B;        /* softer coral */
+  --destructive-foreground: #F2F3F7;
+
   --success: #7FBBA0;
   --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
+
+  /* --- borders, inputs, rings (demarcation lines) --- */
+  --border: rgba(255, 255, 255, 0.08);      /* very subtle base */
+  --border-strong: rgba(255, 255, 255, 0.15); /* stronger demarcation */
+  --border-accent: rgba(143, 191, 212, 0.25); /* teal‑accented line */
+
+  --input: rgba(255, 255, 255, 0.10);
   --ring: #6F7A8E;
 
-  /* Blueprint brand tokens (theme-invariant per the source table) */
+  /* --- panel & elevated panel (layered depth) --- */
+  --panel: #1A1F2D;              /* same as card, but used for brackets */
+  --panel-elevated: #262D3F;     /* lighter, for floating elements */
+
+  /* --- blueprint brand tokens (MAM Realty) --- */
   --navy: #1C2435;
   --navy-deep: #12192A;
-  --line: #8FBFD4;
+  --line: #8FBFD4;               /* teal/blue accent */
   --line-dim: #5B7A8A;
   --paper: #EAE8E3;
   --paper-dim: #D9D6CE;
@@ -125,73 +139,71 @@
   --amber-bright: #E0A344;
   --blueprint-ok: #7FBBA0;
 
-  /* Chart / sidebar tokens (dark values — unused until chart or
-     sidebar components are added, per the source doc) */
+  /* --- charts / sidebar (dark values) --- */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #222633;
-  --sidebar-foreground: #FAFAFA;
+  --sidebar: #1A1F2D;
+  --sidebar-foreground: #F2F3F7;
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #FAFAFA;
-  --sidebar-accent: #3B4252;
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-primary-foreground: #F2F3F7;
+  --sidebar-accent: #2D3445;
+  --sidebar-accent-foreground: #F2F3F7;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: #6F7A8E;
 
-  /* Legacy names still referenced by .panel-bracket, the scrollbar,
-     and .tactical-grid below — repointed to the closest blueprint
-     equivalents (line = sky-blue accent, steel = mid-gray, destructive
-     = coral-red) instead of the old purple/teal. */
-  --panel: #222633;
-  --panel-elevated: #3B4252;
+  /* --- legacy / component-specific --- */
   --blue: #8FBFD4;
   --slate: #5F6875;
-  --danger: #E06B5A;
-  --blue-glow: rgba(143, 191, 212, 0.18);
+  --danger: #D97A6B;
+  --blue-glow: rgba(143, 191, 212, 0.15);
 
-  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
-  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
+  /* --- shadows (premium depth) --- */
+  --shadow-sheet: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 24px 56px -24px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 4px 20px -8px rgba(0, 0, 0, 0.6);
 }
 
+/* --- forward‑compat .dark block (same values) --- */
 .dark {
-  /* Same dark values, duplicated under .dark for forward-compat if a
-     theme toggle is ever added — :root above is the active source of
-     truth today. */
-  --background: #11131A;
-  --foreground: #FAFAFA;
-  --card: #222633;
-  --card-foreground: #FAFAFA;
-  --popover: #222633;
-  --popover-foreground: #FAFAFA;
-  --primary: #EBEBF0;
-  --primary-foreground: #222633;
-  --secondary: #3B4252;
-  --secondary-foreground: #FAFAFA;
-  --muted: #3B4252;
-  --muted-foreground: #A8ACB8;
-  --accent: #3B4252;
-  --accent-foreground: #FAFAFA;
-  --destructive: #E06B5A;
-  --destructive-foreground: #FAFAFA;
+  --background: #0E121B;
+  --foreground: #F2F3F7;
+  --card: #1A1F2D;
+  --card-foreground: #F2F3F7;
+  --popover: #222838;
+  --popover-foreground: #F2F3F7;
+  --primary: #E8EAF0;
+  --primary-foreground: #1A1F2D;
+  --secondary: #2D3445;
+  --secondary-foreground: #F2F3F7;
+  --muted: #2D3445;
+  --muted-foreground: #A5ACBB;
+  --accent: #2D3445;
+  --accent-foreground: #F2F3F7;
+  --destructive: #D97A6B;
+  --destructive-foreground: #F2F3F7;
   --success: #7FBBA0;
   --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(143, 191, 212, 0.25);
+  --input: rgba(255, 255, 255, 0.10);
   --ring: #6F7A8E;
-  --panel: #222633;
-  --panel-elevated: #3B4252;
+  --panel: #1A1F2D;
+  --panel-elevated: #262D3F;
   --blue: #8FBFD4;
   --slate: #5F6875;
-  --danger: #E06B5A;
-  --blue-glow: rgba(143, 191, 212, 0.18);
+  --danger: #D97A6B;
+  --blue-glow: rgba(143, 191, 212, 0.15);
 }
 
-/* Base resets & global styles */
+/* ============================================================
+   BASE RESETS & GLOBAL STYLES
+   ============================================================ */
 * {
-  border-color: var(--color-border);
+  border-color: var(--border);
 }
 
 html {
@@ -204,6 +216,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  line-height: 1.6;
 }
 
 button,
@@ -211,7 +224,44 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom Scrollbar */
+/* ============================================================
+   DEMARCATION LINES — utility classes for visual separation
+   ============================================================ */
+.divider-light {
+  border-top: 1px solid var(--border);
+}
+
+.divider-strong {
+  border-top: 1px solid var(--border-strong);
+}
+
+.divider-accent {
+  border-top: 1px solid var(--border-accent);
+}
+
+.divider-vertical {
+  border-left: 1px solid var(--border);
+  height: 100%;
+}
+
+/* section separator (horizontal rule with subtle glow) */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-strong) 20%,
+    var(--border-accent) 50%,
+    var(--border-strong) 80%,
+    transparent
+  );
+  margin: 2rem 0;
+  border: none;
+}
+
+/* ============================================================
+   CUSTOM SCROLLBAR (premium refinement)
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -219,11 +269,13 @@ a {
 
 ::-webkit-scrollbar-track {
   background: var(--panel);
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-strong);
   border-radius: 999px;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -232,70 +284,112 @@ a {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--panel);
+  scrollbar-color: var(--border-strong) var(--panel);
 }
 
-/* Portal UI & Tactical Framing Components */
+/* ============================================================
+   PANEL BRACKET — premium card with demarcation lines
+   ============================================================ */
 .panel-bracket {
   position: relative;
   background: var(--panel);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sheet);
+  box-shadow: var(--shadow-card);
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
+/* top‑left & bottom‑right corner accents (demarcation) */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-color: var(--blue);
   opacity: 0.5;
   pointer-events: none;
 }
 
 .panel-bracket::before {
-  top: 8px;
-  left: 8px;
-  border-top: 1px solid;
-  border-left: 1px solid;
+  top: 10px;
+  left: 10px;
+  border-top: 2px solid;
+  border-left: 2px solid;
   border-top-left-radius: 8px;
 }
 
 .panel-bracket::after {
-  right: 8px;
-  bottom: 8px;
-  border-right: 1px solid;
-  border-bottom: 1px solid;
+  right: 10px;
+  bottom: 10px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
   border-bottom-right-radius: 8px;
 }
 
+/* elevated variant (lighter background, stronger shadow) */
+.panel-bracket-elevated {
+  background: var(--panel-elevated);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-accent);
+}
+
+/* ============================================================
+   CARD COMPONENT — premium cards with clear hierarchy
+   ============================================================ */
+.premium-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-accent);
+}
+
+/* card with accent top border (demarcation) */
+.premium-card-accent {
+  border-top: 3px solid var(--blue);
+}
+
+.premium-card-success {
+  border-top: 3px solid var(--success);
+}
+
+.premium-card-warning {
+  border-top: 3px solid var(--amber-bright);
+}
+
+/* ============================================================
+   HEX BADGE (unchanged)
+   ============================================================ */
 .hex-badge {
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
 }
 
+/* ============================================================
+   GRID & SCAN OVERLAYS (refined with demarcation)
+   ============================================================ */
 .grid-scan {
-  background-image: linear-gradient(
-      to right,
-      color-mix(in oklab, var(--border) 22%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--border) 18%, transparent) 1px,
-      transparent 1px
-    );
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
   background-size: 34px 34px;
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(143, 191, 212, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(rgba(143, 191, 212, 0.07) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
-/* Scanline visual overlay */
+/* ============================================================
+   SCANLINE (animated, premium feel)
+   ============================================================ */
 .scanline {
   position: relative;
   overflow: hidden;
@@ -308,7 +402,7 @@ a {
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in oklab, var(--slate) 7%, transparent),
+    color-mix(in oklab, var(--slate) 6%, transparent),
     transparent
   );
   height: 40%;
@@ -317,15 +411,13 @@ a {
 }
 
 @keyframes scan {
-  from {
-    transform: translateY(-120%);
-  }
-  to {
-    transform: translateY(280%);
-  }
+  from { transform: translateY(-120%); }
+  to   { transform: translateY(280%); }
 }
 
-/* Infinite Scrolling Ticker Track */
+/* ============================================================
+   TICKER TRACK (infinite scroll)
+   ============================================================ */
 .ticker-track {
   display: flex;
   width: max-content;
@@ -338,32 +430,25 @@ a {
 }
 
 @keyframes ticker-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-/* Live System Telemetry Pulse */
+/* ============================================================
+   LIVE PULSE (telemetry indicator)
+   ============================================================ */
 .live-pulse {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.35;
-    transform: scale(1.2);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(1.2); }
 }
 
-/* Reduced Motion Override */
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
