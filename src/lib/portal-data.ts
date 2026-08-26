@@ -172,5 +172,104 @@ export const decisions = [
       "Full 5-identity system adopted: Mandela (Midnight #141414 / Ivory #F4EFE6 / Terracotta #A6533B), IJIDI Group (Obsidian #111111 / Ivory #F5F1E8 / Champagne Gold #C6A15B), IJIDI Foundation (Deep Forest #173F35 / Ivory / Muted Gold #B99A5A), IJIDI Portal (Deep Navy #101C36 / Soft White #FCFBF8 / Electric Blue #356AE6), IJIDI Atelier (Black #0C0C0C / Bone #EEE8DC / Antique Gold #A8874A). Namespaced tokens (--mandela-*, --ijidi-group-*, --ijidi-foundation-*, --ijidi-portal-*, --ijidi-atelier-*), no decorative gradients, gold restrained. Supersedes the 08 AUG 2026 Brand reconciliation entry.",
     state: "FROZEN",
   },
+  {
+    date: "26 AUG 2026",
+    label: "IGX AI console — gold/purple/orange confirmed",
+    detail:
+      "IGX AI console palette confirmed: gold #C6A15B (primary/human actor), deep purple #5C3D8C (system/IGX actor), orange #D97B3F (reject/attention), background #0C0E2E/#07081C, text #F5F2EB. Scoped to the IGX AI console only — does not alter the 21 AUG Portal Deep Navy #101C36 / Electric Blue #356AE6 tokens. Mandela is personally handling the live Portal repo's global retouch if and when that happens; not queued as a build task here.",
+    state: "FROZEN",
+  },
   { date: "—", label: "Next decision", detail: "No decision has been logged.", state: "OPEN" },
 ];
+
+// Source of truth for the IGX AI console's rail (People / Entities split) and
+// each entity's sub-item pill row. Ported from IGX_Ecosystem_AI_Interface_V0.html.
+// `pillar` is an optional tooltip label (used by Foundation's arms and Atelier's
+// Brand sub-item to show parent context without a separate column).
+export const igxPeople = {
+  mandela: {
+    label: "Mandela Onwusah",
+    subs: [
+      { id: "overview", label: "Overview *placeholder*" },
+      { id: "thought-leader", label: "Thought Leader" },
+      { id: "strategic-consultant", label: "Strategic Consultant" },
+      { id: "diplomatic-architect", label: "Diplomatic Architect" },
+      { id: "digital-catalyst", label: "Digital Catalyst" },
+      { id: "blogging", label: "Blogging" },
+    ],
+  },
+  ifeoma: {
+    label: "Ifeoma Peace David",
+    subs: [
+      { id: "vice-governor", label: "Vice Governor" },
+      { id: "coco-powder", label: "Coco Powder (Milo)" },
+      { id: "yoghurt", label: "Yoghurt *unregistered*" },
+      { id: "custard", label: "Custard" },
+      { id: "petroleum-jelly", label: "IJIDI Petroleum Jelly *unregistered*" },
+      { id: "more", label: "More *placeholder*" },
+    ],
+  },
+} as const;
+
+export const igxOrgEntities = {
+  group: {
+    label: "IJIDI Group",
+    subs: [
+      { id: "holding-investment", label: "Holding & Investment *draft*" },
+      { id: "general-contractors", label: "General Contractors *draft*" },
+      { id: "merchandise-trading", label: "General Merchandise & Trading *draft*" },
+      { id: "real-estate", label: "Real Estate *draft*" },
+      { id: "tech-digital", label: "Technology & Digital Infrastructure *draft*" },
+      { id: "consulting-strategic", label: "Consulting & Strategic Services *draft*" },
+      { id: "media-comms", label: "Media & Communications *draft*" },
+      { id: "ventures-enterprise", label: "Ventures & Enterprise Development *draft*" },
+      { id: "agriculture", label: "Agriculture & Agro-Services *draft*" },
+      { id: "energy-environment", label: "Energy & Environment *draft*" },
+      { id: "import-export-logistics", label: "Importation, Exportation & Logistics *draft*" },
+      { id: "representation-agency", label: "Representation & Agency Services *draft*" },
+      { id: "nonprofit-humanitarian", label: "Nonprofit & Humanitarian (via IJIDI Foundation) *draft*" },
+      { id: "global-development", label: "Global Development Initiatives *draft*" },
+      { id: "intl-partnerships", label: "International Partnerships *draft*" },
+      { id: "research-innovation", label: "Research, Innovation & Capacity Building *draft*" },
+      { id: "financial-services", label: "Financial Services & Investments *draft*" },
+      { id: "intellectual-property", label: "Intellectual Property *draft*" },
+      { id: "other-lawful", label: "Any Other Lawful Business *draft*" },
+      { id: "general-powers", label: "Power to Do All Things *draft*" },
+    ],
+  },
+  foundation: {
+    label: "IJIDI Foundation",
+    subs: [
+      { id: "arm1", label: "Arm 1: Infrastructure & Connectivity", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
+      { id: "arm2", label: "Arm 2: Digital Skills & Youth Empowerment", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
+      { id: "arm3", label: "Arm 3: Micro-Enterprise & Utility", pillar: "Pillar 2 — Economic Mobility & Utility Access" },
+      { id: "arm4", label: "Arm 4: Creative Arts & Design Incubation", pillar: "Pillar 3 — Creative & Innovation Ecosystems" },
+      { id: "arm5", label: "Arm 5: Humanitarian & Social Support", pillar: "Pillar 4 — Community Resilience & Welfare" },
+    ],
+  },
+  atelier: {
+    label: "IJIDI Atelier",
+    subs: [
+      { id: "shoes", label: "Shoes" },
+      { id: "clothes", label: "Clothes" },
+      {
+        id: "brand",
+        label: "Brand",
+        pillar: "Positioning & identity hub — the Atelier brand concept itself, not a product line",
+      },
+    ],
+  },
+  media: {
+    label: "IJIDI Media",
+    subs: [
+      { id: "orbit", label: "IJIDI Orbit" },
+      { id: "wild", label: "IJIDI Wild" },
+      { id: "arena", label: "IJIDI Arena" },
+      { id: "drama", label: "IJIDI Drama" },
+      { id: "toons", label: "IJIDI Toons" },
+      { id: "more", label: "More *placeholder*" },
+    ],
+  },
+} as const;
+
+export const igxAllEntities = { ...igxPeople, ...igxOrgEntities } as const;
