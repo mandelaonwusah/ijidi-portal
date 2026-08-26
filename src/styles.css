@@ -240,6 +240,26 @@ a {
   }
 }
 
+/* ============================================================
+   IGX AI CONSOLE — scoped accent tokens (confirmed 26 AUG 2026)
+   Gold #C6A15B / deep purple #5C3D8C / orange #D97B3F on
+   bg #0C0E2E–#07081C / bone #F5F2EB. Scoped under [data-igx-console]
+   only — does NOT alter the :root Portal tokens above (Deep Navy
+   #101C36 / Electric Blue #356AE6, locked 2026-08-21). If/when the
+   whole Portal repo moves to this palette, that's Mandela's own
+   migration, not done here.
+   ============================================================ */
+[data-igx-console] {
+  --igx-bg: #0C0E2E;
+  --igx-bg-deep: #07081C;
+  --igx-bone: #F5F2EB;
+  --igx-gold: #C6A15B;
+  --igx-purple: #5C3D8C;
+  --igx-orange: #D97B3F;
+  --igx-border: rgba(245, 242, 235, 0.22);
+  --igx-border-soft: rgba(245, 242, 235, 0.12);
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   *,
