@@ -1,6 +1,8 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Brand Color Palette
-   Maintaining IJIDI identity with brightened dark theme
+   IJIDI OPERATING SYSTEM — MAM Realty Color Palette
+   Official blueprint tokens applied with operational aesthetic
+   Background: #11131A (official dark mode background)
+   Cards: #222633 (official dark mode card)
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -17,7 +19,20 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
-  /* Semantic color variables */
+  /* --- MAM Realty Blueprint Brand Tokens --- */
+  --color-navy              : var(--navy);
+  --color-navy-deep         : var(--navy-deep);
+  --color-line              : var(--line);
+  --color-line-dim          : var(--line-dim);
+  --color-paper             : var(--paper);
+  --color-paper-dim         : var(--paper-dim);
+  --color-steel             : var(--steel);
+  --color-charcoal          : var(--charcoal);
+  --color-amber             : var(--amber);
+  --color-amber-bright      : var(--amber-bright);
+  --color-blueprint-ok      : var(--blueprint-ok);
+
+  /* --- Semantic color variables (shadcn) --- */
   --color-background        : var(--background);
   --color-foreground        : var(--foreground);
   --color-card              : var(--card);
@@ -46,20 +61,7 @@
   --color-gold              : var(--amber-bright);
   --color-teal              : var(--line);
 
-  /* IJIDI Blueprint brand tokens */
-  --color-navy              : var(--navy);
-  --color-navy-deep         : var(--navy-deep);
-  --color-line              : var(--line);
-  --color-line-dim          : var(--line-dim);
-  --color-paper             : var(--paper);
-  --color-paper-dim         : var(--paper-dim);
-  --color-steel             : var(--steel);
-  --color-charcoal          : var(--charcoal);
-  --color-amber             : var(--amber);
-  --color-amber-bright      : var(--amber-bright);
-  --color-blueprint-ok      : var(--blueprint-ok);
-
-  /* Chart / sidebar */
+  /* --- Chart / Sidebar (unused but defined) --- */
   --color-chart-1           : var(--chart-1);
   --color-chart-2           : var(--chart-2);
   --color-chart-3           : var(--chart-3);
@@ -76,127 +78,125 @@
 }
 
 /* ============================================================
-   :ROOT — IJIDI BRAND COLOR PALETTE
-   Preserving IJIDI's signature colors while brightening
-   the dark theme for better readability and contrast.
+   :ROOT — OFFICIAL MAM REALTY DARK MODE PALETTE
+   All values from the official color palette document
    ============================================================ */
 :root {
-  /* --- IJIDI Background: signature dark navy --- */
-  --background: #11151E;        /* IJIDI dark navy base */
-  --foreground: #F0F2F7;        /* IJIDI off-white text */
+  /* --- Official Dark Mode Background --- */
+  --background: #11131A;           /* oklch(0.129 0.042 264.695) */
+  --foreground: #FAFAFA;           /* oklch(0.984 0.003 247.858) */
 
-  /* --- IJIDI Cards: brightened for contrast --- */
-  --card: #1E2639;              /* IJIDI navy-lighter */
-  --card-foreground: #F0F2F7;
+  /* --- Official Dark Mode Cards --- */
+  --card: #222633;                 /* oklch(0.208 0.042 265.755) */
+  --card-foreground: #FAFAFA;
 
-  --popover: #28324A;           /* IJIDI navy-popover */
-  --popover-foreground: #F0F2F7;
+  --popover: #222633;              /* Same as card */
+  --popover-foreground: #FAFAFA;
 
-  /* --- IJIDI Primary brand colors --- */
-  --primary: #E8EBF2;           /* IJIDI off-white primary */
-  --primary-foreground: #1E2639;
+  /* --- Official Dark Mode Primary --- */
+  --primary: #EBEBF0;              /* oklch(0.929 0.013 255.508) */
+  --primary-foreground: #222633;
 
-  --secondary: #3A4865;         /* IJIDI muted navy */
-  --secondary-foreground: #F0F2F7;
+  --secondary: #3B4252;            /* oklch(0.279 0.041 260.031) */
+  --secondary-foreground: #FAFAFA;
 
-  --muted: #3A4865;
-  --muted-foreground: #A8B4C8;  /* IJIDI muted text */
+  --muted: #3B4252;                /* oklch(0.279 0.041 260.031) */
+  --muted-foreground: #A8ACB8;     /* oklch(0.704 0.04 256.788) */
 
-  --accent: #3A4865;
-  --accent-foreground: #F0F2F7;
+  --accent: #3B4252;               /* oklch(0.279 0.041 260.031) */
+  --accent-foreground: #FAFAFA;
 
-  /* --- IJIDI Status colours --- */
-  --destructive: #E07A6B;       /* IJIDI coral-red */
-  --destructive-foreground: #F0F2F7;
+  /* --- Official Dark Mode Status Colors --- */
+  --destructive: #E06B5A;          /* oklch(0.704 0.191 22.216) */
+  --destructive-foreground: #FAFAFA;
 
-  --success: #8BC8AD;           /* IJIDI teal-green */
+  --success: #7FBBA0;              /* blueprint-ok token */
   --success-foreground: #12291F;
 
-  /* --- IJIDI Borders & Demarcation --- */
-  --border: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.20);
-  --border-accent: rgba(143, 191, 212, 0.30); /* IJIDI teal accent */
+  /* --- Official Dark Mode Borders --- */
+  --border: rgba(255, 255, 255, 0.10);   /* oklch(1 0 0 / 10%) */
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(143, 191, 212, 0.25);
 
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #7A8AA2;
+  --input: rgba(255, 255, 255, 0.15);    /* oklch(1 0 0 / 15%) */
+  --ring: #6F7A8E;                 /* oklch(0.551 0.027 264.364) */
 
-  /* --- IJIDI Panel variants --- */
-  --panel: #1E2639;
-  --panel-elevated: #2A3550;
+  /* --- Panel variants --- */
+  --panel: #222633;                /* Same as card */
+  --panel-elevated: #2D3447;       /* Slightly lighter than card */
 
-  /* --- IJIDI Blueprint brand tokens (MAM Realty palette) --- */
-  --navy: #1C2435;              /* IJIDI signature navy */
-  --navy-deep: #12192A;         /* IJIDI deep navy */
-  --line: #8FBFD4;              /* IJIDI teal-line */
-  --line-dim: #5B7A8A;          /* IJIDI muted teal */
-  --paper: #EAE8E3;             /* IJIDI warm off-white */
-  --paper-dim: #D9D6CE;         /* IJIDI muted paper */
-  --steel: #5F6875;             /* IJIDI steel gray */
-  --charcoal: #24262B;          /* IJIDI charcoal */
-  --amber: #C68A2E;             /* IJIDI gold-amber */
-  --amber-bright: #E0A344;      /* IJIDI bright amber */
-  --blueprint-ok: #8BC8AD;      /* IJIDI success teal */
+  /* --- MAM Realty Blueprint Brand Tokens --- */
+  --navy: #1C2435;                 /* oklch(0.253 0.049 259) */
+  --navy-deep: #12192A;            /* oklch(0.187 0.041 261) */
+  --line: #8FBFD4;                 /* oklch(0.762 0.083 234) */
+  --line-dim: #5B7A8A;             /* oklch(0.499 0.062 234) */
+  --paper: #EAE8E3;                /* oklch(0.912 0.017 92) */
+  --paper-dim: #D9D6CE;            /* oklch(0.867 0.021 92) */
+  --steel: #5F6875;                /* oklch(0.451 0.014 260) */
+  --charcoal: #24262B;             /* oklch(0.196 0.008 265) */
+  --amber: #C68A2E;                /* oklch(0.625 0.121 58) */
+  --amber-bright: #E0A344;         /* oklch(0.72 0.121 62) */
+  --blueprint-ok: #7FBBA0;         /* oklch(0.71 0.058 152) */
 
-  /* --- IJIDI Charts --- */
+  /* --- Legacy / component-specific aliases --- */
+  --blue: #8FBFD4;                 /* Alias for line */
+  --slate: #5F6875;                /* Alias for steel */
+  --danger: #E06B5A;               /* Alias for destructive */
+  --blue-glow: rgba(143, 191, 212, 0.12);
+
+  /* --- Official Shadow Colors --- */
+  --shadow-sheet: 0 18px 40px -28px rgba(36, 38, 43, 0.55);
+  --shadow-lift: 0 30px 60px -32px rgba(36, 38, 43, 0.6);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
+
+  /* --- Chart / Sidebar (dark values) --- */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  /* --- IJIDI Sidebar --- */
-  --sidebar: #1E2639;
-  --sidebar-foreground: #F0F2F7;
+  --sidebar: #222633;
+  --sidebar-foreground: #FAFAFA;
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #F0F2F7;
-  --sidebar-accent: #3A4865;
-  --sidebar-accent-foreground: #F0F2F7;
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #3B4252;
+  --sidebar-accent-foreground: #FAFAFA;
   --sidebar-border: rgba(255, 255, 255, 0.10);
-  --sidebar-ring: #7A8AA2;
-
-  /* --- IJIDI Legacy / component-specific --- */
-  --blue: #8FBFD4;              /* IJIDI primary blue-teal */
-  --slate: #5F6875;             /* IJIDI slate */
-  --danger: #E07A6B;            /* IJIDI danger coral */
-  --blue-glow: rgba(143, 191, 212, 0.15);
-
-  /* --- IJIDI Shadows --- */
-  --shadow-sheet: 0 8px 32px -12px rgba(0, 0, 0, 0.6);
-  --shadow-lift: 0 20px 48px -20px rgba(0, 0, 0, 0.7);
-  --shadow-card: 0 4px 20px -8px rgba(0, 0, 0, 0.45);
+  --sidebar-ring: #6F7A8E;
 }
 
-/* --- Dark block for forward compatibility --- */
+/* --- Forward‑compat .dark block (same values) --- */
 .dark {
-  --background: #11151E;
-  --foreground: #F0F2F7;
-  --card: #1E2639;
-  --card-foreground: #F0F2F7;
-  --popover: #28324A;
-  --popover-foreground: #F0F2F7;
-  --primary: #E8EBF2;
-  --primary-foreground: #1E2639;
-  --secondary: #3A4865;
-  --secondary-foreground: #F0F2F7;
-  --muted: #3A4865;
-  --muted-foreground: #A8B4C8;
-  --accent: #3A4865;
-  --accent-foreground: #F0F2F7;
-  --destructive: #E07A6B;
-  --destructive-foreground: #F0F2F7;
-  --success: #8BC8AD;
+  --background: #11131A;
+  --foreground: #FAFAFA;
+  --card: #222633;
+  --card-foreground: #FAFAFA;
+  --popover: #222633;
+  --popover-foreground: #FAFAFA;
+  --primary: #EBEBF0;
+  --primary-foreground: #222633;
+  --secondary: #3B4252;
+  --secondary-foreground: #FAFAFA;
+  --muted: #3B4252;
+  --muted-foreground: #A8ACB8;
+  --accent: #3B4252;
+  --accent-foreground: #FAFAFA;
+  --destructive: #E06B5A;
+  --destructive-foreground: #FAFAFA;
+  --success: #7FBBA0;
   --success-foreground: #12291F;
   --border: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.20);
-  --border-accent: rgba(143, 191, 212, 0.30);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #7A8AA2;
-  --panel: #1E2639;
-  --panel-elevated: #2A3550;
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(143, 191, 212, 0.25);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #6F7A8E;
+  --panel: #222633;
+  --panel-elevated: #2D3447;
   --blue: #8FBFD4;
   --slate: #5F6875;
-  --danger: #E07A6B;
-  --blue-glow: rgba(143, 191, 212, 0.15);
+  --danger: #E06B5A;
+  --blue-glow: rgba(143, 191, 212, 0.12);
 }
 
 /* ============================================================
@@ -221,8 +221,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ============================================================
-   IJIDI DEMARCATION LINES — with brand accent colors
+   DEMARCATION LINES — clear and visible separation
    ============================================================ */
 
 /* --- Horizontal dividers --- */
@@ -238,7 +243,7 @@ body {
   border-top: 1px solid var(--border-accent);
 }
 
-/* --- Section divider with IJIDI teal glow --- */
+/* --- Section divider with gradient glow --- */
 .section-divider {
   height: 1px;
   background: linear-gradient(
@@ -254,15 +259,14 @@ body {
   position: relative;
 }
 
-/* IJIDI glow effect for section divider */
 .section-divider::after {
   content: '';
   position: absolute;
   top: -4px;
-  left: 25%;
-  right: 25%;
+  left: 30%;
+  right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.10), transparent);
+  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.08), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -307,7 +311,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--blue);
+  background: var(--line);
 }
 
 * {
@@ -316,7 +320,7 @@ body {
 }
 
 /* ============================================================
-   IJIDI PANEL BRACKET — with brand corner accents
+   PANEL BRACKET — official blueprint aesthetic
    ============================================================ */
 .panel-bracket {
   position: relative;
@@ -327,14 +331,14 @@ body {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* IJIDI corner brackets with teal accent */
+/* Corner brackets using --line (blueprint accent) */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--blue);
+  border-color: var(--line);
   opacity: 0.5;
   pointer-events: none;
 }
@@ -362,7 +366,7 @@ body {
 }
 
 /* ============================================================
-   IJIDI PREMIUM CARDS — with brand accent borders
+   PREMIUM CARD — using official card colors
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -379,21 +383,21 @@ body {
   border-color: var(--border-accent);
 }
 
-/* IJIDI card accent variants */
+/* Card accent variants using blueprint tokens */
 .premium-card-accent {
-  border-top: 2.5px solid var(--blue);        /* IJIDI teal */
+  border-top: 2.5px solid var(--line);
 }
 
 .premium-card-success {
-  border-top: 2.5px solid var(--success);     /* IJIDI teal-green */
+  border-top: 2.5px solid var(--blueprint-ok);
 }
 
 .premium-card-warning {
-  border-top: 2.5px solid var(--amber-bright);/* IJIDI amber */
+  border-top: 2.5px solid var(--amber-bright);
 }
 
-.premium-card-gold {
-  border-top: 2.5px solid var(--amber);       /* IJIDI gold */
+.premium-card-primary {
+  border-top: 2.5px solid var(--amber);
 }
 
 /* Card with internal divider */
@@ -403,7 +407,7 @@ body {
 }
 
 /* ============================================================
-   IJIDI METRIC TILE — with brand demarcation
+   METRIC TILE — dashboard statistics
    ============================================================ */
 .metric-tile {
   background: var(--card);
@@ -414,7 +418,6 @@ body {
   position: relative;
 }
 
-/* IJIDI metric tile with bottom demarcation */
 .metric-tile::after {
   content: '';
   position: absolute;
@@ -423,7 +426,7 @@ body {
   right: 20%;
   height: 1px;
   background: var(--border-accent);
-  opacity: 0.4;
+  opacity: 0.3;
   transition: opacity 0.2s ease;
 }
 
@@ -452,7 +455,6 @@ body {
   margin-top: 0.25rem;
 }
 
-/* "NOT TRACKED" status styling */
 .metric-tile .value.not-tracked {
   font-size: 1rem;
   font-weight: 400;
@@ -460,7 +462,6 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* IJIDI status indicator */
 .metric-tile .status-indicator {
   display: inline-block;
   width: 6px;
@@ -470,17 +471,17 @@ body {
 }
 
 .metric-tile .status-indicator.online {
-  background: var(--success);
-  box-shadow: 0 0 8px rgba(139, 200, 173, 0.4);
+  background: var(--blueprint-ok);
+  box-shadow: 0 0 8px rgba(127, 187, 160, 0.4);
 }
 
 .metric-tile .status-indicator.offline {
   background: var(--destructive);
-  box-shadow: 0 0 8px rgba(224, 122, 107, 0.3);
+  box-shadow: 0 0 8px rgba(224, 107, 90, 0.3);
 }
 
 /* ============================================================
-   IJIDI NODE STATUS BADGE
+   NODE STATUS BADGE — using blueprint tokens
    ============================================================ */
 .node-badge {
   display: inline-flex;
@@ -501,8 +502,8 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 10px rgba(139, 200, 173, 0.5);
+  background: var(--blueprint-ok);
+  box-shadow: 0 0 10px rgba(127, 187, 160, 0.5);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -512,7 +513,7 @@ body {
 }
 
 /* ============================================================
-   IJIDI TABLE STYLING
+   TABLE STYLING — with clear row demarcation
    ============================================================ */
 .table-demarcated {
   width: 100%;
@@ -541,22 +542,6 @@ body {
 
 .table-demarcated tr:hover td {
   background: rgba(255, 255, 255, 0.03);
-}
-
-/* ============================================================
-   IJIDI BRAND GLOW EFFECTS
-   ============================================================ */
-.brand-glow {
-  box-shadow: 0 0 30px -8px rgba(143, 191, 212, 0.08);
-}
-
-.brand-glow-strong {
-  box-shadow: 0 0 40px -8px rgba(143, 191, 212, 0.15);
-}
-
-/* IJIDI amber glow */
-.amber-glow {
-  box-shadow: 0 0 30px -8px rgba(192, 138, 46, 0.08);
 }
 
 /* ============================================================
@@ -589,7 +574,7 @@ body {
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in oklab, var(--slate) 5%, transparent),
+    color-mix(in oklab, var(--steel) 5%, transparent),
     transparent
   );
   height: 40%;
@@ -622,7 +607,7 @@ body {
 }
 
 /* ============================================================
-   IJIDI LIVE PULSE
+   LIVE PULSE
    ============================================================ */
 .live-pulse {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
