@@ -1,7 +1,7 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Dashboard Dark Theme
-   Background matches dashboard exactly (#0E121B) with minimal
-   differentiation. Demarcation lines are clearly visible.
+   IJIDI OPERATING SYSTEM — Brightened Dashboard Theme
+   Slightly lighter background (#11151E) with significantly
+   brighter cards for clear contrast and readability.
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -77,54 +77,54 @@
 }
 
 /* ============================================================
-   :ROOT — IJIDI DARK PALETTE (matches dashboard exactly)
-   Background: #0E121B (same as dashboard)
-   Cards: slightly lighter for differentiation
-   Demarcation lines: clear, visible, with hierarchy
+   :ROOT — IJIDI BRIGHTENED DARK PALETTE
+   Background: slightly lighter (#11151E)
+   Cards: significantly brighter for contrast
+   Demarcation lines: clear and visible
    ============================================================ */
 :root {
-  /* --- Main background: EXACTLY matches dashboard (#0E121B) --- */
-  --background: #0E121B;
-  --foreground: #EDEFF2;
+  /* --- Main background: slightly lighter than before --- */
+  --background: #11151E;        /* Brightened from #0E121B */
+  --foreground: #F0F2F7;        /* Slightly brighter text */
 
-  /* --- Cards & elevated surfaces (slightly lighter for depth) --- */
-  --card: #161C2A;              /* Only slightly lighter than bg */
-  --card-foreground: #EDEFF2;
+  /* --- CARDS: significantly brighter for contrast --- */
+  --card: #1E2639;              /* Much brighter than background */
+  --card-foreground: #F0F2F7;
 
-  --popover: #1B2333;           /* Slightly lighter for popovers */
-  --popover-foreground: #EDEFF2;
+  --popover: #262F47;           /* Even brighter for popovers */
+  --popover-foreground: #F0F2F7;
 
   /* --- Primary & secondary --- */
-  --primary: #E4E7ED;
-  --primary-foreground: #161C2A;
+  --primary: #E8EBF2;
+  --primary-foreground: #1E2639;
 
-  --secondary: #2A3347;
-  --secondary-foreground: #EDEFF2;
+  --secondary: #33405A;
+  --secondary-foreground: #F0F2F7;
 
-  --muted: #2A3347;
-  --muted-foreground: #9BA3B5;
+  --muted: #33405A;
+  --muted-foreground: #A8B1C5;
 
-  --accent: #2A3347;
-  --accent-foreground: #EDEFF2;
+  --accent: #33405A;
+  --accent-foreground: #F0F2F7;
 
   /* --- Status colours --- */
-  --destructive: #D97A6B;
-  --destructive-foreground: #EDEFF2;
+  --destructive: #E07A6B;
+  --destructive-foreground: #F0F2F7;
 
-  --success: #7FBBA0;
+  --success: #8BC8AD;
   --success-foreground: #12291F;
 
   /* --- BORDERS & DEMARCATION LINES (clear and visible) --- */
-  --border: rgba(255, 255, 255, 0.08);        /* subtle base line */
-  --border-strong: rgba(255, 255, 255, 0.15); /* obvious demarcation */
-  --border-accent: rgba(143, 191, 212, 0.25); /* highlighted accent line */
+  --border: rgba(255, 255, 255, 0.10);        /* subtle base line */
+  --border-strong: rgba(255, 255, 255, 0.20); /* obvious demarcation */
+  --border-accent: rgba(143, 191, 212, 0.30); /* highlighted accent line */
 
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #6F7A8E;
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #7A8AA2;
 
   /* --- Panel variants --- */
-  --panel: #161C2A;
-  --panel-elevated: #1E2639;
+  --panel: #1E2639;             /* Matches card */
+  --panel-elevated: #28334B;    /* Brighter for elevated elements */
 
   /* --- Blueprint brand tokens --- */
   --navy: #1C2435;
@@ -146,58 +146,58 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  --sidebar: #161C2A;
-  --sidebar-foreground: #EDEFF2;
+  --sidebar: #1E2639;
+  --sidebar-foreground: #F0F2F7;
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #EDEFF2;
-  --sidebar-accent: #2A3347;
-  --sidebar-accent-foreground: #EDEFF2;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #6F7A8E;
+  --sidebar-primary-foreground: #F0F2F7;
+  --sidebar-accent: #33405A;
+  --sidebar-accent-foreground: #F0F2F7;
+  --sidebar-border: rgba(255, 255, 255, 0.10);
+  --sidebar-ring: #7A8AA2;
 
   /* --- Legacy / component-specific --- */
   --blue: #8FBFD4;
   --slate: #5F6875;
-  --danger: #D97A6B;
-  --blue-glow: rgba(143, 191, 212, 0.12);
+  --danger: #E07A6B;
+  --blue-glow: rgba(143, 191, 212, 0.15);
 
   /* --- Shadows (premium depth) --- */
-  --shadow-sheet: 0 8px 32px -12px rgba(0, 0, 0, 0.65);
-  --shadow-lift: 0 20px 48px -20px rgba(0, 0, 0, 0.75);
-  --shadow-card: 0 4px 16px -8px rgba(0, 0, 0, 0.5);
+  --shadow-sheet: 0 8px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 20px 48px -20px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 4px 20px -8px rgba(0, 0, 0, 0.45);
 }
 
 /* --- Forward‑compat .dark block --- */
 .dark {
-  --background: #0E121B;
-  --foreground: #EDEFF2;
-  --card: #161C2A;
-  --card-foreground: #EDEFF2;
-  --popover: #1B2333;
-  --popover-foreground: #EDEFF2;
-  --primary: #E4E7ED;
-  --primary-foreground: #161C2A;
-  --secondary: #2A3347;
-  --secondary-foreground: #EDEFF2;
-  --muted: #2A3347;
-  --muted-foreground: #9BA3B5;
-  --accent: #2A3347;
-  --accent-foreground: #EDEFF2;
-  --destructive: #D97A6B;
-  --destructive-foreground: #EDEFF2;
-  --success: #7FBBA0;
+  --background: #11151E;
+  --foreground: #F0F2F7;
+  --card: #1E2639;
+  --card-foreground: #F0F2F7;
+  --popover: #262F47;
+  --popover-foreground: #F0F2F7;
+  --primary: #E8EBF2;
+  --primary-foreground: #1E2639;
+  --secondary: #33405A;
+  --secondary-foreground: #F0F2F7;
+  --muted: #33405A;
+  --muted-foreground: #A8B1C5;
+  --accent: #33405A;
+  --accent-foreground: #F0F2F7;
+  --destructive: #E07A6B;
+  --destructive-foreground: #F0F2F7;
+  --success: #8BC8AD;
   --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
-  --border-accent: rgba(143, 191, 212, 0.25);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #6F7A8E;
-  --panel: #161C2A;
-  --panel-elevated: #1E2639;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-accent: rgba(143, 191, 212, 0.30);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #7A8AA2;
+  --panel: #1E2639;
+  --panel-elevated: #28334B;
   --blue: #8FBFD4;
   --slate: #5F6875;
-  --danger: #D97A6B;
-  --blue-glow: rgba(143, 191, 212, 0.12);
+  --danger: #E07A6B;
+  --blue-glow: rgba(143, 191, 212, 0.15);
 }
 
 /* ============================================================
@@ -268,7 +268,7 @@ a {
   left: 30%;
   right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.08), transparent);
+  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.10), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -368,7 +368,7 @@ a {
 }
 
 /* ============================================================
-   PREMIUM CARD — dashboard-style cards with clear borders
+   PREMIUM CARD — bright dashboard-style cards
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -405,7 +405,7 @@ a {
 }
 
 /* ============================================================
-   METRIC TILE — for dashboard statistics
+   METRIC TILE — bright, with clear demarcation
    ============================================================ */
 .metric-tile {
   background: var(--card);
@@ -425,7 +425,7 @@ a {
   right: 20%;
   height: 1px;
   background: var(--border-accent);
-  opacity: 0.3;
+  opacity: 0.4;
   transition: opacity 0.2s ease;
 }
 
@@ -452,6 +452,14 @@ a {
   letter-spacing: -0.02em;
   color: var(--foreground);
   margin-top: 0.25rem;
+}
+
+/* "NOT TRACKED" status styling */
+.metric-tile .value.not-tracked {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  letter-spacing: 0.02em;
 }
 
 .metric-tile .status-indicator {
@@ -525,7 +533,7 @@ a {
 
 .table-demarcated td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .table-demarcated tr:last-child td {
@@ -533,7 +541,7 @@ a {
 }
 
 .table-demarcated tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* ============================================================
