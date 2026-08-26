@@ -1,7 +1,7 @@
 /* ============================================================
-   PREMIUM DARK THEME — elevated palette with depth & hierarchy
-   Replaces flat black with rich, layered dark tones.
-   Demarcation lines added for clear visual separation.
+   IJIDI OPERATING SYSTEM — Dashboard Dark Theme
+   Matches the operational dashboard aesthetic with navy/charcoal
+   backgrounds and premium card styling.
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -18,7 +18,7 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
-  /* --- semantic color variables (mapped to CSS custom props) --- */
+  /* Semantic color variables */
   --color-background        : var(--background);
   --color-foreground        : var(--foreground);
   --color-card              : var(--card);
@@ -47,7 +47,7 @@
   --color-gold              : var(--amber-bright);
   --color-teal              : var(--line);
 
-  /* Blueprint brand tokens (MAM Realty palette) */
+  /* Blueprint brand tokens */
   --color-navy              : var(--navy);
   --color-navy-deep         : var(--navy-deep);
   --color-line              : var(--line);
@@ -60,7 +60,7 @@
   --color-amber-bright      : var(--amber-bright);
   --color-blueprint-ok      : var(--blueprint-ok);
 
-  /* chart / sidebar (unused but defined) */
+  /* Chart / sidebar */
   --color-chart-1           : var(--chart-1);
   --color-chart-2           : var(--chart-2);
   --color-chart-3           : var(--chart-3);
@@ -77,59 +77,59 @@
 }
 
 /* ============================================================
-   :ROOT — PREMIUM DARK PALETTE (always‑on dark mode)
-   Background: deep charcoal-blue (not flat black)
-   Cards & panels: layered with distinct elevations
-   Demarcation lines: subtle, semi‑transparent borders + dividers
+   :ROOT — IJIDI DARK PALETTE (matches dashboard aesthetic)
+   Background: deep navy‑charcoal (#0E121B)
+   Cards: subtly lighter with blue undertone (#171D2B)
+   Demarcation lines: subtle, semi‑transparent borders
    ============================================================ */
 :root {
-  /* --- main background: rich dark blue‑grey (premium alternative to #000) --- */
-  --background: #0E121B;          /* deep navy‑charcoal */
-  --foreground: #F2F3F7;          /* off‑white with warmth */
+  /* --- Main background: deep navy-charcoal (premium dark) --- */
+  --background: #0E121B;
+  --foreground: #EDEFF2;
 
-  /* --- cards & elevated surfaces (lighter than background, distinct) --- */
-  --card: #1A1F2D;               /* dark slate with blue undertone */
-  --card-foreground: #F2F3F7;
+  /* --- Cards & elevated surfaces --- */
+  --card: #171D2B;              /* Slightly lighter than bg, blue undertone */
+  --card-foreground: #EDEFF2;
 
-  --popover: #222838;            /* slightly lighter than card */
-  --popover-foreground: #F2F3F7;
+  --popover: #1E2636;           /* Lighter still for popovers */
+  --popover-foreground: #EDEFF2;
 
-  /* --- primary & secondary (refined contrasts) --- */
-  --primary: #E8EAF0;            /* near‑white with soft grey */
-  --primary-foreground: #1A1F2D;
+  /* --- Primary & secondary --- */
+  --primary: #E4E7ED;
+  --primary-foreground: #171D2B;
 
-  --secondary: #2D3445;          /* muted blue‑grey */
-  --secondary-foreground: #F2F3F7;
+  --secondary: #2A3347;
+  --secondary-foreground: #EDEFF2;
 
-  --muted: #2D3445;
-  --muted-foreground: #A5ACBB;   /* soft, readable grey */
+  --muted: #2A3347;
+  --muted-foreground: #9BA3B5;
 
-  --accent: #2D3445;
-  --accent-foreground: #F2F3F7;
+  --accent: #2A3347;
+  --accent-foreground: #EDEFF2;
 
-  /* --- status colours (kept from original, refined) --- */
-  --destructive: #D97A6B;        /* softer coral */
-  --destructive-foreground: #F2F3F7;
+  /* --- Status colours --- */
+  --destructive: #D97A6B;
+  --destructive-foreground: #EDEFF2;
 
   --success: #7FBBA0;
   --success-foreground: #12291F;
 
-  /* --- borders, inputs, rings (demarcation lines) --- */
-  --border: rgba(255, 255, 255, 0.08);      /* very subtle base */
-  --border-strong: rgba(255, 255, 255, 0.15); /* stronger demarcation */
-  --border-accent: rgba(143, 191, 212, 0.25); /* teal‑accented line */
+  /* --- Borders & demarcation lines --- */
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(143, 191, 212, 0.2);
 
-  --input: rgba(255, 255, 255, 0.10);
+  --input: rgba(255, 255, 255, 0.08);
   --ring: #6F7A8E;
 
-  /* --- panel & elevated panel (layered depth) --- */
-  --panel: #1A1F2D;              /* same as card, but used for brackets */
-  --panel-elevated: #262D3F;     /* lighter, for floating elements */
+  /* --- Panel variants --- */
+  --panel: #171D2B;
+  --panel-elevated: #212A3D;
 
-  /* --- blueprint brand tokens (MAM Realty) --- */
+  /* --- Blueprint brand tokens --- */
   --navy: #1C2435;
   --navy-deep: #12192A;
-  --line: #8FBFD4;               /* teal/blue accent */
+  --line: #8FBFD4;
   --line-dim: #5B7A8A;
   --paper: #EAE8E3;
   --paper-dim: #D9D6CE;
@@ -139,68 +139,69 @@
   --amber-bright: #E0A344;
   --blueprint-ok: #7FBBA0;
 
-  /* --- charts / sidebar (dark values) --- */
+  /* --- Charts / sidebar --- */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #1A1F2D;
-  --sidebar-foreground: #F2F3F7;
+
+  --sidebar: #171D2B;
+  --sidebar-foreground: #EDEFF2;
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #F2F3F7;
-  --sidebar-accent: #2D3445;
-  --sidebar-accent-foreground: #F2F3F7;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-primary-foreground: #EDEFF2;
+  --sidebar-accent: #2A3347;
+  --sidebar-accent-foreground: #EDEFF2;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
   --sidebar-ring: #6F7A8E;
 
-  /* --- legacy / component-specific --- */
+  /* --- Legacy / component-specific --- */
   --blue: #8FBFD4;
   --slate: #5F6875;
   --danger: #D97A6B;
-  --blue-glow: rgba(143, 191, 212, 0.15);
+  --blue-glow: rgba(143, 191, 212, 0.12);
 
-  /* --- shadows (premium depth) --- */
-  --shadow-sheet: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
-  --shadow-lift: 0 24px 56px -24px rgba(0, 0, 0, 0.8);
-  --shadow-card: 0 4px 20px -8px rgba(0, 0, 0, 0.6);
+  /* --- Shadows (premium depth) --- */
+  --shadow-sheet: 0 8px 32px -12px rgba(0, 0, 0, 0.65);
+  --shadow-lift: 0 20px 48px -20px rgba(0, 0, 0, 0.75);
+  --shadow-card: 0 4px 16px -8px rgba(0, 0, 0, 0.5);
 }
 
-/* --- forward‑compat .dark block (same values) --- */
+/* --- Forward‑compat .dark block --- */
 .dark {
   --background: #0E121B;
-  --foreground: #F2F3F7;
-  --card: #1A1F2D;
-  --card-foreground: #F2F3F7;
-  --popover: #222838;
-  --popover-foreground: #F2F3F7;
-  --primary: #E8EAF0;
-  --primary-foreground: #1A1F2D;
-  --secondary: #2D3445;
-  --secondary-foreground: #F2F3F7;
-  --muted: #2D3445;
-  --muted-foreground: #A5ACBB;
-  --accent: #2D3445;
-  --accent-foreground: #F2F3F7;
+  --foreground: #EDEFF2;
+  --card: #171D2B;
+  --card-foreground: #EDEFF2;
+  --popover: #1E2636;
+  --popover-foreground: #EDEFF2;
+  --primary: #E4E7ED;
+  --primary-foreground: #171D2B;
+  --secondary: #2A3347;
+  --secondary-foreground: #EDEFF2;
+  --muted: #2A3347;
+  --muted-foreground: #9BA3B5;
+  --accent: #2A3347;
+  --accent-foreground: #EDEFF2;
   --destructive: #D97A6B;
-  --destructive-foreground: #F2F3F7;
+  --destructive-foreground: #EDEFF2;
   --success: #7FBBA0;
   --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
-  --border-accent: rgba(143, 191, 212, 0.25);
-  --input: rgba(255, 255, 255, 0.10);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(143, 191, 212, 0.2);
+  --input: rgba(255, 255, 255, 0.08);
   --ring: #6F7A8E;
-  --panel: #1A1F2D;
-  --panel-elevated: #262D3F;
+  --panel: #171D2B;
+  --panel-elevated: #212A3D;
   --blue: #8FBFD4;
   --slate: #5F6875;
   --danger: #D97A6B;
-  --blue-glow: rgba(143, 191, 212, 0.15);
+  --blue-glow: rgba(143, 191, 212, 0.12);
 }
 
 /* ============================================================
-   BASE RESETS & GLOBAL STYLES
+   BASE RESETS
    ============================================================ */
 * {
   border-color: var(--border);
@@ -217,6 +218,8 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -225,7 +228,7 @@ a {
 }
 
 /* ============================================================
-   DEMARCATION LINES — utility classes for visual separation
+   DEMARCATION LINES — for visual separation
    ============================================================ */
 .divider-light {
   border-top: 1px solid var(--border);
@@ -244,7 +247,6 @@ a {
   height: 100%;
 }
 
-/* section separator (horizontal rule with subtle glow) */
 .section-divider {
   height: 1px;
   background: linear-gradient(
@@ -260,11 +262,11 @@ a {
 }
 
 /* ============================================================
-   CUSTOM SCROLLBAR (premium refinement)
+   SCROLLBAR
    ============================================================ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -288,7 +290,7 @@ a {
 }
 
 /* ============================================================
-   PANEL BRACKET — premium card with demarcation lines
+   PANEL BRACKET — matches dashboard card style
    ============================================================ */
 .panel-bracket {
   position: relative;
@@ -299,35 +301,33 @@ a {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* top‑left & bottom‑right corner accents (demarcation) */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-color: var(--blue);
-  opacity: 0.5;
+  opacity: 0.4;
   pointer-events: none;
 }
 
 .panel-bracket::before {
   top: 10px;
   left: 10px;
-  border-top: 2px solid;
-  border-left: 2px solid;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
   border-top-left-radius: 8px;
 }
 
 .panel-bracket::after {
   right: 10px;
   bottom: 10px;
-  border-right: 2px solid;
-  border-bottom: 2px solid;
+  border-right: 1.5px solid;
+  border-bottom: 1.5px solid;
   border-bottom-right-radius: 8px;
 }
 
-/* elevated variant (lighter background, stronger shadow) */
 .panel-bracket-elevated {
   background: var(--panel-elevated);
   box-shadow: var(--shadow-lift);
@@ -335,7 +335,7 @@ a {
 }
 
 /* ============================================================
-   CARD COMPONENT — premium cards with clear hierarchy
+   PREMIUM CARD — dashboard-style cards
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -343,7 +343,7 @@ a {
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-card);
   padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .premium-card:hover {
@@ -352,28 +352,110 @@ a {
   border-color: var(--border-accent);
 }
 
-/* card with accent top border (demarcation) */
+/* Card accent variants */
 .premium-card-accent {
-  border-top: 3px solid var(--blue);
+  border-top: 2.5px solid var(--blue);
 }
 
 .premium-card-success {
-  border-top: 3px solid var(--success);
+  border-top: 2.5px solid var(--success);
 }
 
 .premium-card-warning {
-  border-top: 3px solid var(--amber-bright);
+  border-top: 2.5px solid var(--amber-bright);
 }
 
 /* ============================================================
-   HEX BADGE (unchanged)
+   METRIC TILE — for dashboard statistics
+   ============================================================ */
+.metric-tile {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.metric-tile:hover {
+  border-color: var(--border-accent);
+  background: var(--panel-elevated);
+}
+
+.metric-tile .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.metric-tile .value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-top: 0.25rem;
+}
+
+.metric-tile .status-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.metric-tile .status-indicator.online {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(127, 187, 160, 0.4);
+}
+
+.metric-tile .status-indicator.offline {
+  background: var(--destructive);
+  box-shadow: 0 0 8px rgba(217, 122, 107, 0.3);
+}
+
+/* ============================================================
+   NODE STATUS BADGE
+   ============================================================ */
+.node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.node-badge .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 10px rgba(127, 187, 160, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ============================================================
+   HEX BADGE
    ============================================================ */
 .hex-badge {
   clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
 }
 
 /* ============================================================
-   GRID & SCAN OVERLAYS (refined with demarcation)
+   GRID & SCAN OVERLAYS
    ============================================================ */
 .grid-scan {
   background-image:
@@ -383,12 +465,12 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(143, 191, 212, 0.07) 1px, transparent 0);
+  background-image: radial-gradient(rgba(143, 191, 212, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
 /* ============================================================
-   SCANLINE (animated, premium feel)
+   SCANLINE
    ============================================================ */
 .scanline {
   position: relative;
@@ -402,7 +484,7 @@ a {
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in oklab, var(--slate) 6%, transparent),
+    color-mix(in oklab, var(--slate) 5%, transparent),
     transparent
   );
   height: 40%;
@@ -416,7 +498,7 @@ a {
 }
 
 /* ============================================================
-   TICKER TRACK (infinite scroll)
+   TICKER TRACK
    ============================================================ */
 .ticker-track {
   display: flex;
@@ -435,7 +517,7 @@ a {
 }
 
 /* ============================================================
-   LIVE PULSE (telemetry indicator)
+   LIVE PULSE
    ============================================================ */
 .live-pulse {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -443,7 +525,7 @@ a {
 
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.3; transform: scale(1.2); }
+  50%      { opacity: 0.25; transform: scale(1.2); }
 }
 
 /* ============================================================
