@@ -1,9 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Bot, ChevronRight, Cpu, Send, Terminal } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Bell,
+  Bot,
+  Check,
+  ChevronDown,
+  Copy as CopyIcon,
+  History,
+  Mic,
+  MoreHorizontal,
+  Paperclip,
+  PlusCircle,
+  Send,
+  Settings,
+  Volume2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Eyebrow, SectionHeader, Signal, StatusBadge } from "@/components/portal-ui";
+import { Eyebrow, Signal, StatusBadge } from "@/components/portal-ui";
 import { supabase } from "@/lib/supabase";
+import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/igx-ai")({
   head: () => ({
@@ -20,156 +37,721 @@ export const Route = createFileRoute("/igx-ai")({
   component: IgxAi,
 });
 
-type Message = { role: "system" | "operator"; text: string };
+/*
+  HONEST-STATE FLAGS (this port, 2026-08-26)
+  - Rail (People/Entities), merged header + sub-pills, Details panel:
+    real, sourced from igxPeople/igxOrgEntities in portal-data.ts.
+  - Chat submit: REAL — inserts into `proposals` via Supabase, same as
+    the original Step A flow.
+  - Approve/Reject: REAL Supabase UPDATE on the specific proposal row,
+    but only for proposals created in THIS session — `proposals` has
+    no entity/sub scoping column yet, so an older pending proposal
+    can't be resolved from here after a reload. Schema decision, not
+    silently patched here.
+  - Scope is currently stuffed into the `intent` text as a prefix
+    (e.g. "[IJIDI Media → IJIDI Wild] ..."), not a real column. Same
+    reason as above.
+  - Pending count: REAL — fetched from `proposals` on mount and
+    refetched after every submit/approve/reject, so it reflects the
+    true DB state (not just what happened in this session) even
+    across a page refresh.
+  - Read aloud: REAL, browser Web Speech API, no backend needed.
+  - Copy: REAL clipboard write of the AI bubble text.
+  - Reasoning bar / stage-track: runs only during a real submit (not
+    decorative on every tab switch, unlike the HTML mockup) — tied to
+    actual async state, not simulated for idle browsing.
+  - Ticker + activity feed: STILL FAKE. Both are meant to read from
+    `activity_log`; that table's real column shape hasn't been
+    confirmed this session, so wiring it here would be a guess. Kept
+    visibly separate as a reminder, not silently connected.
+  - Settings, New chat, Chat history, attach-menu items, voice input,
+    Redo, Ignore: visual-only, no backend.
+*/
+
+type EntityKey = keyof typeof igxAllEntities;
+type SubItem = { id: string; label: string; pillar?: string };
+type ProposalStatus = "pending_review" | "approved" | "rejected" | "error";
+
+type ThreadMessage = {
+  proposalId: string | null; // null until the insert resolves
+  intent: string;
+  status: ProposalStatus;
+  errorMessage?: string;
+  detailsOpen: boolean;
+  moreOpen: boolean;
+};
+
+const STAGES = [
+  { name: "Idle", detail: "Waiting for a scoped request" },
+  { name: "Thinking", detail: "Parsing intent" },
+  { name: "Routing", detail: "Selecting the right model" },
+  { name: "Orchestrating", detail: "Coordinating sub-agents" },
+  { name: "Synthesizing", detail: "Drafting the proposal" },
+  { name: "Responding", detail: "Awaiting your review" },
+] as const;
+
+const FAKE_TICKER_ITEMS = [
+  { tone: "gold", text: "Mandela approved the Strategy proposal for Group" },
+  { tone: "purple", text: "IGX drafted a new caption set for Atelier → Shoes" },
+  { tone: "muted", text: "Sync complete: 3 sources refreshed" },
+  { tone: "purple", text: "IGX queued a research brief for Foundation → Arm 2" },
+  { tone: "muted", text: "0 proposals pending review" },
+] as const;
+
+const FAKE_ACTIVITY_ITEMS = [
+  { actor: "Mandela", text: "Approved Strategy proposal for Group", time: "2m ago" },
+  { actor: "IGX", text: "Drafted new caption set for Atelier → Shoes", time: "14m ago" },
+  { actor: "system", text: "Synced activity_log to Command Center", time: "1h ago" },
+] as const;
+
+function threadKey(entity: EntityKey, sub: string) {
+  return `${entity}:${sub}`;
+}
 
 function IgxAi() {
+  const [activeEntity, setActiveEntity] = useState<EntityKey>("mandela");
+  const [activeSub, setActiveSub] = useState<string | null>(null);
+  const [subState, setSubState] = useState<Partial<Record<EntityKey, string>>>({});
+  const [threads, setThreads] = useState<Record<string, ThreadMessage[]>>({});
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "system",
-      text: "IGX AI console initialized. Grounding layer online. No external intelligence sources connected.",
-    },
-    {
-      role: "system",
-      text: "I can help structure decisions, inspect portal records, and identify what is not yet tracked.",
-    },
-  ]);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+
+  // REAL — true DB count, not just session-local proposals. See flag block above.
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [pendingCountError, setPendingCountError] = useState<string | null>(null);
+
+  const entity = igxAllEntities[activeEntity];
+  const key = activeSub ? threadKey(activeEntity, activeSub) : null;
+  const messages = key ? threads[key] ?? [] : [];
+
+  const fetchPendingCount = async () => {
+    const { count, error } = await supabase
+      .from("proposals")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending_review");
+
+    if (error) {
+      setPendingCountError(error.message);
+      return;
+    }
+    setPendingCountError(null);
+    setPendingCount(count ?? 0);
+  };
+
+  useEffect(() => {
+    fetchPendingCount();
+  }, []);
+
+  const selectEntity = (nextEntity: EntityKey) => {
+    setActiveEntity(nextEntity);
+    setActiveSub(subState[nextEntity] ?? null);
+  };
+
+  const selectSub = (subId: string) => {
+    setActiveSub(subId);
+    setSubState((prev) => ({ ...prev, [activeEntity]: subId }));
+  };
+
+  const runStages = () => {
+    setStageIndex(1);
+    let i = 1;
+    const timer = setInterval(() => {
+      i += 1;
+      if (i >= STAGES.length) {
+        clearInterval(timer);
+        i = STAGES.length - 1;
+      }
+      setStageIndex(i);
+    }, 700);
+  };
 
   const submit = async () => {
     const trimmed = input.trim();
-    if (!trimmed || isSubmitting) return;
+    if (!trimmed || !activeSub || isSubmitting) return;
 
-    setMessages((prev) => [...prev, { role: "operator", text: trimmed }]);
+    const sub = entity.subs.find((s: SubItem) => s.id === activeSub)!;
+    const scopedIntent = `[${entity.label} → ${sub.label}] ${trimmed}`;
+    const k = threadKey(activeEntity, activeSub);
+
     setInput("");
     setIsSubmitting(true);
+    runStages();
 
-    const newProposal = {
-      actor_type: "IGX_AI",
-      source: "igx-ai-console",
-      intent: trimmed,
-      suggested_action: `Evaluate and process request: "${trimmed}"`,
-      reasoning: "Pending intelligence routing (Step A plumbing test, no reasoning yet).",
-      status: "pending_review",
-    };
+    setThreads((prev) => ({
+      ...prev,
+      [k]: [
+        ...(prev[k] ?? []),
+        {
+          proposalId: null,
+          intent: scopedIntent,
+          status: "pending_review",
+          detailsOpen: false,
+          moreOpen: false,
+        },
+      ],
+    }));
 
     const { data, error } = await supabase
       .from("proposals")
-      .insert([newProposal])
+      .insert([
+        {
+          actor_type: "IGX_AI",
+          source: "igx-ai-console",
+          intent: scopedIntent,
+          suggested_action: `Evaluate and process request: "${trimmed}"`,
+          reasoning: "Pending intelligence routing (Step A plumbing, no reasoning yet).",
+          status: "pending_review",
+        },
+      ])
       .select()
       .single();
 
-    setMessages((prev) => [
-      ...prev,
-      error
-        ? { role: "system", text: `Error writing to queue: ${error.message}` }
-        : {
-            role: "system",
-            text: `Proposal [${data.id.slice(0, 8)}] written to queue. Status: PENDING_REVIEW.`,
-          },
-    ]);
+    setThreads((prev) => {
+      const current = prev[k] ?? [];
+      const updated = [...current];
+      const lastIndex = updated.length - 1;
+      updated[lastIndex] = error
+        ? { ...updated[lastIndex], status: "error", errorMessage: error.message }
+        : { ...updated[lastIndex], proposalId: data.id };
+      return { ...prev, [k]: updated };
+    });
+
     setIsSubmitting(false);
+    if (!error) fetchPendingCount();
   };
 
+  const resolveProposal = async (msgIndex: number, nextStatus: "approved" | "rejected") => {
+    if (!key) return;
+    const message = threads[key]?.[msgIndex];
+    if (!message?.proposalId) return;
+
+    const { error } = await supabase
+      .from("proposals")
+      .update({ status: nextStatus })
+      .eq("id", message.proposalId);
+
+    setThreads((prev) => {
+      const updated = [...(prev[key] ?? [])];
+      updated[msgIndex] = {
+        ...updated[msgIndex],
+        status: error ? "error" : nextStatus,
+        errorMessage: error?.message,
+      };
+      return { ...prev, [key]: updated };
+    });
+
+    if (!error) fetchPendingCount();
+  };
+
+  const toggleDetails = (msgIndex: number) => {
+    if (!key) return;
+    setThreads((prev) => {
+      const updated = [...(prev[key] ?? [])];
+      updated[msgIndex] = { ...updated[msgIndex], detailsOpen: !updated[msgIndex].detailsOpen };
+      return { ...prev, [key]: updated };
+    });
+  };
+
+  const toggleMore = (msgIndex: number) => {
+    if (!key) return;
+    setThreads((prev) => {
+      const updated = [...(prev[key] ?? [])];
+      updated[msgIndex] = { ...updated[msgIndex], moreOpen: !updated[msgIndex].moreOpen };
+      return { ...prev, [key]: updated };
+    });
+  };
+
+  const readAloud = (text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utter);
+  };
+
+  const copyText = (text: string) => {
+    navigator.clipboard?.writeText(text);
+  };
+
+  const stage = STAGES[stageIndex];
+  const isActive = stageIndex !== 0;
+
   return (
-    <div>
-      <SectionHeader
-        eyebrow="06 / IGX AI"
-        title="Intelligence, grounded."
-        detail="A terminal-style console for thinking with the portal without inventing certainty."
-        action={<Signal>Local console / ready</Signal>}
-      />
-      <div className="grid gap-6 xl:grid-cols-[1fr_280px]">
-        <section className="panel-bracket scanline overflow-hidden">
-          <div className="flex items-center justify-between border-b border-border bg-panel-elevated px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center border border-teal/40 bg-teal/10">
-                <Terminal className="h-4 w-4 text-teal" />
-              </div>
-              <div>
-                <Eyebrow className="text-teal">IGX AI / terminal</Eyebrow>
-                <div className="mt-1 font-mono text-xs text-foreground">
-                  intelligence://local-session
-                </div>
-              </div>
-            </div>
-            <StatusBadge status="ready" label="READY" />
+    <div
+      data-igx-console
+      className="grid grid-cols-[220px_1fr] overflow-hidden rounded-2xl border"
+      style={{
+        borderColor: "var(--igx-border)",
+        backgroundColor: "var(--igx-bg)",
+        color: "var(--igx-bone)",
+      }}
+    >
+      {/* Rail */}
+      <aside
+        className="flex flex-col gap-4 border-r p-4"
+        style={{ borderColor: "var(--igx-border)" }}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: "var(--igx-gold)", boxShadow: "0 0 6px 2px rgba(198,161,91,0.5)" }}
+          />
+          <span className="font-display text-sm">IGX AI</span>
+          <div className="ml-auto flex gap-1">
+            <button className="rounded p-1 opacity-60 hover:opacity-100" aria-label="New chat" title="New chat (visual only)">
+              <PlusCircle className="h-3.5 w-3.5" />
+            </button>
+            <button className="rounded p-1 opacity-60 hover:opacity-100" aria-label="Chat history" title="Chat history (visual only)">
+              <History className="h-3.5 w-3.5" />
+            </button>
           </div>
-          <div className="min-h-[390px] space-y-5 p-5 font-mono text-xs leading-6">
-            <div className="flex gap-3 text-muted-foreground">
-              <span className="text-teal">00:00:01</span>
-              <span>session handshake complete</span>
-            </div>
-            {messages.map((message, index) => (
-              <div
-                key={`${message.role}-${index}`}
-                className={
-                  message.role === "operator"
-                    ? "ml-4 border-l border-gold/50 pl-4 text-gold"
-                    : "flex gap-3 text-foreground"
-                }
+        </div>
+
+        <RailGroup
+          label="human-in-the-loop"
+          group={igxPeople}
+          activeEntity={activeEntity}
+          onSelect={selectEntity}
+        />
+        <div className="h-px" style={{ backgroundColor: "var(--igx-border)" }} />
+        <RailGroup
+          label="entities"
+          group={igxOrgEntities}
+          activeEntity={activeEntity}
+          onSelect={selectEntity}
+        />
+
+        <div className="mt-auto">
+          <Eyebrow>pending review</Eyebrow>
+          <div
+            className="mt-1.5 rounded-lg border px-2.5 py-2 font-mono text-xs"
+            style={{ borderColor: "var(--igx-border-soft)" }}
+          >
+            {pendingCountError
+              ? "count unavailable"
+              : pendingCount === null
+                ? "loading..."
+                : `${pendingCount} proposal${pendingCount === 1 ? "" : "s"}`}
+          </div>
+        </div>
+
+        <div className="border-t pt-3" style={{ borderColor: "var(--igx-border-soft)" }}>
+          <button
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs opacity-70 hover:opacity-100"
+            title="Settings (visual only)"
+          >
+            <Settings className="h-3.5 w-3.5" /> Settings
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex min-w-0 flex-col">
+        {/* Ticker — fake, still needs activity_log wiring */}
+        <div
+          className="ticker-track overflow-hidden border-b py-1.5"
+          style={{ borderColor: "var(--igx-border)", backgroundColor: "var(--igx-bg-deep)" }}
+        >
+          <div className="ticker-track flex whitespace-nowrap">
+            {[...FAKE_TICKER_ITEMS, ...FAKE_TICKER_ITEMS].map((item, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-2 border-r px-6 font-mono text-[11px]"
+                style={{
+                  borderColor: "var(--igx-border-soft)",
+                  color:
+                    item.tone === "gold"
+                      ? "var(--igx-gold)"
+                      : item.tone === "purple"
+                        ? "var(--igx-purple)"
+                        : "rgba(245,242,235,0.62)",
+                }}
               >
-                {message.role === "system" && (
-                  <ChevronRight className="mt-1 h-3 w-3 shrink-0 text-teal" />
-                )}
-                <span>
-                  {message.role === "operator" && (
-                    <span className="mr-2 text-muted-foreground">operator &gt;</span>
-                  )}
-                  {message.text}
+                <span
+                  className="h-1 w-1 rounded-full"
+                  style={{
+                    backgroundColor:
+                      item.tone === "gold"
+                        ? "var(--igx-gold)"
+                        : item.tone === "purple"
+                          ? "var(--igx-purple)"
+                          : "rgba(245,242,235,0.35)",
+                  }}
+                />
+                {item.text}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Reasoning bar — real, tied to actual submit state */}
+        <div
+          className="flex items-center gap-2 border-b px-5 py-2.5"
+          style={{
+            borderColor: "var(--igx-border)",
+            backgroundColor: "color-mix(in oklab, var(--igx-gold) 5%, transparent)",
+          }}
+        >
+          <Bot
+            className={cn("h-5 w-5", isActive && "live-pulse")}
+            style={{ color: "var(--igx-gold)" }}
+          />
+          <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: "var(--igx-gold)" }}>
+            {stage.name}
+          </span>
+          <span className="font-mono text-[11px]" style={{ color: "rgba(245,242,235,0.4)" }}>
+            {stage.detail}
+          </span>
+          <div className="ml-1.5 flex gap-1">
+            {STAGES.map((_, i) => (
+              <span
+                key={i}
+                className="h-1.5 w-1.5 rounded-full"
+                style={{
+                  backgroundColor:
+                    i === stageIndex
+                      ? "var(--igx-gold)"
+                      : i < stageIndex
+                        ? "color-mix(in oklab, var(--igx-gold) 50%, transparent)"
+                        : "rgba(245,242,235,0.2)",
+                }}
+              />
+            ))}
+          </div>
+          <div className="ml-auto">
+            <Signal>{isSubmitting ? "Processing" : "Ready"}</Signal>
+          </div>
+        </div>
+
+        {/* Activity feed — fake, toggled by bell */}
+        {activityOpen && (
+          <div
+            className="max-h-40 overflow-y-auto border-b"
+            style={{ borderColor: "var(--igx-border)" }}
+          >
+            {FAKE_ACTIVITY_ITEMS.map((item, i) => (
+              <div
+                key={i}
+                className="flex items-baseline gap-2.5 border-b px-5 py-2 text-xs"
+                style={{ borderColor: "rgba(245,242,235,0.06)" }}
+              >
+                <span
+                  className="font-mono text-[10px] uppercase"
+                  style={{ color: item.actor === "Mandela" ? "var(--igx-gold)" : "var(--igx-purple)" }}
+                >
+                  {item.actor}
+                </span>
+                <span style={{ color: "rgba(245,242,235,0.75)" }}>{item.text}</span>
+                <span className="ml-auto font-mono text-[10px]" style={{ color: "rgba(245,242,235,0.35)" }}>
+                  {item.time}
                 </span>
               </div>
             ))}
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="text-teal">igx://</span>
-              <span className="h-4 w-1 animate-pulse bg-gold" />
-            </div>
           </div>
-          <div className="flex gap-2 border-t border-border bg-panel-elevated p-4">
-            <input
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") submit();
-              }}
-              placeholder="Ask IGX AI to inspect the current state..."
-              className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground"
-              disabled={isSubmitting}
-            />
-            <Button size="icon" onClick={submit} aria-label="Send prompt" disabled={isSubmitting}>
-              <Send className="h-4 w-4" />
-            </Button>
+        )}
+
+        {/* Merged entity header + sub-pill row */}
+        <div
+          className="flex flex-wrap items-center gap-3 border-b px-5 py-3"
+          style={{ borderColor: "var(--igx-border)" }}
+        >
+          <span className="font-display text-base">{entity.label}</span>
+          <div className="h-4 w-px" style={{ backgroundColor: "var(--igx-border-soft)" }} />
+          <div className="flex flex-1 flex-wrap gap-1.5">
+            {entity.subs.map((sub: SubItem) => (
+              <button
+                key={sub.id}
+                title={sub.pillar}
+                onClick={() => selectSub(sub.id)}
+                className="rounded-full border px-3 py-1.5 text-[12.5px] transition-colors"
+                style={
+                  sub.id === activeSub
+                    ? {
+                        backgroundColor: "color-mix(in oklab, var(--igx-gold) 18%, transparent)",
+                        borderColor: "var(--igx-gold)",
+                        color: "var(--igx-gold)",
+                      }
+                    : {
+                        backgroundColor: "rgba(245,242,235,0.05)",
+                        borderColor: "var(--igx-border-soft)",
+                        color: "rgba(245,242,235,0.75)",
+                      }
+                }
+              >
+                {sub.label}
+              </button>
+            ))}
           </div>
-        </section>
-        <aside className="space-y-4">
-          <div className="panel-bracket p-7">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-gold" />
-              <Eyebrow>Capabilities</Eyebrow>
+          <button
+            className="relative rounded-lg p-1.5 opacity-70 hover:opacity-100"
+            aria-label="Activity feed"
+            onClick={() => setActivityOpen((v) => !v)}
+          >
+            <Bell className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Thread */}
+        <div className="flex-1 space-y-3.5 overflow-auto p-6">
+          {!activeSub && (
+            <div className="mx-auto mt-16 text-sm" style={{ color: "rgba(245,242,235,0.4)" }}>
+              Pick a sub-item above to scope this chat.
             </div>
-            <div className="mt-5 space-y-3">
-              {[
-                "Decision structuring",
-                "Portal inspection",
-                "Risk surfacing",
-                "Grounded summaries",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="h-1.5 w-1.5 rounded-full bg-teal" />
-                  {item}
+          )}
+          {activeSub && messages.length === 0 && (
+            <div className="text-xs font-mono" style={{ color: "rgba(245,242,235,0.4)" }}>
+              Scoped to {entity.label} → {entity.subs.find((s: SubItem) => s.id === activeSub)?.label}. Ask
+              something to write a proposal.
+            </div>
+          )}
+          {messages.map((message, i) => (
+            <div key={i} className="space-y-2">
+              <div
+                className="ml-auto max-w-[60%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm"
+                style={{ backgroundColor: "var(--igx-gold)", color: "var(--igx-bg-deep)" }}
+              >
+                {message.intent}
+              </div>
+              <div
+                className="max-w-[65%] rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed"
+                style={{ backgroundColor: "rgba(245,242,235,0.06)" }}
+              >
+                {message.status === "error"
+                  ? `Error writing to queue: ${message.errorMessage}`
+                  : message.proposalId
+                    ? `Proposal [${message.proposalId.slice(0, 8)}] written to queue.`
+                    : "Writing proposal..."}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleDetails(i)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs"
+                  style={{
+                    borderColor: message.detailsOpen ? "var(--igx-gold)" : "var(--igx-border-soft)",
+                    color: message.detailsOpen ? "var(--igx-gold)" : "var(--igx-bone)",
+                  }}
+                >
+                  Details
+                  <ChevronDown
+                    className={cn("h-3 w-3 transition-transform", message.detailsOpen && "rotate-180")}
+                  />
+                </button>
+                {message.status === "pending_review" && message.proposalId && (
+                  <>
+                    <IconButton
+                      label="Approve"
+                      hoverColor="#639922"
+                      onClick={() => resolveProposal(i, "approved")}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </IconButton>
+                    <IconButton
+                      label="Reject"
+                      hoverColor="var(--igx-orange)"
+                      onClick={() => resolveProposal(i, "rejected")}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </IconButton>
+                  </>
+                )}
+                {message.status === "approved" && (
+                  <StatusBadge status="active" label="✓ APPROVED" />
+                )}
+                {message.status === "rejected" && (
+                  <StatusBadge status="restricted" label="✕ REJECTED" />
+                )}
+                <div className="relative">
+                  <IconButton label="More" onClick={() => toggleMore(i)}>
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </IconButton>
+                  {message.moreOpen && (
+                    <div
+                      className="absolute bottom-9 right-0 z-10 min-w-[140px] rounded-lg border p-1.5"
+                      style={{ backgroundColor: "var(--igx-bg)", borderColor: "var(--igx-border-soft)" }}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          copyText(message.intent);
+                          toggleMore(i);
+                        }}
+                      >
+                        <CopyIcon className="h-3.5 w-3.5" /> Copy
+                      </MenuItem>
+                      <MenuItem onClick={() => readAloud(message.intent)}>
+                        <Volume2 className="h-3.5 w-3.5" /> Read aloud
+                      </MenuItem>
+                      <MenuItem disabled>Redo (visual only)</MenuItem>
+                      <MenuItem disabled>Ignore (visual only)</MenuItem>
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
+              {message.detailsOpen && (
+                <div
+                  className="space-y-2 rounded-lg border p-3.5 text-xs"
+                  style={{ borderColor: "var(--igx-border-soft)", backgroundColor: "rgba(245,242,235,0.04)" }}
+                >
+                  <DetailRow label="Scope" value={`${entity.label} → ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}`} />
+                  <DetailRow label="Drafted by" value="Content Agent" />
+                  <DetailRow label="Gate" value={message.status.toUpperCase()} />
+                  <DetailRow label="Proposal ID" value={message.proposalId ?? "pending insert"} />
+                </div>
+              )}
             </div>
+          ))}
+        </div>
+
+        {/* Input row */}
+        <div
+          className="flex items-center gap-2.5 border-t px-5 py-3.5"
+          style={{ borderColor: "var(--igx-border)" }}
+        >
+          <div className="relative">
+            <button
+              className="opacity-60 hover:opacity-100"
+              aria-label="Attach file"
+              title="Attach (visual only)"
+              onClick={() => setAttachOpen((v) => !v)}
+            >
+              <Paperclip className="h-4 w-4" />
+            </button>
+            {attachOpen && (
+              <div
+                className="absolute bottom-9 left-0 z-10 min-w-[170px] rounded-lg border p-1.5"
+                style={{ backgroundColor: "var(--igx-bg)", borderColor: "var(--igx-border-soft)" }}
+              >
+                <MenuItem disabled>Upload from computer</MenuItem>
+                <MenuItem disabled>Google Drive</MenuItem>
+                <MenuItem disabled>GitHub</MenuItem>
+                <MenuItem disabled>Add a screenshot</MenuItem>
+                <MenuItem disabled>Connect data source</MenuItem>
+              </div>
+            )}
           </div>
-          <div className="border border-gold/20 bg-gold/5 p-5">
-            <Bot className="h-5 w-5 text-gold" />
-            <Eyebrow className="mt-5 text-gold">Connection state</Eyebrow>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              Local interface only. Connect a governed intelligence provider when ready.
-            </p>
-          </div>
-        </aside>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            disabled={!activeSub || isSubmitting}
+            placeholder={activeSub ? `Ask IGX AI about ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}...` : "Pick a sub-item first..."}
+            className="min-w-0 flex-1 rounded-xl border px-3.5 py-2.5 text-sm outline-none"
+            style={{
+              backgroundColor: "rgba(245,242,235,0.06)",
+              borderColor: "var(--igx-border-soft)",
+              color: "var(--igx-bone)",
+            }}
+          />
+          <Button
+            size="icon"
+            onClick={submit}
+            disabled={!activeSub || isSubmitting}
+            style={{ backgroundColor: "var(--igx-gold)", color: "var(--igx-bg-deep)" }}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+          <button className="opacity-50" aria-label="Voice input" title="Voice input (visual only)" disabled>
+            <Mic className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function RailGroup({
+  label,
+  group,
+  activeEntity,
+  onSelect,
+}: {
+  label: string;
+  group: typeof igxPeople | typeof igxOrgEntities;
+  activeEntity: EntityKey;
+  onSelect: (key: EntityKey) => void;
+}) {
+  return (
+    <div>
+      <Eyebrow>{label}</Eyebrow>
+      <div className="mt-1.5 flex flex-col gap-0.5">
+        {Object.entries(group).map(([k, v]) => (
+          <button
+            key={k}
+            onClick={() => onSelect(k as EntityKey)}
+            className="rounded-lg px-2.5 py-1.5 text-left text-[13.5px] transition-colors"
+            style={
+              k === activeEntity
+                ? { backgroundColor: "color-mix(in oklab, var(--igx-gold) 16%, transparent)", color: "var(--igx-gold)" }
+                : { color: "rgba(245,242,235,0.7)" }
+            }
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IconButton({
+  children,
+  label,
+  onClick,
+  hoverColor,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  hoverColor?: string;
+}) {
+  return (
+    <button
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+      style={{ borderColor: "var(--igx-border-soft)", color: "rgba(245,242,235,0.7)" }}
+      onMouseEnter={(e) => hoverColor && (e.currentTarget.style.color = hoverColor)}
+      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(245,242,235,0.7)")}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MenuItem({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs hover:bg-white/5 disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span className="font-mono text-[10.5px] uppercase" style={{ color: "rgba(245,242,235,0.4)" }}>
+        {label}
+      </span>
+      <span className="text-right" style={{ color: "rgba(245,242,235,0.82)" }}>
+        {value}
+      </span>
     </div>
   );
 }
