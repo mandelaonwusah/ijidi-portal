@@ -60,12 +60,24 @@ export const Route = createFileRoute("/igx-ai")({
   - Reasoning bar / stage-track: runs only during a real submit (not
     decorative on every tab switch, unlike the HTML mockup) — tied to
     actual async state, not simulated for idle browsing.
-  - Ticker + activity feed: STILL FAKE. Both are meant to read from
-    `activity_log`; that table's real column shape hasn't been
-    confirmed this session, so wiring it here would be a guess. Kept
-    visibly separate as a reminder, not silently connected.
+  - Ticker: REMOVED (2026-08-26). It read fake data from `activity_log`,
+    which isn't wired yet — cut to remove the most visible "not real
+    yet" chrome sitting above the reasoning bar.
+  - Activity feed (bell dropdown): STILL FAKE, kept for now — same
+    `activity_log` dependency as the ticker had, but less visually
+    prominent, so it stays until that table's column shape is confirmed
+    and it can be genuinely wired.
   - Settings, New chat, Chat history, attach-menu items, voice input,
     Redo, Ignore: visual-only, no backend.
+  - Color tokens: this file previously read a scoped `--igx-*` variable
+    set (`--igx-gold`, `--igx-purple`, `--igx-bg`, `--igx-border-soft`,
+    etc.) that no longer exists in styles.css now that the palette
+    swap moved to :root. Remapped every reference to the global tokens
+    (--primary, --accent, --destructive, --background, --foreground,
+    --border, --panel-elevated, --primary-foreground). `--igx-border`
+    and `--igx-border-soft` both collapse to plain `--border` since the
+    new token set has no separate "soft" border tone — flagging in
+    case a lighter secondary border variant is wanted later.
 */
 
 type EntityKey = keyof typeof igxAllEntities;
@@ -88,14 +100,6 @@ const STAGES = [
   { name: "Orchestrating", detail: "Coordinating sub-agents" },
   { name: "Synthesizing", detail: "Drafting the proposal" },
   { name: "Responding", detail: "Awaiting your review" },
-] as const;
-
-const FAKE_TICKER_ITEMS = [
-  { tone: "gold", text: "Mandela approved the Strategy proposal for Group" },
-  { tone: "purple", text: "IGX drafted a new caption set for Atelier → Shoes" },
-  { tone: "muted", text: "Sync complete: 3 sources refreshed" },
-  { tone: "purple", text: "IGX queued a research brief for Foundation → Arm 2" },
-  { tone: "muted", text: "0 proposals pending review" },
 ] as const;
 
 const FAKE_ACTIVITY_ITEMS = [
@@ -286,20 +290,20 @@ function IgxAi() {
       data-igx-console
       className="grid grid-cols-[220px_1fr] overflow-hidden rounded-2xl border"
       style={{
-        borderColor: "var(--igx-border)",
-        backgroundColor: "var(--igx-bg)",
-        color: "var(--igx-bone)",
+        borderColor: "var(--border)",
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
       }}
     >
       {/* Rail */}
       <aside
         className="flex flex-col gap-4 border-r p-4"
-        style={{ borderColor: "var(--igx-border)" }}
+        style={{ borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: "var(--igx-gold)", boxShadow: "0 0 6px 2px rgba(198,161,91,0.5)" }}
+            style={{ backgroundColor: "var(--primary)", boxShadow: "0 0 6px 2px rgba(198,161,91,0.5)" }}
           />
           <span className="font-display text-sm">IGX AI</span>
           <div className="ml-auto flex gap-1">
@@ -318,7 +322,7 @@ function IgxAi() {
           activeEntity={activeEntity}
           onSelect={selectEntity}
         />
-        <div className="h-px" style={{ backgroundColor: "var(--igx-border)" }} />
+        <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
         <RailGroup
           label="entities"
           group={igxOrgEntities}
@@ -330,7 +334,7 @@ function IgxAi() {
           <Eyebrow>pending review</Eyebrow>
           <div
             className="mt-1.5 rounded-lg border px-2.5 py-2 font-mono text-xs"
-            style={{ borderColor: "var(--igx-border-soft)" }}
+            style={{ borderColor: "var(--border)" }}
           >
             {pendingCountError
               ? "count unavailable"
@@ -340,7 +344,7 @@ function IgxAi() {
           </div>
         </div>
 
-        <div className="border-t pt-3" style={{ borderColor: "var(--igx-border-soft)" }}>
+        <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
           <button
             className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs opacity-70 hover:opacity-100"
             title="Settings (visual only)"
@@ -352,56 +356,19 @@ function IgxAi() {
 
       {/* Main */}
       <div className="flex min-w-0 flex-col">
-        {/* Ticker — fake, still needs activity_log wiring */}
-        <div
-          className="ticker-track overflow-hidden border-b py-1.5"
-          style={{ borderColor: "var(--igx-border)", backgroundColor: "var(--igx-bg-deep)" }}
-        >
-          <div className="ticker-track flex whitespace-nowrap">
-            {[...FAKE_TICKER_ITEMS, ...FAKE_TICKER_ITEMS].map((item, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-2 border-r px-6 font-mono text-[11px]"
-                style={{
-                  borderColor: "var(--igx-border-soft)",
-                  color:
-                    item.tone === "gold"
-                      ? "var(--igx-gold)"
-                      : item.tone === "purple"
-                        ? "var(--igx-purple)"
-                        : "rgba(245,242,235,0.62)",
-                }}
-              >
-                <span
-                  className="h-1 w-1 rounded-full"
-                  style={{
-                    backgroundColor:
-                      item.tone === "gold"
-                        ? "var(--igx-gold)"
-                        : item.tone === "purple"
-                          ? "var(--igx-purple)"
-                          : "rgba(245,242,235,0.35)",
-                  }}
-                />
-                {item.text}
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* Reasoning bar — real, tied to actual submit state */}
         <div
           className="flex items-center gap-2 border-b px-5 py-2.5"
           style={{
-            borderColor: "var(--igx-border)",
-            backgroundColor: "color-mix(in oklab, var(--igx-gold) 5%, transparent)",
+            borderColor: "var(--border)",
+            backgroundColor: "color-mix(in oklab, var(--primary) 5%, transparent)",
           }}
         >
           <Bot
             className={cn("h-5 w-5", isActive && "live-pulse")}
-            style={{ color: "var(--igx-gold)" }}
+            style={{ color: "var(--primary)" }}
           />
-          <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: "var(--igx-gold)" }}>
+          <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: "var(--primary)" }}>
             {stage.name}
           </span>
           <span className="font-mono text-[11px]" style={{ color: "rgba(245,242,235,0.4)" }}>
@@ -415,9 +382,9 @@ function IgxAi() {
                 style={{
                   backgroundColor:
                     i === stageIndex
-                      ? "var(--igx-gold)"
+                      ? "var(--primary)"
                       : i < stageIndex
-                        ? "color-mix(in oklab, var(--igx-gold) 50%, transparent)"
+                        ? "color-mix(in oklab, var(--primary) 50%, transparent)"
                         : "rgba(245,242,235,0.2)",
                 }}
               />
@@ -432,7 +399,7 @@ function IgxAi() {
         {activityOpen && (
           <div
             className="max-h-40 overflow-y-auto border-b"
-            style={{ borderColor: "var(--igx-border)" }}
+            style={{ borderColor: "var(--border)" }}
           >
             {FAKE_ACTIVITY_ITEMS.map((item, i) => (
               <div
@@ -442,7 +409,7 @@ function IgxAi() {
               >
                 <span
                   className="font-mono text-[10px] uppercase"
-                  style={{ color: item.actor === "Mandela" ? "var(--igx-gold)" : "var(--igx-purple)" }}
+                  style={{ color: item.actor === "Mandela" ? "var(--primary)" : "var(--accent)" }}
                 >
                   {item.actor}
                 </span>
@@ -458,10 +425,10 @@ function IgxAi() {
         {/* Merged entity header + sub-pill row */}
         <div
           className="flex flex-wrap items-center gap-3 border-b px-5 py-3"
-          style={{ borderColor: "var(--igx-border)" }}
+          style={{ borderColor: "var(--border)" }}
         >
           <span className="font-display text-base">{entity.label}</span>
-          <div className="h-4 w-px" style={{ backgroundColor: "var(--igx-border-soft)" }} />
+          <div className="h-4 w-px" style={{ backgroundColor: "var(--border)" }} />
           <div className="flex flex-1 flex-wrap gap-1.5">
             {entity.subs.map((sub: SubItem) => (
               <button
@@ -472,13 +439,13 @@ function IgxAi() {
                 style={
                   sub.id === activeSub
                     ? {
-                        backgroundColor: "color-mix(in oklab, var(--igx-gold) 18%, transparent)",
-                        borderColor: "var(--igx-gold)",
-                        color: "var(--igx-gold)",
+                        backgroundColor: "color-mix(in oklab, var(--primary) 18%, transparent)",
+                        borderColor: "var(--primary)",
+                        color: "var(--primary)",
                       }
                     : {
                         backgroundColor: "rgba(245,242,235,0.05)",
-                        borderColor: "var(--igx-border-soft)",
+                        borderColor: "var(--border)",
                         color: "rgba(245,242,235,0.75)",
                       }
                 }
@@ -513,7 +480,7 @@ function IgxAi() {
             <div key={i} className="space-y-2">
               <div
                 className="ml-auto max-w-[60%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm"
-                style={{ backgroundColor: "var(--igx-gold)", color: "var(--igx-bg-deep)" }}
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
               >
                 {message.intent}
               </div>
@@ -532,8 +499,8 @@ function IgxAi() {
                   onClick={() => toggleDetails(i)}
                   className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs"
                   style={{
-                    borderColor: message.detailsOpen ? "var(--igx-gold)" : "var(--igx-border-soft)",
-                    color: message.detailsOpen ? "var(--igx-gold)" : "var(--igx-bone)",
+                    borderColor: message.detailsOpen ? "var(--primary)" : "var(--border)",
+                    color: message.detailsOpen ? "var(--primary)" : "var(--foreground)",
                   }}
                 >
                   Details
@@ -552,7 +519,7 @@ function IgxAi() {
                     </IconButton>
                     <IconButton
                       label="Reject"
-                      hoverColor="var(--igx-orange)"
+                      hoverColor="var(--destructive)"
                       onClick={() => resolveProposal(i, "rejected")}
                     >
                       <X className="h-3.5 w-3.5" />
@@ -572,7 +539,7 @@ function IgxAi() {
                   {message.moreOpen && (
                     <div
                       className="absolute bottom-9 right-0 z-10 min-w-[140px] rounded-lg border p-1.5"
-                      style={{ backgroundColor: "var(--igx-bg)", borderColor: "var(--igx-border-soft)" }}
+                      style={{ backgroundColor: "var(--panel-elevated)", borderColor: "var(--border)" }}
                     >
                       <MenuItem
                         onClick={() => {
@@ -594,7 +561,7 @@ function IgxAi() {
               {message.detailsOpen && (
                 <div
                   className="space-y-2 rounded-lg border p-3.5 text-xs"
-                  style={{ borderColor: "var(--igx-border-soft)", backgroundColor: "rgba(245,242,235,0.04)" }}
+                  style={{ borderColor: "var(--border)", backgroundColor: "rgba(245,242,235,0.04)" }}
                 >
                   <DetailRow label="Scope" value={`${entity.label} → ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}`} />
                   <DetailRow label="Drafted by" value="Content Agent" />
@@ -609,7 +576,7 @@ function IgxAi() {
         {/* Input row */}
         <div
           className="flex items-center gap-2.5 border-t px-5 py-3.5"
-          style={{ borderColor: "var(--igx-border)" }}
+          style={{ borderColor: "var(--border)" }}
         >
           <div className="relative">
             <button
@@ -623,7 +590,7 @@ function IgxAi() {
             {attachOpen && (
               <div
                 className="absolute bottom-9 left-0 z-10 min-w-[170px] rounded-lg border p-1.5"
-                style={{ backgroundColor: "var(--igx-bg)", borderColor: "var(--igx-border-soft)" }}
+                style={{ backgroundColor: "var(--panel-elevated)", borderColor: "var(--border)" }}
               >
                 <MenuItem disabled>Upload from computer</MenuItem>
                 <MenuItem disabled>Google Drive</MenuItem>
@@ -642,15 +609,15 @@ function IgxAi() {
             className="min-w-0 flex-1 rounded-xl border px-3.5 py-2.5 text-sm outline-none"
             style={{
               backgroundColor: "rgba(245,242,235,0.06)",
-              borderColor: "var(--igx-border-soft)",
-              color: "var(--igx-bone)",
+              borderColor: "var(--border)",
+              color: "var(--foreground)",
             }}
           />
           <Button
             size="icon"
             onClick={submit}
             disabled={!activeSub || isSubmitting}
-            style={{ backgroundColor: "var(--igx-gold)", color: "var(--igx-bg-deep)" }}
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -685,7 +652,7 @@ function RailGroup({
             className="rounded-lg px-2.5 py-1.5 text-left text-[13.5px] transition-colors"
             style={
               k === activeEntity
-                ? { backgroundColor: "color-mix(in oklab, var(--igx-gold) 16%, transparent)", color: "var(--igx-gold)" }
+                ? { backgroundColor: "color-mix(in oklab, var(--primary) 16%, transparent)", color: "var(--primary)" }
                 : { color: "rgba(245,242,235,0.7)" }
             }
           >
@@ -714,7 +681,7 @@ function IconButton({
       title={label}
       onClick={onClick}
       className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
-      style={{ borderColor: "var(--igx-border-soft)", color: "rgba(245,242,235,0.7)" }}
+      style={{ borderColor: "var(--border)", color: "rgba(245,242,235,0.7)" }}
       onMouseEnter={(e) => hoverColor && (e.currentTarget.style.color = hoverColor)}
       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(245,242,235,0.7)")}
     >
