@@ -35,6 +35,8 @@
   --color-blue: var(--blue);
   --color-slate: var(--slate);
   --color-danger: var(--danger);
+  --color-gold: var(--primary);
+  --color-teal: var(--accent);
 }
 
 :root {
@@ -45,7 +47,14 @@
      Variable NAMES kept unchanged (--blue, --slate, --danger, etc.)
      so any component or Tailwind class already referencing them
      (text-blue, bg-blue/10, etc.) repaints automatically without
-     needing a find-and-replace across the codebase. */
+     needing a find-and-replace across the codebase.
+
+     Teal decision (26 AUG 2026): teal collapses into this same
+     purple rather than staying a separate accent — --color-gold and
+     --color-teal above alias to --primary/--accent so the previously
+     dead text-gold / bg-gold / text-teal classes across the codebase
+     resolve to real color again, with "ready/active/tracked" state
+     now reading as the same purple used for "system voice". */
   --background: #0C0E2E;
   --foreground: #F5F2EB;
   --card: #14163A;
