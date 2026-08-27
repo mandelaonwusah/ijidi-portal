@@ -83,53 +83,8 @@ function Eyebrow({ children, className = "" }: { children: React.ReactNode; clas
   );
 }
 
-// ===== IGX Emblem SVG Component =====
-function IgxEmblem({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      {/* Segmented Circle */}
-      <circle cx="50" cy="50" r="42" stroke="currentColor" strokeWidth="3" strokeDasharray="8 6" />
-      
-      {/* Top Pillars */}
-      <rect x="38" y="8" width="6" height="20" rx="3" fill="currentColor" />
-      <rect x="56" y="8" width="6" height="20" rx="3" fill="currentColor" />
-      
-      {/* Bottom Pillars */}
-      <rect x="38" y="72" width="6" height="20" rx="3" fill="currentColor" />
-      <rect x="56" y="72" width="6" height="20" rx="3" fill="currentColor" />
-      
-      {/* Left Wings */}
-      <rect x="8" y="38" width="20" height="6" rx="3" fill="currentColor" />
-      <rect x="8" y="56" width="20" height="6" rx="3" fill="currentColor" />
-      
-      {/* Right Wings */}
-      <rect x="72" y="38" width="20" height="6" rx="3" fill="currentColor" />
-      <rect x="72" y="56" width="20" height="6" rx="3" fill="currentColor" />
-      
-      {/* Diamond/Pillar Structure - Left */}
-      <path d="M30 30 L22 50 L30 70 L34 50 L30 30Z" fill="currentColor" />
-      
-      {/* Diamond/Pillar Structure - Right */}
-      <path d="M70 30 L78 50 L70 70 L66 50 L70 30Z" fill="currentColor" />
-      
-      {/* Central Four-Pointed Starburst */}
-      <path d="M50 35 L55 45 L65 50 L55 55 L50 65 L45 55 L35 50 L45 45 L50 35Z" fill="currentColor" />
-      
-      {/* Inner Star Glow */}
-      <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.3" />
-    </svg>
-  );
-}
-
 function CommandCenterOverview() {
   const navigate = useNavigate();
-  const [isIgxPanelOpen, setIsIgxPanelOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [isEntitiesOpen, setIsEntitiesOpen] = useState(false);
 
   const {
@@ -148,18 +103,6 @@ function CommandCenterOverview() {
   const totalActivities = activity?.length ?? 0;
   const recentActivities = activity?.slice(0, 10) ?? [];
   const hasRealData = totalActivities > 0;
-
-  // Fetch pending count for notification dot
-  useEffect(() => {
-    const fetchPendingCount = async () => {
-      const { count } = await supabase
-        .from("proposals")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending_review");
-      setPendingCount(count ?? 0);
-    };
-    fetchPendingCount();
-  }, []);
 
   const entitySubItems = [
     { label: "IJIDI Foundation", to: "/foundation", icon: Building, status: "standby" },
@@ -594,95 +537,6 @@ function CommandCenterOverview() {
           );
         })}
       </div>
-
-      {/* ===== IGX AI FLOATING BUTTON ===== */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-2">
-        {/* Label - appears on hover */}
-        <div className="bg-card/90 border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-foreground shadow-lg backdrop-blur-sm opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 pointer-events-none">
-          Ask IGX AI
-        </div>
-
-        {/* Button */}
-        <button
-          onClick={() => setIsIgxPanelOpen(true)}
-          className="group relative flex h-[60px] w-[60px] items-center justify-center rounded-full bg-gradient-to-br from-[#C6A15B] to-[#D4AF37] shadow-xl shadow-[#C6A15B]/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#C6A15B]/40 active:scale-95"
-        >
-          {/* Glow ring */}
-          <span className="absolute inset-0 rounded-full bg-[#C6A15B]/20 blur-xl animate-pulse" />
-          
-          {/* Inner ring */}
-          <span className="absolute inset-1 rounded-full border border-white/20" />
-          
-          {/* IGX Emblem - Black */}
-          <IgxEmblem className="h-8 w-8 text-black relative z-10" />
-
-          {/* Notification dot - shows pending count */}
-          {pendingCount !== null && pendingCount > 0 && (
-            <span className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground shadow-lg shadow-destructive/30 ring-2 ring-background">
-              {pendingCount > 9 ? '9+' : pendingCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* ===== IGX AI SLIDE-OUT PANEL ===== */}
-      {isIgxPanelOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setIsIgxPanelOpen(false)}
-          />
-          
-          {/* Panel */}
-          <div className="relative h-full w-full max-w-[480px] bg-background shadow-2xl animate-in slide-in-from-right duration-300 border-l">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#C6A15B] to-[#D4AF37]">
-                  <IgxEmblem className="h-6 w-6 text-black" />
-                </div>
-                <div>
-                  <span className="font-sans font-bold text-foreground">IGX AI</span>
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
-                    <span className="font-mono text-[10px] text-muted-foreground">ONLINE</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsIgxPanelOpen(false)}
-                className="rounded-lg p-2 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Panel Content */}
-            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#C6A15B] to-[#D4AF37] shadow-xl shadow-[#C6A15B]/30">
-                <IgxEmblem className="h-10 w-10 text-black" />
-              </div>
-              <h3 className="mt-6 font-sans text-xl font-bold text-foreground">IGX Intelligence</h3>
-              <p className="mt-2 max-w-sm font-mono text-sm text-muted-foreground">
-                Your AI-powered intelligence console for grounded operations.
-              </p>
-              <button
-                onClick={() => {
-                  setIsIgxPanelOpen(false);
-                  navigate({ to: "/igx-ai" });
-                }}
-                className="mt-8 rounded-lg bg-primary px-6 py-3 font-mono text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30"
-              >
-                Open Full Console →
-              </button>
-              <p className="mt-4 font-mono text-[10px] text-muted-foreground/40">
-                Or press ⌘J to open from anywhere
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
