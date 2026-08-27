@@ -243,4 +243,22 @@ export const igxOrgEntities = {
       {
         id: "brand",
         label: "Brand",
-        pillar: "Positioning & identity hub — the Atelier brand concept itself, not
+        pillar: "Positioning & identity hub — the Atelier brand concept itself, not a product line",
+      },
+    ],
+  },
+  media: {
+    label: "IJIDI Media",
+    state: "forming",
+    subs: [
+      { id: "orbit", label: "IJIDI Orbit" },
+      { id: "wild", label: "IJIDI Wild" },
+      { id: "arena", label: "IJIDI Arena" },
+      { id: "drama", label: "IJIDI Drama" },
+      { id: "toons", label: "IJIDI Toons" },
+      { id: "more", label: "More *placeholder*" },
+    ],
+  },
+} as const;
+
+export const igxAllEntities = { ...igxPeople, ...igxOrgEntities } as const;
