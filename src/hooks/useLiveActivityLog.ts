@@ -19,15 +19,18 @@ export function useLiveActivityLog() {
       });
 
     // 2. Realtime WebSocket subscription
+    // FIX (2026-08-27): this was subscribing to table "log", but getActivity()
+    // reads from "activity_log" — the mismatch meant no realtime INSERT ever
+    // matched, so the feed only ever showed the initial fetch and silently
+    // never updated live. Corrected to the real table name.
     const channel = supabase
       .channel("live_logs_feed")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "log" },
+        { event: "INSERT", schema: "public", table: "activity_log" },
         (payload) => {
           const newRecord = payload.new;
           if (!newRecord || !newRecord.id) return;
-
           const newEntry: ActivityEntry = {
             id: newRecord.id,
             actor: newRecord.actor || "SYSTEM",
@@ -35,7 +38,6 @@ export function useLiveActivityLog() {
             timestamp: newRecord.created_at || new Date().toISOString(),
             type: newRecord.type || "SYSTEM",
           };
-
           setLogs((prev) => {
             // Deduplicate to prevent race conditions during initial fetch
             if (prev.some((entry) => entry.id === newEntry.id)) {
