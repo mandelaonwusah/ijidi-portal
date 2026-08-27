@@ -1,3 +1,4 @@
+// src/lib/portal-data.ts
 export type DataStatus = "not-tracked" | "tracked" | "estimated";
 
 export const navItems = [
@@ -36,16 +37,13 @@ export const metricTiles = [
   },
 ];
 
-// `handle` / `siteUrl` are optional and only set when confirmed real — omitted
-// (not empty-stringed) fields render as "Not tracked" / "Not deployed" in the
-// Directory view rather than a fake or dead value. See Directory route.
 export const modules = [
   {
     name: "IJIDI Group",
     code: "GRP-01",
     detail: "Professional services & holding",
     state: "standby",
-    to: "/ecosystem", // no dedicated Group page yet — open item, see reconciliation notes
+    to: "/ecosystem",
     handle: "@ijidigroup",
     siteUrl: "https://ijidigroup.com",
   },
@@ -64,7 +62,6 @@ export const modules = [
     detail: "Intelligence console",
     state: "ready",
     to: "/igx-ai",
-    // internal console only — no external site, no social handle
   },
   {
     name: "IJIDI Atelier",
@@ -73,7 +70,6 @@ export const modules = [
     state: "forming",
     to: "/atelier",
     handle: "@ijidiatelier",
-    // siteUrl intentionally omitted — atelier.ijidigroup.com agreed but not yet deployed
   },
   {
     name: "IJIDI Media",
@@ -81,14 +77,9 @@ export const modules = [
     detail: "AI-generated content studio",
     state: "forming",
     to: "/media",
-    // handle not yet confirmed — omitted rather than guessed
-    // siteUrl intentionally omitted — media.ijidigroup.com agreed but not yet deployed
   },
 ] as const;
 
-// Personal brand is not an operating arm (see ecosystemNodes note below) but is
-// a real, live, confirmed entity — included here so the Directory view can show
-// all three actually-deployed sites honestly in one place.
 export const personalBrand = {
   name: "Mandela Onwusah",
   code: "MDL-01",
@@ -103,9 +94,6 @@ export const activity = [
   { time: "—", text: "No capital movements tracked", tag: "EMPTY", tone: "gold" },
 ];
 
-// IGX AI intentionally excluded here — it is the connective layer across every
-// entity, not a fifth peer arm, so it is not drawn as a hierarchy node.
-// It is reachable everywhere via the ⌘J global panel and the /igx-ai console.
 export const ecosystemNodes = [
   { name: "IJIDI Foundation", code: "FND", kind: "philanthropic", state: "forming", x: 15, y: 68 },
   { name: "IJIDI Group", code: "GRP", kind: "corporate", state: "forming", x: 38, y: 68 },
@@ -181,14 +169,6 @@ export const decisions = [
   { date: "—", label: "Next decision", detail: "No decision has been logged.", state: "OPEN" },
 ];
 
-// Source of truth for the IGX AI console's rail (People / Entities split) and
-// each entity's sub-item pill row. Ported from IGX_Ecosystem_AI_Interface_V0.html.
-// `pillar` is an optional tooltip label (used by Foundation's arms and Atelier's
-// Brand sub-item to show parent context without a separate column).
-// `state` drives the rail's status dot — "active" for real people (not a
-// build-state, they're just... people), and for org entities the same
-// ready/forming/standby values already used in `modules` above, so the dot
-// is never a fabricated status independent of what Directory already shows.
 export const igxPeople = {
   mandela: {
     label: "Mandela Onwusah",
@@ -219,7 +199,7 @@ export const igxPeople = {
 export const igxOrgEntities = {
   group: {
     label: "IJIDI Group",
-    state: "standby", // matches `modules` above
+    state: "standby",
     subs: [
       { id: "holding-investment", label: "Holding & Investment *draft*" },
       { id: "general-contractors", label: "General Contractors *draft*" },
@@ -245,7 +225,7 @@ export const igxOrgEntities = {
   },
   foundation: {
     label: "IJIDI Foundation",
-    state: "standby", // matches `modules` above
+    state: "standby",
     subs: [
       { id: "arm1", label: "Arm 1: Infrastructure & Connectivity", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
       { id: "arm2", label: "Arm 2: Digital Skills & Youth Empowerment", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
@@ -256,29 +236,11 @@ export const igxOrgEntities = {
   },
   atelier: {
     label: "IJIDI Atelier",
-    state: "forming", // matches `modules` above
+    state: "forming",
     subs: [
       { id: "shoes", label: "Shoes" },
       { id: "clothes", label: "Clothes" },
       {
         id: "brand",
         label: "Brand",
-        pillar: "Positioning & identity hub — the Atelier brand concept itself, not a product line",
-      },
-    ],
-  },
-  media: {
-    label: "IJIDI Media",
-    state: "forming", // matches `modules` above
-    subs: [
-      { id: "orbit", label: "IJIDI Orbit" },
-      { id: "wild", label: "IJIDI Wild" },
-      { id: "arena", label: "IJIDI Arena" },
-      { id: "drama", label: "IJIDI Drama" },
-      { id: "toons", label: "IJIDI Toons" },
-      { id: "more", label: "More *placeholder*" },
-    ],
-  },
-} as const;
-
-export const igxAllEntities = { ...igxPeople, ...igxOrgEntities } as const;
+        pillar: "Positioning & identity hub — the Atelier brand concept itself, not
