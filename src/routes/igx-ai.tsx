@@ -1,5 +1,6 @@
+// src/routes/igx-ai.tsx
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Bell,
   Bot,
@@ -15,12 +16,33 @@ import {
   Settings,
   Volume2,
   X,
+  Sparkles,
+  Zap,
+  Shield,
+  Brain,
+  Globe,
+  Users,
+  Building2,
+  User,
+  ArrowRight,
+  MessageSquare,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  ChevronRight,
+  Menu,
+  X as XClose,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, Signal, StatusBadge } from "@/components/portal-ui";
 import { supabase } from "@/lib/supabase";
 import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
+import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 
 export const Route = createFileRoute("/igx-ai")({
   head: () => ({
@@ -37,60 +59,12 @@ export const Route = createFileRoute("/igx-ai")({
   component: IgxAi,
 });
 
-/*
-  HONEST-STATE FLAGS (this port, 2026-08-26)
-  - Rail (People/Entities), merged header + sub-pills, Details panel:
-    real, sourced from igxPeople/igxOrgEntities in portal-data.ts.
-  - Rail status dot: real, driven by each entry's `state` field in
-    portal-data.ts (same ready/forming/standby vocabulary `modules`
-    already uses on Directory) — not a decorative/fake indicator.
-  - Chat submit: REAL — inserts into `proposals` via Supabase, same as
-    the original Step A flow.
-  - Approve/Reject: REAL Supabase UPDATE on the specific proposal row,
-    but only for proposals created in THIS session — `proposals` has
-    no entity/sub scoping column yet, so an older pending proposal
-    can't be resolved from here after a reload. Schema decision, not
-    silently patched here.
-  - Scope is currently stuffed into the `intent` text as a prefix
-    (e.g. "[IJIDI Media → IJIDI Wild] ..."), not a real column. Same
-    reason as above.
-  - Pending count: REAL — fetched from `proposals` on mount and
-    refetched after every submit/approve/reject, so it reflects the
-    true DB state (not just what happened in this session) even
-    across a page refresh.
-  - Read aloud: REAL, browser Web Speech API, no backend needed.
-  - Copy: REAL clipboard write of the AI bubble text.
-  - Reasoning bar / stage-track: runs only during a real submit (not
-    decorative on every tab switch, unlike the HTML mockup) — tied to
-    actual async state, not simulated for idle browsing. Still the
-    small strip version — the bigger glowing orb centerpiece is not
-    yet built.
-  - Ticker: REMOVED (2026-08-26). It read fake data from `activity_log`,
-    which isn't wired yet — cut to remove the most visible "not real
-    yet" chrome sitting above the reasoning bar.
-  - Activity feed (bell dropdown): STILL FAKE, kept for now — same
-    `activity_log` dependency as the ticker had, but less visually
-    prominent, so it stays until that table's column shape is confirmed
-    and it can be genuinely wired.
-  - Settings, New chat, Chat history, attach-menu items, voice input,
-    Redo, Ignore: visual-only, no backend.
-  - Color tokens: this file previously read a scoped `--igx-*` variable
-    set (`--igx-gold`, `--igx-purple`, `--igx-bg`, `--igx-border-soft`,
-    etc.) that no longer exists in styles.css now that the palette
-    swap moved to :root. Remapped every reference to the global tokens
-    (--primary, --accent, --destructive, --background, --foreground,
-    --border, --panel-elevated, --primary-foreground). `--igx-border`
-    and `--igx-border-soft` both collapse to plain `--border` since the
-    new token set has no separate "soft" border tone — flagging in
-    case a lighter secondary border variant is wanted later.
-*/
-
 type EntityKey = keyof typeof igxAllEntities;
 type SubItem = { id: string; label: string; pillar?: string };
 type ProposalStatus = "pending_review" | "approved" | "rejected" | "error";
 
 type ThreadMessage = {
-  proposalId: string | null; // null until the insert resolves
+  proposalId: string | null;
   intent: string;
   status: ProposalStatus;
   errorMessage?: string;
@@ -99,22 +73,30 @@ type ThreadMessage = {
 };
 
 const STAGES = [
-  { name: "Idle", detail: "Waiting for a scoped request" },
-  { name: "Thinking", detail: "Parsing intent" },
-  { name: "Routing", detail: "Selecting the right model" },
-  { name: "Orchestrating", detail: "Coordinating sub-agents" },
-  { name: "Synthesizing", detail: "Drafting the proposal" },
-  { name: "Responding", detail: "Awaiting your review" },
-] as const;
-
-const FAKE_ACTIVITY_ITEMS = [
-  { actor: "Mandela", text: "Approved Strategy proposal for Group", time: "2m ago" },
-  { actor: "IGX", text: "Drafted new caption set for Atelier → Shoes", time: "14m ago" },
-  { actor: "system", text: "Synced activity_log to Command Center", time: "1h ago" },
+  { name: "Idle", detail: "Waiting for a scoped request", icon: Brain },
+  { name: "Thinking", detail: "Parsing intent", icon: Zap },
+  { name: "Routing", detail: "Selecting the right model", icon: Globe },
+  { name: "Orchestrating", detail: "Coordinating sub-agents", icon: Users },
+  { name: "Synthesizing", detail: "Drafting the proposal", icon: Sparkles },
+  { name: "Responding", detail: "Awaiting your review", icon: Shield },
 ] as const;
 
 function threadKey(entity: EntityKey, sub: string) {
   return `${entity}:${sub}`;
+}
+
+function formatTime(isoString?: string): string {
+  if (!isoString) return "";
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
 }
 
 function IgxAi() {
@@ -127,10 +109,14 @@ function IgxAi() {
   const [stageIndex, setStageIndex] = useState(0);
   const [activityOpen, setActivityOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
-
-  // REAL — true DB count, not just session-local proposals. See flag block above.
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [pendingCountError, setPendingCountError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Real activity feed from Portal
+  const { logs: activityLogs, isLoading: activityLoading } = useLiveActivityLog();
 
   const entity = igxAllEntities[activeEntity];
   const key = activeSub ? threadKey(activeEntity, activeSub) : null;
@@ -151,12 +137,17 @@ function IgxAi() {
   };
 
   useEffect(() => {
-    fetchPendingCount();
+    Promise.all([fetchPendingCount()]).finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const selectEntity = (nextEntity: EntityKey) => {
     setActiveEntity(nextEntity);
     setActiveSub(subState[nextEntity] ?? null);
+    setMobileMenuOpen(false);
   };
 
   const selectSub = (subId: string) => {
@@ -175,6 +166,7 @@ function IgxAi() {
       }
       setStageIndex(i);
     }, 700);
+    return () => clearInterval(timer);
   };
 
   const submit = async () => {
@@ -289,398 +281,591 @@ function IgxAi() {
 
   const stage = STAGES[stageIndex];
   const isActive = stageIndex !== 0;
+  const StageIcon = stage.icon;
+
+  // Recent activity for the feed (real logs)
+  const recentActivities = activityLogs?.slice(0, 5) ?? [];
 
   return (
-    <div
-      data-igx-console
-      className="grid grid-cols-[220px_1fr] overflow-hidden rounded-2xl border"
-      style={{
-        borderColor: "var(--border)",
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
-      {/* Rail */}
-      <aside
-        className="flex flex-col gap-4 border-r p-4"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <div className="flex items-center gap-2">
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: "var(--primary)", boxShadow: "0 0 6px 2px rgba(198,161,91,0.5)" }}
-          />
-          <span className="font-display text-sm">IGX AI</span>
-          <div className="ml-auto flex gap-1">
-            <button className="rounded p-1 opacity-60 hover:opacity-100" aria-label="New chat" title="New chat (visual only)">
-              <PlusCircle className="h-3.5 w-3.5" />
-            </button>
-            <button className="rounded p-1 opacity-60 hover:opacity-100" aria-label="Chat history" title="Chat history (visual only)">
-              <History className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+    <div className="relative h-[calc(100vh-5rem)] min-h-[600px] overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
+      {/* Premium gradient overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-30" />
 
-        <RailGroup
-          label="human-in-the-loop"
-          group={igxPeople}
-          activeEntity={activeEntity}
-          onSelect={selectEntity}
-        />
-        <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
-        <RailGroup
-          label="entities"
-          group={igxOrgEntities}
-          activeEntity={activeEntity}
-          onSelect={selectEntity}
-        />
-
-        <div className="mt-auto">
-          <Eyebrow>pending review</Eyebrow>
-          <div
-            className="mt-1.5 rounded-lg border px-2.5 py-2 font-mono text-xs"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {pendingCountError
-              ? "count unavailable"
-              : pendingCount === null
-                ? "loading..."
-                : `${pendingCount} proposal${pendingCount === 1 ? "" : "s"}`}
-          </div>
-        </div>
-
-        <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
-          <button
-            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs opacity-70 hover:opacity-100"
-            title="Settings (visual only)"
-          >
-            <Settings className="h-3.5 w-3.5" /> Settings
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div className="flex min-w-0 flex-col">
-        {/* Reasoning bar — real, tied to actual submit state */}
-        <div
-          className="flex items-center gap-2 border-b px-5 py-2.5"
-          style={{
-            borderColor: "var(--border)",
-            backgroundColor: "color-mix(in oklab, var(--primary) 5%, transparent)",
-          }}
+      <div className="relative flex h-full flex-col lg:flex-row">
+        {/* Mobile Menu Toggle */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="absolute left-4 top-4 z-50 rounded-lg border border-border bg-background/80 p-2 backdrop-blur-sm lg:hidden"
         >
-          <Bot
-            className={cn("h-5 w-5", isActive && "live-pulse")}
-            style={{ color: "var(--primary)" }}
-          />
-          <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: "var(--primary)" }}>
-            {stage.name}
-          </span>
-          <span className="font-mono text-[11px]" style={{ color: "rgba(245,242,235,0.4)" }}>
-            {stage.detail}
-          </span>
-          <div className="ml-1.5 flex gap-1">
-            {STAGES.map((_, i) => (
-              <span
-                key={i}
-                className="h-1.5 w-1.5 rounded-full"
-                style={{
-                  backgroundColor:
-                    i === stageIndex
-                      ? "var(--primary)"
-                      : i < stageIndex
-                        ? "color-mix(in oklab, var(--primary) 50%, transparent)"
-                        : "rgba(245,242,235,0.2)",
-                }}
-              />
-            ))}
-          </div>
-          <div className="ml-auto">
-            <Signal>{isSubmitting ? "Processing" : "Ready"}</Signal>
-          </div>
-        </div>
+          {mobileMenuOpen ? <XClose className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
 
-        {/* Activity feed — fake, toggled by bell */}
-        {activityOpen && (
-          <div
-            className="max-h-40 overflow-y-auto border-b"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {FAKE_ACTIVITY_ITEMS.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-baseline gap-2.5 border-b px-5 py-2 text-xs"
-                style={{ borderColor: "rgba(245,242,235,0.06)" }}
-              >
-                <span
-                  className="font-mono text-[10px] uppercase"
-                  style={{ color: item.actor === "Mandela" ? "var(--primary)" : "var(--accent)" }}
-                >
-                  {item.actor}
-                </span>
-                <span style={{ color: "rgba(245,242,235,0.75)" }}>{item.text}</span>
-                <span className="ml-auto font-mono text-[10px]" style={{ color: "rgba(245,242,235,0.35)" }}>
-                  {item.time}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Merged entity header + sub-pill row */}
-        <div
-          className="flex flex-wrap items-center gap-3 border-b px-5 py-3"
-          style={{ borderColor: "var(--border)" }}
+        {/* Rail - Left Sidebar */}
+        <aside
+          className={cn(
+            "absolute inset-y-0 left-0 z-40 w-[280px] border-r border-border bg-background/95 backdrop-blur-sm transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          )}
         >
-          <span className="font-display text-base">{entity.label}</span>
-          <div className="h-4 w-px" style={{ backgroundColor: "var(--border)" }} />
-          <div className="flex flex-1 flex-wrap gap-1.5">
-            {entity.subs.map((sub: SubItem) => (
-              <button
-                key={sub.id}
-                title={sub.pillar}
-                onClick={() => selectSub(sub.id)}
-                className="rounded-full border px-3 py-1.5 text-[12.5px] transition-colors"
-                style={
-                  sub.id === activeSub
-                    ? {
-                        backgroundColor: "color-mix(in oklab, var(--primary) 18%, transparent)",
-                        borderColor: "var(--primary)",
-                        color: "var(--primary)",
-                      }
-                    : {
-                        backgroundColor: "rgba(245,242,235,0.05)",
-                        borderColor: "var(--border)",
-                        color: "rgba(245,242,235,0.75)",
-                      }
-                }
-              >
-                {sub.label}
-              </button>
-            ))}
-          </div>
-          <button
-            className="relative rounded-lg p-1.5 opacity-70 hover:opacity-100"
-            aria-label="Activity feed"
-            onClick={() => setActivityOpen((v) => !v)}
-          >
-            <Bell className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Thread */}
-        <div className="flex-1 space-y-3.5 overflow-auto p-6">
-          {!activeSub && (
-            <div className="mx-auto mt-16 text-sm" style={{ color: "rgba(245,242,235,0.4)" }}>
-              Pick a sub-item above to scope this chat.
-            </div>
-          )}
-          {activeSub && messages.length === 0 && (
-            <div className="text-xs font-mono" style={{ color: "rgba(245,242,235,0.4)" }}>
-              Scoped to {entity.label} → {entity.subs.find((s: SubItem) => s.id === activeSub)?.label}. Ask
-              something to write a proposal.
-            </div>
-          )}
-          {messages.map((message, i) => (
-            <div key={i} className="space-y-2">
-              <div
-                className="ml-auto max-w-[60%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-              >
-                {message.intent}
+          <div className="flex h-full flex-col p-5">
+            {/* Brand Header */}
+            <div className="flex items-center gap-3 border-b border-border pb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Bot className="h-5 w-5 text-primary" />
               </div>
-              <div
-                className="max-w-[65%] rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed"
-                style={{ backgroundColor: "rgba(245,242,235,0.06)" }}
-              >
-                {message.status === "error"
-                  ? `Error writing to queue: ${message.errorMessage}`
-                  : message.proposalId
-                    ? `Proposal [${message.proposalId.slice(0, 8)}] written to queue.`
-                    : "Writing proposal..."}
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleDetails(i)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs"
-                  style={{
-                    borderColor: message.detailsOpen ? "var(--primary)" : "var(--border)",
-                    color: message.detailsOpen ? "var(--primary)" : "var(--foreground)",
-                  }}
-                >
-                  Details
-                  <ChevronDown
-                    className={cn("h-3 w-3 transition-transform", message.detailsOpen && "rotate-180")}
-                  />
-                </button>
-                {message.status === "pending_review" && message.proposalId && (
-                  <>
-                    <IconButton
-                      label="Approve"
-                      hoverColor="#639922"
-                      onClick={() => resolveProposal(i, "approved")}
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </IconButton>
-                    <IconButton
-                      label="Reject"
-                      hoverColor="var(--destructive)"
-                      onClick={() => resolveProposal(i, "rejected")}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </IconButton>
-                  </>
-                )}
-                {message.status === "approved" && (
-                  <StatusBadge status="active" label="✓ APPROVED" />
-                )}
-                {message.status === "rejected" && (
-                  <StatusBadge status="restricted" label="✕ REJECTED" />
-                )}
-                <div className="relative">
-                  <IconButton label="More" onClick={() => toggleMore(i)}>
-                    <MoreHorizontal className="h-3.5 w-3.5" />
-                  </IconButton>
-                  {message.moreOpen && (
-                    <div
-                      className="absolute bottom-9 right-0 z-10 min-w-[140px] rounded-lg border p-1.5"
-                      style={{ backgroundColor: "var(--panel-elevated)", borderColor: "var(--border)" }}
-                    >
-                      <MenuItem
-                        onClick={() => {
-                          copyText(message.intent);
-                          toggleMore(i);
-                        }}
-                      >
-                        <CopyIcon className="h-3.5 w-3.5" /> Copy
-                      </MenuItem>
-                      <MenuItem onClick={() => readAloud(message.intent)}>
-                        <Volume2 className="h-3.5 w-3.5" /> Read aloud
-                      </MenuItem>
-                      <MenuItem disabled>Redo (visual only)</MenuItem>
-                      <MenuItem disabled>Ignore (visual only)</MenuItem>
-                    </div>
-                  )}
+              <div>
+                <span className="font-sans text-lg font-bold tracking-tight text-foreground">
+                  IGX AI
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-mono text-[10px] text-muted-foreground">ONLINE</span>
                 </div>
               </div>
-              {message.detailsOpen && (
-                <div
-                  className="space-y-2 rounded-lg border p-3.5 text-xs"
-                  style={{ borderColor: "var(--border)", backgroundColor: "rgba(245,242,235,0.04)" }}
+              <div className="ml-auto flex gap-1">
+                <button
+                  className="rounded-lg p-1.5 text-muted-foreground/60 transition-all hover:bg-primary/10 hover:text-primary"
+                  aria-label="New chat"
                 >
-                  <DetailRow label="Scope" value={`${entity.label} → ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}`} />
-                  <DetailRow label="Drafted by" value="Content Agent" />
-                  <DetailRow label="Gate" value={message.status.toUpperCase()} />
-                  <DetailRow label="Proposal ID" value={message.proposalId ?? "pending insert"} />
+                  <PlusCircle className="h-4 w-4" />
+                </button>
+                <button
+                  className="rounded-lg p-1.5 text-muted-foreground/60 transition-all hover:bg-primary/10 hover:text-primary"
+                  aria-label="Chat history"
+                >
+                  <History className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* People */}
+            <div className="mt-5">
+              <Eyebrow className="text-[10px] text-muted-foreground">HUMAN-IN-THE-LOOP</Eyebrow>
+              <RailGroup
+                group={igxPeople}
+                activeEntity={activeEntity}
+                onSelect={selectEntity}
+              />
+            </div>
+
+            <div className="my-3 h-px bg-border" />
+
+            {/* Entities */}
+            <div>
+              <Eyebrow className="text-[10px] text-muted-foreground">ENTITIES</Eyebrow>
+              <RailGroup
+                group={igxOrgEntities}
+                activeEntity={activeEntity}
+                onSelect={selectEntity}
+              />
+            </div>
+
+            {/* Pending Review */}
+            <div className="mt-auto border-t border-border pt-4">
+              <div className="rounded-lg border border-border bg-card/20 p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase text-muted-foreground">
+                    Pending Review
+                  </span>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : pendingCountError ? (
+                    <span className="font-mono text-[10px] text-destructive">ERR</span>
+                  ) : (
+                    <span className="font-mono text-sm font-bold text-primary">
+                      {pendingCount ?? 0}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{
+                      width: pendingCount
+                        ? `${Math.min((pendingCount / 10) * 100, 100)}%`
+                        : "0%",
+                    }}
+                  />
+                </div>
+                <p className="mt-2 font-mono text-[9px] text-muted-foreground/60">
+                  Proposals awaiting your review
+                </p>
+              </div>
+            </div>
+
+            {/* Settings */}
+            <button
+              className="mt-3 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+              title="Settings"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Reasoning Bar */}
+          <div
+            className={cn(
+              "flex items-center gap-3 border-b border-border px-6 py-3 transition-colors",
+              isActive && "bg-primary/5"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
+                isActive ? "bg-primary/20" : "bg-muted/10"
+              )}
+            >
+              <StageIcon
+                className={cn(
+                  "h-4 w-4 transition-all",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    "font-mono text-xs font-bold uppercase tracking-wider transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  {stage.name}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground/60">
+                  {stage.detail}
+                </span>
+              </div>
+              <div className="mt-1.5 flex gap-1">
+                {STAGES.map((_, i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      "h-1 w-8 rounded-full transition-all duration-500",
+                      i === stageIndex
+                        ? "bg-primary"
+                        : i < stageIndex
+                          ? "bg-primary/40"
+                          : "bg-border"
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Signal>{isSubmitting ? "Processing" : "Ready"}</Signal>
+            </div>
+          </div>
+
+          {/* Activity Feed Toggle */}
+          <button
+            onClick={() => setActivityOpen(!activityOpen)}
+            className="flex items-center gap-2 border-b border-border px-6 py-2 text-xs text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            <span>Activity Feed</span>
+            <ChevronDown
+              className={cn(
+                "h-3 w-3 transition-transform duration-200",
+                activityOpen && "rotate-180"
+              )}
+            />
+            {recentActivities.length > 0 && (
+              <span className="ml-auto rounded-full bg-primary/20 px-2 py-0.5 font-mono text-[9px] text-primary">
+                {recentActivities.length}
+              </span>
+            )}
+          </button>
+
+          {/* Activity Feed Dropdown */}
+          {activityOpen && (
+            <div className="max-h-48 overflow-y-auto border-b border-border bg-card/10">
+              {activityLoading ? (
+                <div className="flex items-center justify-center gap-3 px-6 py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="font-mono text-xs text-muted-foreground">
+                    Loading telemetry...
+                  </span>
+                </div>
+              ) : recentActivities.length > 0 ? (
+                recentActivities.map((log, i) => (
+                  <div
+                    key={log.id || i}
+                    className="flex items-center gap-3 border-b border-border/50 px-6 py-3 last:border-0 hover:bg-primary/5"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-mono text-xs font-medium text-foreground">
+                      {log.actor?.toUpperCase() ?? "SYSTEM"}
+                    </span>
+                    <span className="flex-1 text-xs text-muted-foreground">{log.action}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground/40">
+                      {formatTime(log.timestamp)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-6 text-center">
+                  <p className="font-mono text-xs text-muted-foreground/60">
+                    No verified activity entries logged in current epoch.
+                  </p>
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Input row */}
-        <div
-          className="flex items-center gap-2.5 border-t px-5 py-3.5"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <div className="relative">
-            <button
-              className="opacity-60 hover:opacity-100"
-              aria-label="Attach file"
-              title="Attach (visual only)"
-              onClick={() => setAttachOpen((v) => !v)}
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
-            {attachOpen && (
-              <div
-                className="absolute bottom-9 left-0 z-10 min-w-[170px] rounded-lg border p-1.5"
-                style={{ backgroundColor: "var(--panel-elevated)", borderColor: "var(--border)" }}
-              >
-                <MenuItem disabled>Upload from computer</MenuItem>
-                <MenuItem disabled>Google Drive</MenuItem>
-                <MenuItem disabled>GitHub</MenuItem>
-                <MenuItem disabled>Add a screenshot</MenuItem>
-                <MenuItem disabled>Connect data source</MenuItem>
+          {/* Entity Header + Sub Pills */}
+          <div className="border-b border-border bg-card/5 px-6 py-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <Building2 className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-sans text-base font-semibold text-foreground">
+                  {entity.label}
+                </span>
+              </div>
+              <div className="h-6 w-px bg-border" />
+              <div className="flex flex-1 flex-wrap gap-1.5">
+                {entity.subs.map((sub: SubItem) => (
+                  <button
+                    key={sub.id}
+                    title={sub.pillar}
+                    onClick={() => selectSub(sub.id)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200",
+                      sub.id === activeSub
+                        ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20"
+                        : "border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+                    )}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Thread Messages */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
+            {!activeSub && (
+              <div className="flex h-full flex-col items-center justify-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+                  <Bot className="h-10 w-10 text-primary/40" />
+                </div>
+                <div className="text-center">
+                  <p className="font-sans text-lg font-semibold text-foreground">
+                    Scope Your Query
+                  </p>
+                  <p className="font-mono text-sm text-muted-foreground/60">
+                    Pick a sub-item above to begin
+                  </p>
+                </div>
               </div>
             )}
+
+            {activeSub && messages.length === 0 && (
+              <div className="flex h-full flex-col items-center justify-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/5">
+                  <MessageSquare className="h-8 w-8 text-primary/30" />
+                </div>
+                <div className="text-center">
+                  <p className="font-mono text-sm text-muted-foreground/60">
+                    Scoped to {entity.label} →{" "}
+                    {entity.subs.find((s: SubItem) => s.id === activeSub)?.label}
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground/40">
+                    Ask something to draft a proposal
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {messages.map((message, i) => (
+                <div key={i} className="space-y-3">
+                  {/* User message */}
+                  <div className="flex justify-end">
+                    <div className="max-w-[70%] rounded-2xl rounded-br-sm bg-primary/10 px-5 py-3">
+                      <p className="text-sm text-foreground">{message.intent}</p>
+                      {message.status === "pending_review" && (
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                          <span className="font-mono text-[10px] text-primary/70">
+                            Awaiting review
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* AI response */}
+                  <div className="flex">
+                    <div className="max-w-[75%] rounded-2xl rounded-tl-sm border border-border bg-card/30 px-5 py-3.5">
+                      {message.status === "error" ? (
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                          <span className="text-sm text-destructive">
+                            Error: {message.errorMessage}
+                          </span>
+                        </div>
+                      ) : message.proposalId ? (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                            <span className="text-sm text-foreground">
+                              Proposal queued
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                            <span>ID:</span>
+                            <span className="rounded bg-border/30 px-2 py-0.5 font-mono">
+                              {message.proposalId.slice(0, 8)}
+                            </span>
+                            <span className="text-muted-foreground/40">···</span>
+                            <span className="rounded bg-border/30 px-2 py-0.5 font-mono">
+                              {message.proposalId.slice(-8)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <span className="text-sm text-muted-foreground">
+                            Writing proposal...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap items-center gap-1.5 pl-4">
+                    <button
+                      onClick={() => toggleDetails(i)}
+                      className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span>Details</span>
+                      <ChevronDown
+                        className={cn(
+                          "h-3 w-3 transition-transform duration-200",
+                          message.detailsOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+
+                    {message.status === "pending_review" && message.proposalId && (
+                      <>
+                        <button
+                          onClick={() => resolveProposal(i, "approved")}
+                          className="flex items-center gap-1.5 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs text-emerald-400 transition-all hover:bg-emerald-400/20"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => resolveProposal(i, "rejected")}
+                          className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive transition-all hover:bg-destructive/20"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Reject
+                        </button>
+                      </>
+                    )}
+
+                    {message.status === "approved" && (
+                      <StatusBadge status="active" label="✓ APPROVED" />
+                    )}
+                    {message.status === "rejected" && (
+                      <StatusBadge status="restricted" label="✕ REJECTED" />
+                    )}
+
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleMore(i)}
+                        className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                      {message.moreOpen && (
+                        <div className="absolute bottom-8 right-0 z-10 min-w-[160px] rounded-lg border border-border bg-background/95 p-1 shadow-xl backdrop-blur-sm">
+                          <MenuItem
+                            onClick={() => {
+                              copyText(message.intent);
+                              toggleMore(i);
+                            }}
+                            icon={<CopyIcon className="h-3.5 w-3.5" />}
+                          >
+                            Copy
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => readAloud(message.intent)}
+                            icon={<Volume2 className="h-3.5 w-3.5" />}
+                          >
+                            Read aloud
+                          </MenuItem>
+                          <MenuItem disabled icon={<ArrowRight className="h-3.5 w-3.5" />}>
+                            Redo (visual only)
+                          </MenuItem>
+                          <MenuItem disabled icon={<EyeOff className="h-3.5 w-3.5" />}>
+                            Ignore (visual only)
+                          </MenuItem>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Details Panel */}
+                  {message.detailsOpen && (
+                    <div className="ml-4 space-y-2 rounded-lg border border-border bg-card/20 p-4">
+                      <DetailRow
+                        label="Scope"
+                        value={`${entity.label} → ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}`}
+                      />
+                      <DetailRow label="Drafted by" value="Content Agent" />
+                      <DetailRow
+                        label="Gate"
+                        value={message.status.toUpperCase()}
+                        valueClassName={cn(
+                          message.status === "approved" && "text-emerald-400",
+                          message.status === "rejected" && "text-destructive",
+                          message.status === "pending_review" && "text-primary"
+                        )}
+                      />
+                      <DetailRow
+                        label="Proposal ID"
+                        value={message.proposalId ?? "pending insert"}
+                        valueClassName="font-mono text-xs"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
-            disabled={!activeSub || isSubmitting}
-            placeholder={activeSub ? `Ask IGX AI about ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}...` : "Pick a sub-item first..."}
-            className="min-w-0 flex-1 rounded-xl border px-3.5 py-2.5 text-sm outline-none"
-            style={{
-              backgroundColor: "rgba(245,242,235,0.06)",
-              borderColor: "var(--border)",
-              color: "var(--foreground)",
-            }}
-          />
-          <Button
-            size="icon"
-            onClick={submit}
-            disabled={!activeSub || isSubmitting}
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-          <button className="opacity-50" aria-label="Voice input" title="Voice input (visual only)" disabled>
-            <Mic className="h-4 w-4" />
-          </button>
+
+          {/* Input Row */}
+          <div className="border-t border-border bg-card/5 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button
+                  className="rounded-lg p-2 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                  aria-label="Attach file"
+                  onClick={() => setAttachOpen((v) => !v)}
+                >
+                  <Paperclip className="h-4 w-4" />
+                </button>
+                {attachOpen && (
+                  <div className="absolute bottom-12 left-0 z-10 min-w-[180px] rounded-lg border border-border bg-background/95 p-1 shadow-xl backdrop-blur-sm">
+                    <MenuItem disabled icon={<Paperclip className="h-3.5 w-3.5" />}>
+                      Upload from computer
+                    </MenuItem>
+                    <MenuItem disabled icon={<Globe className="h-3.5 w-3.5" />}>
+                      Google Drive
+                    </MenuItem>
+                    <MenuItem disabled icon={<Users className="h-3.5 w-3.5" />}>
+                      GitHub
+                    </MenuItem>
+                    <MenuItem disabled icon={<Eye className="h-3.5 w-3.5" />}>
+                      Add a screenshot
+                    </MenuItem>
+                    <MenuItem disabled icon={<Zap className="h-3.5 w-3.5" />}>
+                      Connect data source
+                    </MenuItem>
+                  </div>
+                )}
+              </div>
+
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                disabled={!activeSub || isSubmitting}
+                placeholder={
+                  activeSub
+                    ? `Ask IGX AI about ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}...`
+                    : "Pick a sub-item first..."
+                }
+                className="flex-1 rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:bg-background focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
+              />
+
+              <button
+                className="rounded-lg p-2 text-muted-foreground/50 transition-all hover:text-foreground disabled:opacity-30"
+                aria-label="Voice input"
+                disabled
+              >
+                <Mic className="h-4 w-4" />
+              </button>
+
+              <Button
+                size="icon"
+                onClick={submit}
+                disabled={!activeSub || isSubmitting || !input.trim()}
+                className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// ===== Sub-components =====
+
 function RailGroup({
-  label,
   group,
   activeEntity,
   onSelect,
 }: {
-  label: string;
   group: typeof igxPeople | typeof igxOrgEntities;
   activeEntity: EntityKey;
   onSelect: (key: EntityKey) => void;
 }) {
   return (
-    <div>
-      <Eyebrow>{label}</Eyebrow>
-      <div className="mt-1.5 flex flex-col gap-0.5">
-        {Object.entries(group).map(([k, v]) => (
+    <div className="mt-2 space-y-0.5">
+      {Object.entries(group).map(([k, v]) => {
+        const isActive = k === activeEntity;
+        const Icon = isActive ? ChevronRight : null;
+        return (
           <button
             key={k}
             onClick={() => onSelect(k as EntityKey)}
-            className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13.5px] transition-colors"
-            style={
-              k === activeEntity
-                ? { backgroundColor: "color-mix(in oklab, var(--primary) 16%, transparent)", color: "var(--primary)" }
-                : { color: "rgba(245,242,235,0.7)" }
-            }
+            className={cn(
+              "group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all duration-200",
+              isActive
+                ? "bg-primary/10 text-primary shadow-sm shadow-primary/10"
+                : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+            )}
           >
             <StatusDot state={"state" in v ? v.state : undefined} />
-            {v.label}
+            <span className="flex-1">{v.label}</span>
+            {isActive && <ChevronRight className="h-3.5 w-3.5 text-primary" />}
           </button>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// Real status dot — driven by the `state` field on igxPeople/igxOrgEntities
-// entries in portal-data.ts (same ready/forming/standby vocabulary `modules`
-// already uses on the Directory page). No entity here is given a status that
-// isn't backed by that shared field.
 function StatusDot({ state }: { state?: string }) {
   const color =
     state === "active" || state === "ready"
-      ? "#4ADE80" // green
+      ? "#4ADE80"
       : state === "forming"
-        ? "#D9A63F" // amber
-        : "rgba(245,242,235,0.25)"; // standby / unknown — dim gray, not a fake color
+        ? "#FBBF24"
+        : "rgba(255,255,255,0.15)";
   return (
     <span
       className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -690,59 +875,44 @@ function StatusDot({ state }: { state?: string }) {
   );
 }
 
-function IconButton({
-  children,
-  label,
-  onClick,
-  hoverColor,
-}: {
-  children: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  hoverColor?: string;
-}) {
-  return (
-    <button
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
-      style={{ borderColor: "var(--border)", color: "rgba(245,242,235,0.7)" }}
-      onMouseEnter={(e) => hoverColor && (e.currentTarget.style.color = hoverColor)}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(245,242,235,0.7)")}
-    >
-      {children}
-    </button>
-  );
-}
-
 function MenuItem({
   children,
   onClick,
   disabled,
+  icon,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs hover:bg-white/5 disabled:opacity-40"
+      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-primary/10 disabled:opacity-40"
     >
-      {children}
+      {icon}
+      <span>{children}</span>
     </button>
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
   return (
-    <div className="flex justify-between gap-4">
-      <span className="font-mono text-[10.5px] uppercase" style={{ color: "rgba(245,242,235,0.4)" }}>
+    <div className="flex items-center justify-between gap-6">
+      <span className="font-mono text-[10px] uppercase text-muted-foreground/50">
         {label}
       </span>
-      <span className="text-right" style={{ color: "rgba(245,242,235,0.82)" }}>
+      <span className={cn("text-sm text-foreground/80", valueClassName)}>
         {value}
       </span>
     </div>
