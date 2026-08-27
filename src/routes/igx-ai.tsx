@@ -41,6 +41,9 @@ export const Route = createFileRoute("/igx-ai")({
   HONEST-STATE FLAGS (this port, 2026-08-26)
   - Rail (People/Entities), merged header + sub-pills, Details panel:
     real, sourced from igxPeople/igxOrgEntities in portal-data.ts.
+  - Rail status dot: real, driven by each entry's `state` field in
+    portal-data.ts (same ready/forming/standby vocabulary `modules`
+    already uses on Directory) — not a decorative/fake indicator.
   - Chat submit: REAL — inserts into `proposals` via Supabase, same as
     the original Step A flow.
   - Approve/Reject: REAL Supabase UPDATE on the specific proposal row,
@@ -59,7 +62,9 @@ export const Route = createFileRoute("/igx-ai")({
   - Copy: REAL clipboard write of the AI bubble text.
   - Reasoning bar / stage-track: runs only during a real submit (not
     decorative on every tab switch, unlike the HTML mockup) — tied to
-    actual async state, not simulated for idle browsing.
+    actual async state, not simulated for idle browsing. Still the
+    small strip version — the bigger glowing orb centerpiece is not
+    yet built.
   - Ticker: REMOVED (2026-08-26). It read fake data from `activity_log`,
     which isn't wired yet — cut to remove the most visible "not real
     yet" chrome sitting above the reasoning bar.
@@ -649,18 +654,39 @@ function RailGroup({
           <button
             key={k}
             onClick={() => onSelect(k as EntityKey)}
-            className="rounded-lg px-2.5 py-1.5 text-left text-[13.5px] transition-colors"
+            className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13.5px] transition-colors"
             style={
               k === activeEntity
                 ? { backgroundColor: "color-mix(in oklab, var(--primary) 16%, transparent)", color: "var(--primary)" }
                 : { color: "rgba(245,242,235,0.7)" }
             }
           >
+            <StatusDot state={"state" in v ? v.state : undefined} />
             {v.label}
           </button>
         ))}
       </div>
     </div>
+  );
+}
+
+// Real status dot — driven by the `state` field on igxPeople/igxOrgEntities
+// entries in portal-data.ts (same ready/forming/standby vocabulary `modules`
+// already uses on the Directory page). No entity here is given a status that
+// isn't backed by that shared field.
+function StatusDot({ state }: { state?: string }) {
+  const color =
+    state === "active" || state === "ready"
+      ? "#4ADE80" // green
+      : state === "forming"
+        ? "#D9A63F" // amber
+        : "rgba(245,242,235,0.25)"; // standby / unknown — dim gray, not a fake color
+  return (
+    <span
+      className="h-1.5 w-1.5 shrink-0 rounded-full"
+      style={{ backgroundColor: color }}
+      title={state ?? "status not tracked"}
+    />
   );
 }
 
