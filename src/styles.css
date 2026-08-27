@@ -155,7 +155,7 @@
 }
 
 /* ============================================================
-   .DARK — Optional dark mode override (commented out by default)
+   .DARK — Optional dark mode override (commented out)
    Uncomment if you want a dark mode toggle later
    ============================================================ */
 /*
@@ -225,10 +225,9 @@ a {
 }
 
 /* ============================================================
-   DEMARCATION LINES — clear and visible separation
+   DEMARCATION LINES
    ============================================================ */
 
-/* --- Horizontal dividers --- */
 .divider-light {
   border-top: 1px solid var(--border);
 }
@@ -241,7 +240,6 @@ a {
   border-top: 1px solid var(--border-accent);
 }
 
-/* --- Section divider with gradient glow --- */
 .section-divider {
   height: 1px;
   background: linear-gradient(
@@ -269,7 +267,6 @@ a {
   pointer-events: none;
 }
 
-/* --- Vertical divider --- */
 .divider-vertical {
   border-left: 1px solid var(--border-strong);
   height: 100%;
@@ -277,12 +274,10 @@ a {
   margin: 0 1rem;
 }
 
-/* --- Dashed divider --- */
 .divider-dashed {
   border-top: 1px dashed var(--border-strong);
 }
 
-/* --- Card separator --- */
 .card-divider {
   border-top: 1px solid var(--border);
   margin: 1rem 0;
@@ -290,7 +285,7 @@ a {
 }
 
 /* ============================================================
-   SCROLLBAR
+   SCROLLBAR — consistent across Chrome + Edge
    ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
@@ -298,27 +293,55 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--panel);
+  background: var(--background);
   border-radius: 8px;
+  border: 1px solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--primary);
   border-radius: 999px;
   transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--accent);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) var(--panel);
+  scrollbar-color: var(--primary) var(--background);
+}
+
+/* Custom scrollbar for specific elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--background);
 }
 
 /* ============================================================
-   PANEL BRACKET — blueprint aesthetic with warm tones
+   PANEL BRACKET
    ============================================================ */
 .panel-bracket {
   position: relative;
@@ -329,7 +352,6 @@ a {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* Corner brackets using primary (terracotta) */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
@@ -364,7 +386,7 @@ a {
 }
 
 /* ============================================================
-   PREMIUM CARD — warm theme
+   PREMIUM CARD
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -381,7 +403,6 @@ a {
   border-color: var(--border-accent);
 }
 
-/* Card accent variants */
 .premium-card-accent {
   border-top: 2.5px solid var(--primary);
 }
@@ -398,14 +419,13 @@ a {
   border-top: 2.5px solid var(--accent);
 }
 
-/* Card with internal divider */
 .premium-card .card-divider {
   border-top: 1px solid var(--border-strong);
   margin: 1.25rem 0;
 }
 
 /* ============================================================
-   METRIC TILE — dashboard statistics
+   METRIC TILE
    ============================================================ */
 .metric-tile {
   background: var(--card);
@@ -511,7 +531,7 @@ a {
 }
 
 /* ============================================================
-   TABLE STYLING
+   TABLE
    ============================================================ */
 .table-demarcated {
   width: 100%;
@@ -617,7 +637,7 @@ a {
 }
 
 /* ============================================================
-   HEX BADGE (for IGX AI / Console)
+   HEX BADGE
    ============================================================ */
 .hex-badge {
   display: inline-flex;
