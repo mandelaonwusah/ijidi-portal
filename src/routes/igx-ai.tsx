@@ -836,4 +836,71 @@ function RailGroup({
             )}
           >
             <StatusDot state={"state" in v ? v.state : undefined} />
-            <span className="flex-1
+            <span className="flex-1">{v.label}</span>
+            {isActive && <ChevronRight className="h-3.5 w-3.5 text-[#B85C3A]" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatusDot({ state }: { state?: string }) {
+  const color =
+    state === "active" || state === "ready"
+      ? "#7A9B76"
+      : state === "forming"
+        ? "#C6A15B"
+        : "#A6978A";
+  return (
+    <span
+      className="h-1.5 w-1.5 shrink-0 rounded-full"
+      style={{ backgroundColor: color }}
+      title={state ?? "status not tracked"}
+    />
+  );
+}
+
+function MenuItem({
+  children,
+  onClick,
+  disabled,
+  icon,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-xs text-[#1A1614] transition-colors hover:bg-[#B85C3A]/10 disabled:opacity-40"
+    >
+      {icon}
+      <span>{children}</span>
+    </button>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-6">
+      <span className="font-mono text-[10px] uppercase text-[#A6978A]">
+        {label}
+      </span>
+      <span className={cn("text-sm text-[#1A1614]", valueClassName)}>
+        {value}
+      </span>
+    </div>
+  );
+}
