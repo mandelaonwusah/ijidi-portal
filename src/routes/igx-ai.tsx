@@ -848,10 +848,10 @@ function RailGroup({
 function StatusDot({ state }: { state?: string }) {
   const color =
     state === "active" || state === "ready"
-      ? "var(--teal-400)"
+      ? "#7A9B76"
       : state === "forming"
-        ? "var(--gold-500)"
-        : "var(--muted-foreground)";
+        ? "#C6A15B"
+        : "#A6978A";
   return (
     <span
       className="h-1.5 w-1.5 shrink-0 rounded-full"
