@@ -1,4 +1,686 @@
 /* ============================================================
+   IJIDI OPERATING SYSTEM — Warm Ivory Theme
+   Background: #F5F0EB · Cards: #FAF6F1 · Primary: #B85C3A
+   ============================================================ */
+
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-display: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* --- Semantic color variables (shadcn) --- */
+  --color-background        : var(--background);
+  --color-foreground        : var(--foreground);
+  --color-card              : var(--card);
+  --color-card-foreground   : var(--card-foreground);
+  --color-popover           : var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary           : var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary         : var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted             : var(--muted);
+  --color-muted-foreground  : var(--muted-foreground);
+  --color-accent            : var(--accent);
+  --color-accent-foreground : var(--accent-foreground);
+  --color-destructive       : var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success           : var(--success);
+  --color-border            : var(--border);
+  --color-input             : var(--input);
+  --color-ring              : var(--ring);
+  --color-panel             : var(--panel);
+  --color-panel-elevated    : var(--panel-elevated);
+  --color-blue              : var(--blue);
+  --color-slate             : var(--slate);
+  --color-danger            : var(--danger);
+  --color-gold              : var(--gold);
+  --color-teal              : var(--teal);
+
+  /* --- Chart / Sidebar (unused but defined) --- */
+  --color-chart-1           : var(--chart-1);
+  --color-chart-2           : var(--chart-2);
+  --color-chart-3           : var(--chart-3);
+  --color-chart-4           : var(--chart-4);
+  --color-chart-5           : var(--chart-5);
+  --color-sidebar           : var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary   : var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent    : var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border    : var(--sidebar-border);
+  --color-sidebar-ring      : var(--sidebar-ring);
+}
+
+/* ============================================================
+   :ROOT — WARM IVORY / TERRACOTTA THEME
+   ============================================================ */
+:root {
+  /* --- Backgrounds --- */
+  --background: #F5F0EB;           /* Warm Ivory */
+  --foreground: #1A1614;            /* Warm Black */
+
+  /* --- Cards & Surfaces --- */
+  --card: #FAF6F1;                 /* Soft Cream */
+  --card-foreground: #1A1614;
+
+  --popover: #FFFCF8;              /* Warm White */
+  --popover-foreground: #1A1614;
+
+  /* --- Primary - Terracotta --- */
+  --primary: #B85C3A;
+  --primary-foreground: #F5F0EB;
+
+  /* --- Secondary - Warm Taupe --- */
+  --secondary: #E8DDD2;
+  --secondary-foreground: #1A1614;
+
+  /* --- Muted --- */
+  --muted: #E8DDD2;
+  --muted-foreground: #6B5F55;      /* Warm Grey */
+
+  /* --- Accent - Muted Gold --- */
+  --accent: #C6A15B;
+  --accent-foreground: #1A1614;
+
+  /* --- Destructive - Rust --- */
+  --destructive: #C45A3C;
+  --destructive-foreground: #F5F0EB;
+
+  /* --- Success - Sage --- */
+  --success: #7A9B76;
+  --success-foreground: #F5F0EB;
+
+  /* --- Borders --- */
+  --border: #E8DDD2;
+  --border-strong: #D6C9BC;
+  --border-accent: rgba(184, 92, 58, 0.25);
+
+  --input: #E8DDD2;
+  --ring: #B85C3A;
+
+  /* --- Panel variants --- */
+  --panel: #FAF6F1;
+  --panel-elevated: #FFFCF8;
+
+  /* --- Warm theme brand tokens --- */
+  --navy: #2C241E;
+  --navy-deep: #1A1614;
+  --line: #A6978A;
+  --line-dim: #C4B8AB;
+  --paper: #F5F0EB;
+  --paper-dim: #EAE3DA;
+  --steel: #8A7E72;
+  --charcoal: #3C322A;
+  --amber: #C6A15B;
+  --amber-bright: #D4AF37;
+  --gold: #C6A15B;
+  --teal: #7A9B76;
+  --blue: #8A9BA8;
+  --slate: #8A7E72;
+  --danger: #C45A3C;
+  --blueprint-ok: #7A9B76;
+  --blue-glow: rgba(184, 92, 58, 0.12);
+
+  /* --- Shadow Colors --- */
+  --shadow-sheet: 0 18px 40px -28px rgba(26, 22, 20, 0.15);
+  --shadow-lift: 0 30px 60px -32px rgba(26, 22, 20, 0.2);
+  --shadow-card: 0 4px 24px -12px rgba(26, 22, 20, 0.12);
+
+  /* --- Chart / Sidebar (warm values) --- */
+  --chart-1: #B85C3A;
+  --chart-2: #7A9B76;
+  --chart-3: #C6A15B;
+  --chart-4: #8A9BA8;
+  --chart-5: #C45A3C;
+
+  --sidebar: #FAF6F1;
+  --sidebar-foreground: #1A1614;
+  --sidebar-primary: #B85C3A;
+  --sidebar-primary-foreground: #F5F0EB;
+  --sidebar-accent: #C6A15B;
+  --sidebar-accent-foreground: #1A1614;
+  --sidebar-border: #E8DDD2;
+  --sidebar-ring: #B85C3A;
+
+  /* --- RGB triples for the color-mix fallback layer at the bottom
+     of this file. Derived directly from the hex values above. --- */
+  --primary-rgb: 184, 92, 58;
+  --accent-rgb: 198, 161, 91;
+  --gold-rgb: 198, 161, 91;
+  --teal-rgb: 122, 155, 118;
+  --destructive-rgb: 196, 90, 60;
+}
+
+/* ============================================================
+   .DARK — Optional dark mode override (commented out)
+   Uncomment if you want a dark mode toggle later
+   ============================================================ */
+/*
+.dark {
+  --background: #1A1614;
+  --foreground: #F5F0EB;
+  --card: #2C241E;
+  --card-foreground: #F5F0EB;
+  --popover: #2C241E;
+  --popover-foreground: #F5F0EB;
+  --primary: #C6A15B;
+  --primary-foreground: #1A1614;
+  --secondary: #3C322A;
+  --secondary-foreground: #F5F0EB;
+  --muted: #3C322A;
+  --muted-foreground: #A6978A;
+  --accent: #B85C3A;
+  --accent-foreground: #F5F0EB;
+  --destructive: #C45A3C;
+  --destructive-foreground: #F5F0EB;
+  --success: #7A9B76;
+  --success-foreground: #F5F0EB;
+  --border: #3C322A;
+  --border-strong: #4A3F35;
+  --border-accent: rgba(198, 161, 91, 0.25);
+  --input: #3C322A;
+  --ring: #C6A15B;
+  --panel: #2C241E;
+  --panel-elevated: #3C322A;
+  --blue: #8A9BA8;
+  --slate: #6B5F55;
+  --danger: #C45A3C;
+  --gold: #C6A15B;
+  --teal: #7A9B76;
+  --blue-glow: rgba(198, 161, 91, 0.12);
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
+}
+*/
+
+/* ============================================================
+   BASE RESETS
+   ============================================================ */
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   DEMARCATION LINES
+   ============================================================ */
+
+.divider-light {
+  border-top: 1px solid var(--border);
+}
+
+.divider-strong {
+  border-top: 1px solid var(--border-strong);
+}
+
+.divider-accent {
+  border-top: 1px solid var(--border-accent);
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-strong) 15%,
+    var(--border-accent) 50%,
+    var(--border-strong) 85%,
+    transparent
+  );
+  margin: 2rem 0;
+  border: none;
+  position: relative;
+}
+
+.section-divider::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 30%;
+  right: 30%;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(184, 92, 58, 0.08), transparent);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.divider-vertical {
+  border-left: 1px solid var(--border-strong);
+  height: 100%;
+  min-height: 3rem;
+  margin: 0 1rem;
+}
+
+.divider-dashed {
+  border-top: 1px dashed var(--border-strong);
+}
+
+.card-divider {
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+  padding-top: 1rem;
+}
+
+/* ============================================================
+   SCROLLBAR — consistent across Chrome + Edge
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--background);
+}
+
+/* Custom scrollbar for specific elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--background);
+}
+
+/* ============================================================
+   PANEL BRACKET
+   ============================================================ */
+.panel-bracket {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.panel-bracket::before,
+.panel-bracket::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--primary);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.panel-bracket::before {
+  top: 10px;
+  left: 10px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+  border-top-left-radius: 8px;
+}
+
+.panel-bracket::after {
+  right: 10px;
+  bottom: 10px;
+  border-right: 1.5px solid;
+  border-bottom: 1.5px solid;
+  border-bottom-right-radius: 8px;
+}
+
+.panel-bracket-elevated {
+  background: var(--panel-elevated);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-accent);
+}
+
+/* ============================================================
+   PREMIUM CARD
+   ============================================================ */
+.premium-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-accent);
+}
+
+.premium-card-accent {
+  border-top: 2.5px solid var(--primary);
+}
+
+.premium-card-success {
+  border-top: 2.5px solid var(--success);
+}
+
+.premium-card-warning {
+  border-top: 2.5px solid var(--gold);
+}
+
+.premium-card-primary {
+  border-top: 2.5px solid var(--accent);
+}
+
+.premium-card .card-divider {
+  border-top: 1px solid var(--border-strong);
+  margin: 1.25rem 0;
+}
+
+/* ============================================================
+   METRIC TILE
+   ============================================================ */
+.metric-tile {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+
+.metric-tile::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: var(--border-accent);
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.metric-tile:hover::after {
+  opacity: 1;
+}
+
+.metric-tile:hover {
+  border-color: var(--border-accent);
+  background: var(--panel-elevated);
+}
+
+.metric-tile .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.metric-tile .value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-top: 0.25rem;
+}
+
+.metric-tile .value.not-tracked {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  letter-spacing: 0.02em;
+}
+
+.metric-tile .status-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.metric-tile .status-indicator.online {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(122, 155, 118, 0.4);
+}
+
+.metric-tile .status-indicator.offline {
+  background: var(--destructive);
+  box-shadow: 0 0 8px rgba(196, 90, 60, 0.3);
+}
+
+/* ============================================================
+   NODE STATUS BADGE
+   ============================================================ */
+.node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--panel);
+}
+
+.node-badge .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 10px rgba(122, 155, 118, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-demarcated {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-demarcated th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-strong);
+  font-weight: 600;
+}
+
+.table-demarcated td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.table-demarcated tr:last-child td {
+  border-bottom: none;
+}
+
+.table-demarcated tr:hover td {
+  background: rgba(184, 92, 58, 0.05);
+}
+
+/* ============================================================
+   GRID & SCAN OVERLAYS
+   ============================================================ */
+.grid-scan {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.tactical-grid {
+  background-image: radial-gradient(rgba(184, 92, 58, 0.06) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* ============================================================
+   SCANLINE
+   ============================================================ */
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--steel) 5%, transparent),
+    transparent
+  );
+  height: 40%;
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  from { transform: translateY(-120%); }
+  to   { transform: translateY(280%); }
+}
+
+/* ============================================================
+   TICKER TRACK
+   ============================================================ */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 28s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ============================================================
+   LIVE PULSE
+   ============================================================ */
+.live-pulse {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.25; transform: scale(1.2); }
+}
+
+/* ============================================================
+   HEX BADGE
+   ============================================================ */
+.hex-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 0 20px rgba(184, 92, 58, 0.15);
+  transition: all 0.2s ease;
+}
+
+.hex-badge:hover {
+  box-shadow: 0 0 30px rgba(184, 92, 58, 0.25);
+  transform: scale(1.02);
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
    COLOR-MIX FALLBACK LAYER (added 2026-08-27)
    ------------------------------------------------------------
    Tailwind v4 compiles every opacity-modifier utility that reads
@@ -13,28 +695,19 @@
    Fix: define plain rgba() fallbacks for the small set of tokens
    actually referenced at opacity in this codebase, applied as
    the DEFAULT (not gated behind @supports-not, since the bug is
-   inconsistent quality, not absence of support). Tailwind's
-   generated color-mix() rules load after this block and win
-   where they render correctly; where they don't, these rgba()
-   values are still painted underneath as the base-color, so the
-   result never falls through to pure white/transparent.
+   inconsistent quality, not absence of support). Tailwind's own
+   generated color-mix() rules load earlier in the cascade via
+   @import "tailwindcss" at the top of this file; these plain
+   rgba() rules come later in file order and win on equal
+   specificity, so a browser that renders color-mix() correctly
+   sees no visual change, and one that doesn't still gets the
+   real gold instead of falling through to white/transparent.
 
-   RGB triples below are derived directly from the hex values
-   already defined at :root above — not invented colors.
-   --primary:  #B85C3A -> 184, 92, 58
-   --accent:   #C6A15B -> 198, 161, 91
-   --gold:     #C6A15B -> 198, 161, 91  (same token as accent)
-   --teal:     #7A9B76 -> 122, 155, 118
-   --destructive: #C45A3C -> 196, 90, 60
+   RGB triples used below are declared once in :root above
+   (--primary-rgb, --accent-rgb, --gold-rgb, --teal-rgb,
+   --destructive-rgb) so there is one source of truth if the
+   base hex values ever change.
    ============================================================ */
-
-:root {
-  --primary-rgb: 184, 92, 58;
-  --accent-rgb: 198, 161, 91;
-  --gold-rgb: 198, 161, 91;
-  --teal-rgb: 122, 155, 118;
-  --destructive-rgb: 196, 90, 60;
-}
 
 .bg-primary\/5   { background-color: rgba(var(--primary-rgb), 0.05); }
 .bg-primary\/10  { background-color: rgba(var(--primary-rgb), 0.10); }
@@ -60,9 +733,3 @@
 .border-accent\/30     { border-color: rgba(var(--accent-rgb), 0.30); }
 .border-teal-400\/30   { border-color: rgba(var(--teal-rgb), 0.30); }
 .border-destructive\/30 { border-color: rgba(var(--destructive-rgb), 0.30); }
-
-/* Where a browser DOES support color-mix() correctly, let Tailwind's
-   own generated rule win (it's loaded after this file/layer and has
-   equal specificity via class selector, so last-defined wins per
-   normal cascade — no !important needed, no visual change on a
-   correctly-rendering browser). */
