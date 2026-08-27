@@ -29,6 +29,7 @@ import { HexBadge, Eyebrow } from "@/components/portal-ui";
 import { RadarBackground } from "@/components/RadarBackground";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
+import igxEmblem from "@/assets/igx-emblem.png";
 
 function NotFoundComponent() {
   return (
@@ -351,9 +352,9 @@ function PortalShell({ children }: { children: ReactNode }) {
             navigate({ to: "/igx-ai" });
           }}
           aria-label="Open IGX AI"
-          className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 bg-gold text-background shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-gold/60 shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
         >
-          <span className="font-mono text-sm font-bold">✦</span>
+          <img src={igxEmblem} alt="IGX AI" className="h-full w-full object-cover" />
         </button>
 
         <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
