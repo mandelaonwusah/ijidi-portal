@@ -9,10 +9,9 @@ export const navItems = [
   { label: "Media", to: "/media", icon: "▶", key: "06" },
   { label: "The Vault", to: "/vault", icon: "▣", key: "07" },
   { label: "IGX AI", to: "/igx-ai", icon: "›_", key: "08" },
-  { label: "Proposals", to: "/proposals", icon: "☑", key: "09" },
-  { label: "Governance", to: "/governance", icon: "◎", key: "10" },
-  { label: "Directory", to: "/directory", icon: "⊞", key: "11" },
-  { label: "Identity", to: "/settings", icon: "◌", key: "12" },
+  { label: "Governance", to: "/governance", icon: "◎", key: "09" },
+  { label: "Directory", to: "/directory", icon: "⊞", key: "10" },
+  { label: "Identity", to: "/settings", icon: "◌", key: "11" },
 ] as const;
 
 export const metricTiles = [
