@@ -113,7 +113,6 @@ function IgxAi() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Real activity feed from Portal
   const { logs: activityLogs, isLoading: activityLoading } = useLiveActivityLog();
 
   const entity = igxAllEntities[activeEntity];
@@ -832,4 +831,9 @@ function RailGroup({
             className={cn(
               "group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all duration-200",
               isActive
-                ?
+                ? "bg-[#B85C3A]/10 text-[#B85C3A] shadow-sm shadow-[#B85C3A]/10"
+                : "text-[#6B5F55] hover:bg-[#B85C3A]/5 hover:text-[#1A1614]"
+            )}
+          >
+            <StatusDot state={"state" in v ? v.state : undefined} />
+            <span className="flex-1
