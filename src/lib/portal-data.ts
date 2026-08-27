@@ -185,9 +185,14 @@ export const decisions = [
 // each entity's sub-item pill row. Ported from IGX_Ecosystem_AI_Interface_V0.html.
 // `pillar` is an optional tooltip label (used by Foundation's arms and Atelier's
 // Brand sub-item to show parent context without a separate column).
+// `state` drives the rail's status dot — "active" for real people (not a
+// build-state, they're just... people), and for org entities the same
+// ready/forming/standby values already used in `modules` above, so the dot
+// is never a fabricated status independent of what Directory already shows.
 export const igxPeople = {
   mandela: {
     label: "Mandela Onwusah",
+    state: "active",
     subs: [
       { id: "overview", label: "Overview *placeholder*" },
       { id: "thought-leader", label: "Thought Leader" },
@@ -199,6 +204,7 @@ export const igxPeople = {
   },
   ifeoma: {
     label: "Ifeoma Peace David",
+    state: "active",
     subs: [
       { id: "vice-governor", label: "Vice Governor" },
       { id: "coco-powder", label: "Coco Powder (Milo)" },
@@ -213,6 +219,7 @@ export const igxPeople = {
 export const igxOrgEntities = {
   group: {
     label: "IJIDI Group",
+    state: "standby", // matches `modules` above
     subs: [
       { id: "holding-investment", label: "Holding & Investment *draft*" },
       { id: "general-contractors", label: "General Contractors *draft*" },
@@ -238,6 +245,7 @@ export const igxOrgEntities = {
   },
   foundation: {
     label: "IJIDI Foundation",
+    state: "standby", // matches `modules` above
     subs: [
       { id: "arm1", label: "Arm 1: Infrastructure & Connectivity", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
       { id: "arm2", label: "Arm 2: Digital Skills & Youth Empowerment", pillar: "Pillar 1 — Digital Inclusion & Literacy" },
@@ -248,6 +256,7 @@ export const igxOrgEntities = {
   },
   atelier: {
     label: "IJIDI Atelier",
+    state: "forming", // matches `modules` above
     subs: [
       { id: "shoes", label: "Shoes" },
       { id: "clothes", label: "Clothes" },
@@ -260,6 +269,7 @@ export const igxOrgEntities = {
   },
   media: {
     label: "IJIDI Media",
+    state: "forming", // matches `modules` above
     subs: [
       { id: "orbit", label: "IJIDI Orbit" },
       { id: "wild", label: "IJIDI Wild" },
