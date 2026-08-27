@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 import { 
   Bot, 
   Zap, 
@@ -112,14 +113,11 @@ function IgxEmblem({ className = "h-8 w-8" }: { className?: string }) {
       
       {/* Diamond/Pillar Structure - Left */}
       <path d="M30 30 L22 50 L30 70 L34 50 L30 30Z" fill="currentColor" />
-      <path d="M30 30 L22 50 L30 70 L34 50 L30 30Z" fill="currentColor" />
       
       {/* Diamond/Pillar Structure - Right */}
       <path d="M70 30 L78 50 L70 70 L66 50 L70 30Z" fill="currentColor" />
-      <path d="M70 30 L78 50 L70 70 L66 50 L70 30Z" fill="currentColor" />
       
       {/* Central Four-Pointed Starburst */}
-      <path d="M50 35 L55 45 L65 50 L55 55 L50 65 L45 55 L35 50 L45 45 L50 35Z" fill="currentColor" />
       <path d="M50 35 L55 45 L65 50 L55 55 L50 65 L45 55 L35 50 L45 45 L50 35Z" fill="currentColor" />
       
       {/* Inner Star Glow */}
@@ -687,14 +685,4 @@ function CommandCenterOverview() {
       )}
     </div>
   );
-}
-
-// ===== Utility: cn() for conditional classes =====
-// If you don't have this imported, add it:
-// import { cn } from "@/lib/utils";
-// Then use cn() instead of the inline function below
-
-// Quick inline cn replacement if you don't have it
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }
