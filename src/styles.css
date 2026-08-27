@@ -1,8 +1,6 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — MAM Realty Color Palette
-   Official blueprint tokens applied with operational aesthetic
-   Background: #11131A (official dark mode background)
-   Cards: #222633 (official dark mode card)
+   IJIDI OPERATING SYSTEM — Warm Ivory Theme
+   Background: #F5F0EB · Cards: #FAF6F1 · Primary: #B85C3A
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -18,19 +16,6 @@
   --font-display: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
-
-  /* --- MAM Realty Blueprint Brand Tokens --- */
-  --color-navy              : var(--navy);
-  --color-navy-deep         : var(--navy-deep);
-  --color-line              : var(--line);
-  --color-line-dim          : var(--line-dim);
-  --color-paper             : var(--paper);
-  --color-paper-dim         : var(--paper-dim);
-  --color-steel             : var(--steel);
-  --color-charcoal          : var(--charcoal);
-  --color-amber             : var(--amber);
-  --color-amber-bright      : var(--amber-bright);
-  --color-blueprint-ok      : var(--blueprint-ok);
 
   /* --- Semantic color variables (shadcn) --- */
   --color-background        : var(--background);
@@ -58,8 +43,8 @@
   --color-blue              : var(--blue);
   --color-slate             : var(--slate);
   --color-danger            : var(--danger);
-  --color-gold              : var(--amber-bright);
-  --color-teal              : var(--line);
+  --color-gold              : var(--gold);
+  --color-teal              : var(--teal);
 
   /* --- Chart / Sidebar (unused but defined) --- */
   --color-chart-1           : var(--chart-1);
@@ -78,126 +63,139 @@
 }
 
 /* ============================================================
-   :ROOT — OFFICIAL MAM REALTY DARK MODE PALETTE
-   All values from the official color palette document
+   :ROOT — WARM IVORY / TERRACOTTA THEME
    ============================================================ */
 :root {
-  /* --- Official Dark Mode Background --- */
-  --background: #11131A;           /* oklch(0.129 0.042 264.695) */
-  --foreground: #FAFAFA;           /* oklch(0.984 0.003 247.858) */
+  /* --- Backgrounds --- */
+  --background: #F5F0EB;           /* Warm Ivory */
+  --foreground: #1A1614;            /* Warm Black */
 
-  /* --- Official Dark Mode Cards --- */
-  --card: #222633;                 /* oklch(0.208 0.042 265.755) */
-  --card-foreground: #FAFAFA;
+  /* --- Cards & Surfaces --- */
+  --card: #FAF6F1;                 /* Soft Cream */
+  --card-foreground: #1A1614;
 
-  --popover: #222633;              /* Same as card */
-  --popover-foreground: #FAFAFA;
+  --popover: #FFFCF8;              /* Warm White */
+  --popover-foreground: #1A1614;
 
-  /* --- Official Dark Mode Primary --- */
-  --primary: #EBEBF0;              /* oklch(0.929 0.013 255.508) */
-  --primary-foreground: #222633;
+  /* --- Primary - Terracotta --- */
+  --primary: #B85C3A;
+  --primary-foreground: #F5F0EB;
 
-  --secondary: #3B4252;            /* oklch(0.279 0.041 260.031) */
-  --secondary-foreground: #FAFAFA;
+  /* --- Secondary - Warm Taupe --- */
+  --secondary: #E8DDD2;
+  --secondary-foreground: #1A1614;
 
-  --muted: #3B4252;                /* oklch(0.279 0.041 260.031) */
-  --muted-foreground: #A8ACB8;     /* oklch(0.704 0.04 256.788) */
+  /* --- Muted --- */
+  --muted: #E8DDD2;
+  --muted-foreground: #6B5F55;      /* Warm Grey */
 
-  --accent: #3B4252;               /* oklch(0.279 0.041 260.031) */
-  --accent-foreground: #FAFAFA;
+  /* --- Accent - Muted Gold --- */
+  --accent: #C6A15B;
+  --accent-foreground: #1A1614;
 
-  /* --- Official Dark Mode Status Colors --- */
-  --destructive: #E06B5A;          /* oklch(0.704 0.191 22.216) */
-  --destructive-foreground: #FAFAFA;
+  /* --- Destructive - Rust --- */
+  --destructive: #C45A3C;
+  --destructive-foreground: #F5F0EB;
 
-  --success: #7FBBA0;              /* blueprint-ok token */
-  --success-foreground: #12291F;
+  /* --- Success - Sage --- */
+  --success: #7A9B76;
+  --success-foreground: #F5F0EB;
 
-  /* --- Official Dark Mode Borders --- */
-  --border: rgba(255, 255, 255, 0.10);   /* oklch(1 0 0 / 10%) */
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-accent: rgba(143, 191, 212, 0.25);
+  /* --- Borders --- */
+  --border: #E8DDD2;
+  --border-strong: #D6C9BC;
+  --border-accent: rgba(184, 92, 58, 0.25);
 
-  --input: rgba(255, 255, 255, 0.15);    /* oklch(1 0 0 / 15%) */
-  --ring: #6F7A8E;                 /* oklch(0.551 0.027 264.364) */
+  --input: #E8DDD2;
+  --ring: #B85C3A;
 
   /* --- Panel variants --- */
-  --panel: #222633;                /* Same as card */
-  --panel-elevated: #2D3447;       /* Slightly lighter than card */
+  --panel: #FAF6F1;
+  --panel-elevated: #FFFCF8;
 
-  /* --- MAM Realty Blueprint Brand Tokens --- */
-  --navy: #1C2435;                 /* oklch(0.253 0.049 259) */
-  --navy-deep: #12192A;            /* oklch(0.187 0.041 261) */
-  --line: #8FBFD4;                 /* oklch(0.762 0.083 234) */
-  --line-dim: #5B7A8A;             /* oklch(0.499 0.062 234) */
-  --paper: #EAE8E3;                /* oklch(0.912 0.017 92) */
-  --paper-dim: #D9D6CE;            /* oklch(0.867 0.021 92) */
-  --steel: #5F6875;                /* oklch(0.451 0.014 260) */
-  --charcoal: #24262B;             /* oklch(0.196 0.008 265) */
-  --amber: #C68A2E;                /* oklch(0.625 0.121 58) */
-  --amber-bright: #E0A344;         /* oklch(0.72 0.121 62) */
-  --blueprint-ok: #7FBBA0;         /* oklch(0.71 0.058 152) */
+  /* --- Warm theme brand tokens --- */
+  --navy: #2C241E;
+  --navy-deep: #1A1614;
+  --line: #A6978A;
+  --line-dim: #C4B8AB;
+  --paper: #F5F0EB;
+  --paper-dim: #EAE3DA;
+  --steel: #8A7E72;
+  --charcoal: #3C322A;
+  --amber: #C6A15B;
+  --amber-bright: #D4AF37;
+  --gold: #C6A15B;
+  --teal: #7A9B76;
+  --blue: #8A9BA8;
+  --slate: #8A7E72;
+  --danger: #C45A3C;
+  --blueprint-ok: #7A9B76;
+  --blue-glow: rgba(184, 92, 58, 0.12);
 
-  /* --- Legacy / component-specific aliases --- */
-  --blue: #8FBFD4;                 /* Alias for line */
-  --slate: #5F6875;                /* Alias for steel */
-  --danger: #E06B5A;               /* Alias for destructive */
-  --blue-glow: rgba(143, 191, 212, 0.12);
+  /* --- Shadow Colors --- */
+  --shadow-sheet: 0 18px 40px -28px rgba(26, 22, 20, 0.15);
+  --shadow-lift: 0 30px 60px -32px rgba(26, 22, 20, 0.2);
+  --shadow-card: 0 4px 24px -12px rgba(26, 22, 20, 0.12);
 
-  /* --- Official Shadow Colors --- */
-  --shadow-sheet: 0 18px 40px -28px rgba(36, 38, 43, 0.55);
-  --shadow-lift: 0 30px 60px -32px rgba(36, 38, 43, 0.6);
-  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
+  /* --- Chart / Sidebar (warm values) --- */
+  --chart-1: #B85C3A;
+  --chart-2: #7A9B76;
+  --chart-3: #C6A15B;
+  --chart-4: #8A9BA8;
+  --chart-5: #C45A3C;
 
-  /* --- Chart / Sidebar (dark values) --- */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-
-  --sidebar: #222633;
-  --sidebar-foreground: #FAFAFA;
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: #FAFAFA;
-  --sidebar-accent: #3B4252;
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: rgba(255, 255, 255, 0.10);
-  --sidebar-ring: #6F7A8E;
+  --sidebar: #FAF6F1;
+  --sidebar-foreground: #1A1614;
+  --sidebar-primary: #B85C3A;
+  --sidebar-primary-foreground: #F5F0EB;
+  --sidebar-accent: #C6A15B;
+  --sidebar-accent-foreground: #1A1614;
+  --sidebar-border: #E8DDD2;
+  --sidebar-ring: #B85C3A;
 }
 
-/* --- Forward‑compat .dark block (same values) --- */
+/* ============================================================
+   .DARK — Optional dark mode override (commented out by default)
+   Uncomment if you want a dark mode toggle later
+   ============================================================ */
+/*
 .dark {
-  --background: #11131A;
-  --foreground: #FAFAFA;
-  --card: #222633;
-  --card-foreground: #FAFAFA;
-  --popover: #222633;
-  --popover-foreground: #FAFAFA;
-  --primary: #EBEBF0;
-  --primary-foreground: #222633;
-  --secondary: #3B4252;
-  --secondary-foreground: #FAFAFA;
-  --muted: #3B4252;
-  --muted-foreground: #A8ACB8;
-  --accent: #3B4252;
-  --accent-foreground: #FAFAFA;
-  --destructive: #E06B5A;
-  --destructive-foreground: #FAFAFA;
-  --success: #7FBBA0;
-  --success-foreground: #12291F;
-  --border: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-accent: rgba(143, 191, 212, 0.25);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: #6F7A8E;
-  --panel: #222633;
-  --panel-elevated: #2D3447;
-  --blue: #8FBFD4;
-  --slate: #5F6875;
-  --danger: #E06B5A;
-  --blue-glow: rgba(143, 191, 212, 0.12);
+  --background: #1A1614;
+  --foreground: #F5F0EB;
+  --card: #2C241E;
+  --card-foreground: #F5F0EB;
+  --popover: #2C241E;
+  --popover-foreground: #F5F0EB;
+  --primary: #C6A15B;
+  --primary-foreground: #1A1614;
+  --secondary: #3C322A;
+  --secondary-foreground: #F5F0EB;
+  --muted: #3C322A;
+  --muted-foreground: #A6978A;
+  --accent: #B85C3A;
+  --accent-foreground: #F5F0EB;
+  --destructive: #C45A3C;
+  --destructive-foreground: #F5F0EB;
+  --success: #7A9B76;
+  --success-foreground: #F5F0EB;
+  --border: #3C322A;
+  --border-strong: #4A3F35;
+  --border-accent: rgba(198, 161, 91, 0.25);
+  --input: #3C322A;
+  --ring: #C6A15B;
+  --panel: #2C241E;
+  --panel-elevated: #3C322A;
+  --blue: #8A9BA8;
+  --slate: #6B5F55;
+  --danger: #C45A3C;
+  --gold: #C6A15B;
+  --teal: #7A9B76;
+  --blue-glow: rgba(198, 161, 91, 0.12);
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
 }
+*/
 
 /* ============================================================
    BASE RESETS
@@ -266,7 +264,7 @@ a {
   left: 30%;
   right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(143, 191, 212, 0.08), transparent);
+  background: radial-gradient(ellipse, rgba(184, 92, 58, 0.08), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -311,7 +309,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--line);
+  background: var(--primary);
 }
 
 * {
@@ -320,7 +318,7 @@ a {
 }
 
 /* ============================================================
-   PANEL BRACKET — official blueprint aesthetic
+   PANEL BRACKET — blueprint aesthetic with warm tones
    ============================================================ */
 .panel-bracket {
   position: relative;
@@ -331,15 +329,15 @@ a {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* Corner brackets using --line (blueprint accent) */
+/* Corner brackets using primary (terracotta) */
 .panel-bracket::before,
 .panel-bracket::after {
   content: "";
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: var(--line);
-  opacity: 0.5;
+  border-color: var(--primary);
+  opacity: 0.4;
   pointer-events: none;
 }
 
@@ -366,7 +364,7 @@ a {
 }
 
 /* ============================================================
-   PREMIUM CARD — using official card colors
+   PREMIUM CARD — warm theme
    ============================================================ */
 .premium-card {
   background: var(--card);
@@ -383,21 +381,21 @@ a {
   border-color: var(--border-accent);
 }
 
-/* Card accent variants using blueprint tokens */
+/* Card accent variants */
 .premium-card-accent {
-  border-top: 2.5px solid var(--line);
+  border-top: 2.5px solid var(--primary);
 }
 
 .premium-card-success {
-  border-top: 2.5px solid var(--blueprint-ok);
+  border-top: 2.5px solid var(--success);
 }
 
 .premium-card-warning {
-  border-top: 2.5px solid var(--amber-bright);
+  border-top: 2.5px solid var(--gold);
 }
 
 .premium-card-primary {
-  border-top: 2.5px solid var(--amber);
+  border-top: 2.5px solid var(--accent);
 }
 
 /* Card with internal divider */
@@ -471,17 +469,17 @@ a {
 }
 
 .metric-tile .status-indicator.online {
-  background: var(--blueprint-ok);
-  box-shadow: 0 0 8px rgba(127, 187, 160, 0.4);
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(122, 155, 118, 0.4);
 }
 
 .metric-tile .status-indicator.offline {
   background: var(--destructive);
-  box-shadow: 0 0 8px rgba(224, 107, 90, 0.3);
+  box-shadow: 0 0 8px rgba(196, 90, 60, 0.3);
 }
 
 /* ============================================================
-   NODE STATUS BADGE — using blueprint tokens
+   NODE STATUS BADGE
    ============================================================ */
 .node-badge {
   display: inline-flex;
@@ -502,8 +500,8 @@ a {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--blueprint-ok);
-  box-shadow: 0 0 10px rgba(127, 187, 160, 0.5);
+  background: var(--success);
+  box-shadow: 0 0 10px rgba(122, 155, 118, 0.5);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -513,7 +511,7 @@ a {
 }
 
 /* ============================================================
-   TABLE STYLING — with clear row demarcation
+   TABLE STYLING
    ============================================================ */
 .table-demarcated {
   width: 100%;
@@ -541,7 +539,7 @@ a {
 }
 
 .table-demarcated tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(184, 92, 58, 0.05);
 }
 
 /* ============================================================
@@ -555,7 +553,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(143, 191, 212, 0.06) 1px, transparent 0);
+  background-image: radial-gradient(rgba(184, 92, 58, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -616,6 +614,29 @@ a {
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.25; transform: scale(1.2); }
+}
+
+/* ============================================================
+   HEX BADGE (for IGX AI / Console)
+   ============================================================ */
+.hex-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 0 20px rgba(184, 92, 58, 0.15);
+  transition: all 0.2s ease;
+}
+
+.hex-badge:hover {
+  box-shadow: 0 0 30px rgba(184, 92, 58, 0.25);
+  transform: scale(1.02);
 }
 
 /* ============================================================
