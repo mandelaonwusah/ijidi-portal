@@ -5,6 +5,7 @@ import {
   createRootRouteWithContext,
   useRouter,
   useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -174,12 +175,20 @@ function TickerBar() {
 function PortalShell({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
-  const [igxOpen, setIgxOpen] = useState(false);
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
+  const navigate = useNavigate();
 
   // Activate WebSocket Realtime Cache Invalidation Engine
   usePortalRealtime();
 
+  // FIX (2026-08-27): the IGX AI floating trigger used to open a local
+  // slide-out "quick console" panel here. index.tsx ALSO had its own
+  // floating IGX button + slide-out panel, so two buttons rendered on the
+  // Command Center at once. Removed the duplicate in index.tsx and kept
+  // this one, since it's the global layout button (present on every route).
+  // Per request: tapping now navigates straight to the full /igx-ai chat
+  // console — no intermediate panel. ⌘J does the same, direct navigation,
+  // no interstitial state.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -188,12 +197,12 @@ function PortalShell({ children }: { children: ReactNode }) {
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
         event.preventDefault();
-        setIgxOpen(true);
+        navigate({ to: "/igx-ai" });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
@@ -339,48 +348,13 @@ function PortalShell({ children }: { children: ReactNode }) {
           onMouseEnter={() => sounds.playHover()}
           onClick={() => {
             sounds.playClick();
-            setIgxOpen(true);
+            navigate({ to: "/igx-ai" });
           }}
           aria-label="Open IGX AI"
           className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 bg-gold text-background shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
         >
           <span className="font-mono text-sm font-bold">✦</span>
         </button>
-        {igxOpen && (
-          <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col rounded-l-2xl border-l border-border bg-panel/95 backdrop-blur-md shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <div>
-                <Eyebrow className="text-teal">IGX AI</Eyebrow>
-                <div className="mt-1 font-display text-sm font-semibold">Quick console</div>
-              </div>
-              <button
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => {
-                  sounds.playClick();
-                  setIgxOpen(false);
-                }}
-                className="font-mono text-xs text-muted-foreground hover:text-foreground"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-5 font-mono text-xs text-muted-foreground">
-              Reachable from anywhere with ⌘J. Full console with history lives at{" "}
-              <Link
-                to="/igx-ai"
-                onMouseEnter={() => sounds.playHover()}
-                onClick={() => {
-                  sounds.playClick();
-                  setIgxOpen(false);
-                }}
-                className="text-teal underline hover:text-gold"
-              >
-                /igx-ai
-              </Link>
-              .
-            </div>
-          </div>
-        )}
 
         <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
           <CommandInput placeholder="Navigate the portal..." />
