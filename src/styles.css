@@ -303,25 +303,27 @@ a {
 ::-webkit-scrollbar-track {
   background: var(--background);
   border-radius: 8px;
-  border: 1px solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary);
+  background: var(--border-strong);
   border-radius: 999px;
   transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--line);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--background);
+  scrollbar-color: var(--border-strong) var(--background);
 }
 
-/* Custom scrollbar for specific elements */
+/* Custom scrollbar for specific elements — same muted, blended tone as
+   the global scrollbar above (was orange/primary against the ivory
+   background; --border-strong sits close enough to --background/--card
+   to read as a quiet track rather than a loud accent color). */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -330,22 +332,21 @@ a {
 .custom-scrollbar::-webkit-scrollbar-track {
   background: var(--background);
   border-radius: 8px;
-  border: 1px solid var(--border);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--primary);
+  background: var(--border-strong);
   border-radius: 999px;
   transition: background 0.2s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--line);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--background);
+  scrollbar-color: var(--border-strong) var(--background);
 }
 
 /* ============================================================
