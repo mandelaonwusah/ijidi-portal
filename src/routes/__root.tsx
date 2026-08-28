@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "IJIDI Portal · Command Center" },
       {
         name: "description",
@@ -116,9 +116,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('ijidi_theme');
+                  var theme = saved || 'dark';
+                  document.documentElement.classList.remove('dark', 'light');
+                  document.documentElement.classList.add(theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -175,10 +189,27 @@ function TickerBar() {
 function PortalShell({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
 
   usePortalRealtime();
+
+  useEffect(() => {
+    const savedTheme = (localStorage.getItem("ijidi_theme") as "dark" | "light") || "dark";
+    setTheme(savedTheme);
+    document.documentElement.classList.remove("dark", "light");
+    document.documentElement.classList.add(savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    sounds.playClick();
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("ijidi_theme", nextTheme);
+    document.documentElement.classList.remove("dark", "light");
+    document.documentElement.classList.add(nextTheme);
+  };
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -297,73 +328,45 @@ function PortalShell({ children }: { children: ReactNode }) {
                   </div>
                 </div>
               </div>
+
+              {/* Theme Switcher Button */}
               <div className="flex items-center gap-3">
                 <button
+                  onClick={toggleTheme}
                   onMouseEnter={() => sounds.playHover()}
-                  onClick={() => {
-                    sounds.playClick();
-                    setPaletteOpen(true);
-                  }}
-                  className="hidden items-center gap-2 rounded-md border border-border px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-gold/50 hover:text-gold sm:flex"
+                  className="flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold"
+                  title="Toggle Light/Dark Theme"
                 >
-                  <span>Search modules</span>
-                  <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
+                  <span>{theme === "dark" ? "🌙 DARK" : "☀️ LIGHT"}</span>
                 </button>
-                <div className="flex items-center gap-3 border-l border-border pl-3">
-                  <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-gold">
-                    ROOT
-                  </span>
-                  <HexBadge small />
-                  <div className="hidden sm:block">
-                    <div className="font-mono text-[10px] font-semibold text-foreground">
-                      Mandela Onwusah
-                    </div>
-                    <Eyebrow className="text-[8px] text-teal">
-                      @mandelaonwusah1 · Governor
-                    </Eyebrow>
-                  </div>
-                </div>
               </div>
             </header>
-            <main className="min-h-[calc(100vh-108px)] p-4 sm:p-6 xl:p-8">{children}</main>
+            <main className="p-4 sm:p-6 lg:p-8">{children}</main>
           </div>
         </div>
-        <button
-          onMouseEnter={() => sounds.playHover()}
-          onClick={() => {
-            sounds.playClick();
-            navigate({ to: "/igx-ai" });
-          }}
-          aria-label="Open IGX AI"
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-gold/60 shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
-        >
-          <img src="/igx-emblem.png" alt="IGX AI" className="h-full w-full object-cover" />
-        </button>
-
-        <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
-          <CommandInput placeholder="Navigate the portal..." />
-          <CommandList>
-            <CommandEmpty>No module found.</CommandEmpty>
-            <CommandGroup heading="Modules">
-              {navItems.map((item) => (
-                <CommandItem
-                  key={item.to}
-                  onMouseEnter={() => sounds.playHover()}
-                  onSelect={() => {
-                    sounds.playClick();
-                    setPaletteOpen(false);
-                    window.location.href = item.to;
-                  }}
-                >
-                  <span className="text-gold">{item.icon}</span>
-                  {item.label}
-                  <CommandShortcut>{item.key}</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </CommandDialog>
       </div>
+
+      <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
+        <CommandInput placeholder="Type a command or search modules..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Navigation">
+            {navItems.map((item) => (
+              <CommandItem
+                key={item.to}
+                onSelect={() => {
+                  sounds.playClick();
+                  navigate({ to: item.to });
+                  setPaletteOpen(false);
+                }}
+              >
+                <span>{item.label}</span>
+                <CommandShortcut>{item.key}</CommandShortcut>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 }
