@@ -23,6 +23,8 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
