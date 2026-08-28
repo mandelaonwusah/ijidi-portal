@@ -231,18 +231,6 @@ function PortalShell({ children }: { children: ReactNode }) {
                   <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
                 </div>
               </div>
-              <div className="border-b border-border px-5 py-4">
-                <div className="flex items-center justify-between">
-                  <Eyebrow>ACCESS TIER</Eyebrow>
-                  <span className="font-mono text-[9px] font-bold text-gold">ROOT</span>
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-teal live-pulse" />
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-teal">
-                    Governor online
-                  </span>
-                </div>
-              </div>
               <nav className="flex-1 overflow-y-auto px-3 py-5">
                 <Eyebrow className="px-3 pb-3">NAVIGATION</Eyebrow>
                 {navItems.map((item) => (
@@ -333,11 +321,23 @@ function PortalShell({ children }: { children: ReactNode }) {
                   <span>Search modules</span>
                   <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
                 </button>
-                <div className="flex items-center gap-2 border-l border-border pl-3">
+                {/* Merged identity block — single top-right source of truth for
+                    access tier + identity. Previously "ACCESS TIER / ROOT" and
+                    "Governor online" lived separately in the left rail; that
+                    block is removed and folded in here, "online" text dropped
+                    per request. */}
+                <div className="flex items-center gap-3 border-l border-border pl-3">
+                  <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-gold">
+                    ROOT
+                  </span>
                   <HexBadge small />
                   <div className="hidden sm:block">
-                    <div className="font-mono text-[10px] font-semibold text-foreground">Mandela Onwusah</div>
-                    <Eyebrow className="text-[8px] text-teal">@mandelaonwusah1 · Governor</Eyebrow>
+                    <div className="font-mono text-[10px] font-semibold text-foreground">
+                      Mandela Onwusah
+                    </div>
+                    <Eyebrow className="text-[8px] text-teal">
+                      @mandelaonwusah1 · Governor
+                    </Eyebrow>
                   </div>
                 </div>
               </div>
