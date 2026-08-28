@@ -1,4 +1,3 @@
-// src/routes/igx-ai.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -40,7 +39,6 @@ import { supabase } from "@/lib/supabase";
 import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
-import igxEmblem from "@/assets/igx-emblem.png";
 
 export const Route = createFileRoute("/igx-ai")({
   head: () => ({
@@ -207,7 +205,7 @@ function IgxAi() {
           source: "igx-ai-console",
           intent: scopedIntent,
           suggested_action: `Evaluate and process request: "${trimmed}"`,
-          reasoning: "Pending intelligence routing (Step A plumbing, no reasoning yet).",
+          reasoning: "Pending intelligence routing.",
           status: "pending_review",
         },
       ])
@@ -284,20 +282,11 @@ function IgxAi() {
   };
 
   const stage = STAGES[stageIndex];
-  const isActive = stageIndex !== 0;
   const StageIcon = stage.icon;
 
   const recentActivities = activityLogs?.slice(0, 5) ?? [];
 
   return (
-    // FIX (2026-08-28): this container had no `relative`, so the absolutely
-    // positioned mobile rail + menu-toggle button below anchored themselves
-    // to the nearest positioned ancestor UP THE TREE instead — which is
-    // PortalShell's page-wide `relative min-h-screen` wrapper in
-    // __root.tsx. That made the rail/toggle span and overlay the whole
-    // page (sticky ticker, header, dashboard) rather than just this card,
-    // which is what read as "the main dashboard covers the chat" on
-    // mobile. `relative` here scopes them correctly to this card.
     <div className="relative flex h-[calc(100vh-5rem)] min-h-[600px] overflow-hidden rounded-xl border bg-background shadow-2xl">
       {/* Mobile Menu Toggle */}
       <button
@@ -318,7 +307,7 @@ function IgxAi() {
           {/* Brand Header */}
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
-              <img src={igxEmblem} alt="IGX AI" className="h-full w-full object-cover" />
+              <img src="/igx-emblem.png" alt="IGX AI" className="h-full w-full object-cover" />
             </div>
             <div>
               <span className="font-sans text-lg font-bold tracking-tight text-foreground">
@@ -465,345 +454,152 @@ function IgxAi() {
                   </span>
                 </div>
               ) : recentActivities.length > 0 ? (
-                recentActivities.map((log, i) => (
-                  <div
-                    key={log.id || i}
-                    className="flex items-center gap-3 border-b border-border/50 px-4 py-3 last:border-0 hover:bg-primary/5"
-                  >
-                    <div className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
-                    <span className="font-mono text-xs font-medium text-foreground">
-                      {log.actor?.toUpperCase() ?? "SYSTEM"}
-                    </span>
-                    <span className="flex-1 text-xs text-muted-foreground">{log.action}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground/40">
-                      {formatTime(log.timestamp)}
-                    </span>
+                recentActivities.map((log: any, i: number) => (
+                  <div key={log.id || i} className="flex items-center justify-between border-b p-3 last:border-0 font-mono text-xs">
+                    <span className="text-foreground">{log.action || log.message || "System event"}</span>
+                    <span className="text-muted-foreground">{formatTime(log.created_at)}</span>
                   </div>
                 ))
               ) : (
-                <div className="px-4 py-6 text-center">
-                  <p className="font-mono text-xs text-muted-foreground/60">
-                    No verified activity entries logged.
-                  </p>
-                </div>
+                <div className="p-4 text-center font-mono text-xs text-muted-foreground">No recent activity logs.</div>
               )}
             </div>
           )}
         </div>
 
-        {/* Thread Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border">
-          {!activeSub && (
-            <div className="flex h-full flex-col items-center justify-center gap-4">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <Bot className="h-10 w-10 text-primary/40" />
-              </div>
-              <div className="text-center">
-                <p className="font-sans text-lg font-semibold text-foreground">
-                  Scope Your Query
-                </p>
-                <p className="font-mono text-sm text-muted-foreground">
-                  Pick a sub-item above to begin
-                </p>
-              </div>
-            </div>
-          )}
+        {/* Stage Indicator */}
+        <div className="flex items-center gap-3 border-b bg-muted/30 px-6 py-2">
+          <StageIcon className="h-4 w-4 text-primary animate-pulse" />
+          <span className="font-mono text-xs font-semibold uppercase text-primary">
+            {stage.name}
+          </span>
+          <span className="text-xs text-muted-foreground">— {stage.detail}</span>
+        </div>
 
-          {activeSub && messages.length === 0 && (
-            <div className="flex h-full flex-col items-center justify-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/5">
-                <MessageSquare className="h-8 w-8 text-primary/30" />
-              </div>
-              <div className="text-center">
-                <p className="font-mono text-sm text-muted-foreground">
-                  Scoped to {entity.label} →{" "}
-                  {entity.subs.find((s: SubItem) => s.id === activeSub)?.label}
-                </p>
-                <p className="font-mono text-xs text-muted-foreground/40">
-                  Ask something to draft a proposal
-                </p>
-              </div>
+        {/* Chat Stream */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {!activeSub ? (
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <MessageSquare className="h-12 w-12 text-muted-foreground/40 mb-3" />
+              <h3 className="font-sans text-lg font-semibold text-foreground">Select a Sub-Module</h3>
+              <p className="font-mono text-xs text-muted-foreground mt-1 max-w-sm">
+                Choose a targeted scope from the top pills to open an intelligence thread.
+              </p>
             </div>
-          )}
-
-          <div className="space-y-6">
-            {messages.map((message, i) => (
-              <div key={i} className="space-y-3">
-                {/* User message */}
-                <div className="flex justify-end">
-                  <div className="max-w-[70%] rounded-2xl rounded-br-sm bg-primary/10 px-5 py-3">
-                    <p className="text-sm text-foreground">{message.intent}</p>
-                    {message.status === "pending_review" && (
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                        <span className="font-mono text-[10px] text-primary/70">
-                          Awaiting review
-                        </span>
-                      </div>
-                    )}
-                  </div>
+          ) : messages.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <Brain className="h-12 w-12 text-primary/40 mb-3" />
+              <h3 className="font-sans text-lg font-semibold text-foreground">Console Ready</h3>
+              <p className="font-mono text-xs text-muted-foreground mt-1 max-w-sm">
+                Dispatch an instruction for evaluation and proposal synthesis.
+              </p>
+            </div>
+          ) : (
+            messages.map((msg, idx) => (
+              <div key={idx} className="rounded-lg border bg-card p-5 space-y-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <p className="font-sans text-sm font-medium text-foreground">{msg.intent}</p>
+                  <StatusBadge status={msg.status} />
                 </div>
 
-                {/* AI response */}
-                <div className="flex">
-                  <div className="max-w-[75%] rounded-2xl rounded-tl-sm border bg-card px-5 py-3.5 shadow-sm">
-                    {message.status === "error" ? (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <span className="text-sm text-destructive">
-                          Error: {message.errorMessage}
-                        </span>
-                      </div>
-                    ) : message.proposalId ? (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-teal-400" />
-                          <span className="text-sm text-foreground">
-                            Proposal queued
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                          <span>ID:</span>
-                          <span className="rounded bg-muted/30 px-2 py-0.5 font-mono">
-                            {message.proposalId.slice(0, 8)}
-                          </span>
-                          <span className="text-muted-foreground/40">···</span>
-                          <span className="rounded bg-muted/30 px-2 py-0.5 font-mono">
-                            {message.proposalId.slice(-8)}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        <span className="text-sm text-muted-foreground">
-                          Writing proposal...
-                        </span>
-                      </div>
-                    )}
+                {msg.errorMessage && (
+                  <div className="flex items-center gap-2 text-xs text-destructive font-mono">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>{msg.errorMessage}</span>
                   </div>
-                </div>
+                )}
 
-                {/* Actions */}
-                <div className="flex flex-wrap items-center gap-1.5 pl-4">
-                  <button
-                    onClick={() => toggleDetails(i)}
-                    className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-                  >
-                    <Eye className="h-3 w-3" />
-                    <span>Details</span>
-                    <ChevronDown
-                      className={cn(
-                        "h-3 w-3 transition-transform duration-200",
-                        message.detailsOpen && "rotate-180"
-                      )}
-                    />
-                  </button>
-
-                  {message.status === "pending_review" && message.proposalId && (
-                    <>
-                      <button
-                        onClick={() => resolveProposal(i, "approved")}
-                        className="flex items-center gap-1.5 rounded-lg border border-teal-400/30 bg-teal-400/10 px-3 py-1.5 text-xs text-teal-400 transition-all hover:bg-teal-400/20"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => resolveProposal(i, "rejected")}
-                        className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive transition-all hover:bg-destructive/20"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                        Reject
-                      </button>
-                    </>
-                  )}
-
-                  {message.status === "approved" && (
-                    <StatusBadge status="active" label="✓ APPROVED" />
-                  )}
-                  {message.status === "rejected" && (
-                    <StatusBadge status="restricted" label="✕ REJECTED" />
-                  )}
-
-                  <div className="relative">
-                    <button
-                      onClick={() => toggleMore(i)}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                {msg.status === "pending_review" && (
+                  <div className="flex items-center gap-3 pt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => resolveProposal(idx, "approved")}
+                      className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
-                    </button>
-                    {message.moreOpen && (
-                      <div className="absolute bottom-8 right-0 z-10 min-w-[160px] rounded-lg border bg-card p-1 shadow-xl">
-                        <MenuItem
-                          onClick={() => {
-                            copyText(message.intent);
-                            toggleMore(i);
-                          }}
-                          icon={<CopyIcon className="h-3.5 w-3.5" />}
-                        >
-                          Copy
-                        </MenuItem>
-                        <MenuItem
-                          onClick={() => readAloud(message.intent)}
-                          icon={<Volume2 className="h-3.5 w-3.5" />}
-                        >
-                          Read aloud
-                        </MenuItem>
-                        <MenuItem disabled icon={<ArrowRight className="h-3.5 w-3.5" />}>
-                          Redo (visual only)
-                        </MenuItem>
-                        <MenuItem disabled icon={<EyeOff className="h-3.5 w-3.5" />}>
-                          Ignore (visual only)
-                        </MenuItem>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Details Panel */}
-                {message.detailsOpen && (
-                  <div className="ml-4 space-y-2 rounded-lg border bg-card/50 p-4">
-                    <DetailRow
-                      label="Scope"
-                      value={`${entity.label} → ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}`}
-                    />
-                    <DetailRow label="Drafted by" value="Content Agent" />
-                    <DetailRow
-                      label="Gate"
-                      value={message.status.toUpperCase()}
-                      valueClassName={cn(
-                        message.status === "approved" && "text-teal-400",
-                        message.status === "rejected" && "text-destructive",
-                        message.status === "pending_review" && "text-primary"
-                      )}
-                    />
-                    <DetailRow
-                      label="Proposal ID"
-                      value={message.proposalId ?? "pending insert"}
-                      valueClassName="font-mono text-xs"
-                    />
+                      <Check className="h-4 w-4" /> Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => resolveProposal(idx, "rejected")}
+                      className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/10"
+                    >
+                      <X className="h-4 w-4" /> Reject
+                    </Button>
                   </div>
                 )}
+
+                {msg.detailsOpen && (
+                  <div className="rounded border bg-muted/40 p-3 font-mono text-xs text-muted-foreground space-y-1">
+                    <div>Proposal ID: {msg.proposalId || "Generating..."}</div>
+                    <div>Status: {msg.status}</div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1 text-muted-foreground">
+                  <button onClick={() => toggleDetails(idx)} className="p-1 hover:text-foreground">
+                    {msg.detailsOpen ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <button onClick={() => copyText(msg.intent)} className="p-1 hover:text-foreground">
+                    <CopyIcon className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => readAloud(msg.intent)} className="p-1 hover:text-foreground">
+                    <Volume2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Reasoning Bar + Input Row - Fixed Bottom */}
-        <div className="border-t bg-card/50">
-          {/* Reasoning Bar */}
-          <div
-            className={cn(
-              "flex items-center gap-3 border-b px-6 py-2.5 transition-colors",
-              isActive && "bg-primary/5"
-            )}
+        {/* Input Bar */}
+        <div className="border-t bg-card p-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              submit();
+            }}
+            className="flex items-center gap-3"
           >
-            <div
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-lg transition-all",
-                isActive ? "bg-primary/20" : "bg-muted/10"
-              )}
-            >
-              <StageIcon
-                className={cn(
-                  "h-3.5 w-3.5 transition-all",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )}
-              />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "font-mono text-[10px] font-bold uppercase tracking-wider transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {stage.name}
-                </span>
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  {stage.detail}
-                </span>
-              </div>
-              <div className="mt-1 flex gap-1">
-                {STAGES.map((_, i) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      "h-1 w-6 rounded-full transition-all duration-500",
-                      i === stageIndex
-                        ? "bg-primary"
-                        : i < stageIndex
-                          ? "bg-primary/40"
-                          : "bg-border"
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-            <Signal>{isSubmitting ? "Processing" : "Ready"}</Signal>
-          </div>
-
-          {/* Input Row */}
-          <div className="flex items-center gap-3 px-6 py-3">
             <div className="relative">
               <button
-                className="rounded-lg p-2 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
-                aria-label="Attach file"
+                type="button"
                 onClick={() => setAttachOpen((v) => !v)}
+                className="rounded-lg p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                <Paperclip className="h-4 w-4" />
+                <Paperclip className="h-5 w-5" />
               </button>
               {attachOpen && (
-                <div className="absolute bottom-12 left-0 z-10 min-w-[180px] rounded-lg border bg-card p-1 shadow-xl">
-                  <MenuItem disabled icon={<Paperclip className="h-3.5 w-3.5" />}>
-                    Upload from computer
-                  </MenuItem>
-                  <MenuItem disabled icon={<Globe className="h-3.5 w-3.5" />}>
-                    Google Drive
-                  </MenuItem>
-                  <MenuItem disabled icon={<Users className="h-3.5 w-3.5" />}>
-                    GitHub
-                  </MenuItem>
-                  <MenuItem disabled icon={<Eye className="h-3.5 w-3.5" />}>
-                    Add a screenshot
-                  </MenuItem>
-                  <MenuItem disabled icon={<Zap className="h-3.5 w-3.5" />}>
-                    Connect data source
-                  </MenuItem>
+                <div className="absolute bottom-12 left-0 z-50 w-48 rounded-lg border bg-card p-2 shadow-lg font-mono text-xs space-y-1">
+                  <button className="flex w-full items-center gap-2 px-3 py-2 hover:bg-muted rounded">
+                    Attach Document
+                  </button>
+                  <button className="flex w-full items-center gap-2 px-3 py-2 hover:bg-muted rounded">
+                    Attach Telemetry Log
+                  </button>
                 </div>
               )}
             </div>
 
             <input
               ref={inputRef}
+              type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
               disabled={!activeSub || isSubmitting}
+              onChange={(e) => setInput(e.target.value)}
               placeholder={
                 activeSub
-                  ? `Ask IGX AI about ${entity.subs.find((s: SubItem) => s.id === activeSub)?.label}...`
-                  : "Pick a sub-item first..."
+                  ? "Enter instructions for IGX AI..."
+                  : "Select a module pill above to begin..."
               }
-              className="flex-1 rounded-xl border bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
+              className="flex-1 rounded-lg border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
             />
 
-            <button
-              className="rounded-lg p-2 text-muted-foreground/50 transition-all hover:text-foreground disabled:opacity-30"
-              aria-label="Voice input"
-              disabled
-            >
-              <Mic className="h-4 w-4" />
-            </button>
-
             <Button
-              size="icon"
-              onClick={submit}
-              disabled={!activeSub || isSubmitting || !input.trim()}
-              className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 disabled:opacity-50"
+              type="submit"
+              disabled={!input.trim() || !activeSub || isSubmitting}
+              className="gap-2"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -811,105 +607,39 @@ function IgxAi() {
                 <Send className="h-4 w-4" />
               )}
             </Button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   );
 }
 
-// ===== Sub-components =====
-
 function RailGroup({
   group,
   activeEntity,
   onSelect,
 }: {
-  group: typeof igxPeople | typeof igxOrgEntities;
+  group: Record<string, { label: string; subs: SubItem[] }>;
   activeEntity: EntityKey;
   onSelect: (key: EntityKey) => void;
 }) {
   return (
-    <div className="mt-2 space-y-0.5">
-      {Object.entries(group).map(([k, v]) => {
-        const isActive = k === activeEntity;
-        return (
-          <button
-            key={k}
-            onClick={() => onSelect(k as EntityKey)}
-            className={cn(
-              "group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all duration-200",
-              isActive
-                ? "bg-primary/10 text-primary shadow-sm shadow-primary/10"
-                : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
-            )}
-          >
-            <StatusDot state={"state" in v ? v.state : undefined} />
-            <span className="flex-1">{v.label}</span>
-            {isActive && <ChevronRight className="h-3.5 w-3.5 text-primary" />}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function StatusDot({ state }: { state?: string }) {
-  const color =
-    state === "active" || state === "ready"
-      ? "#7A9B76"
-      : state === "forming"
-        ? "#C6A15B"
-        : "#A6978A";
-  return (
-    <span
-      className="h-1.5 w-1.5 shrink-0 rounded-full"
-      style={{ backgroundColor: color }}
-      title={state ?? "status not tracked"}
-    />
-  );
-}
-
-function MenuItem({
-  children,
-  onClick,
-  disabled,
-  icon,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-xs text-foreground transition-colors hover:bg-primary/10 disabled:opacity-40"
-    >
-      {icon}
-      <span>{children}</span>
-    </button>
-  );
-}
-
-function DetailRow({
-  label,
-  value,
-  valueClassName,
-}: {
-  label: string;
-  value: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-6">
-      <span className="font-mono text-[10px] uppercase text-muted-foreground/50">
-        {label}
-      </span>
-      <span className={cn("text-sm text-foreground/80", valueClassName)}>
-        {value}
-      </span>
+    <div className="mt-2 space-y-1">
+      {Object.entries(group).map(([key, item]) => (
+        <button
+          key={key}
+          onClick={() => onSelect(key as EntityKey)}
+          className={cn(
+            "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-mono text-xs transition-all",
+            activeEntity === key
+              ? "bg-primary/10 text-primary font-semibold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+        >
+          <span>{item.label}</span>
+          <ChevronRight className="h-3.5 w-3.5 opacity-60" />
+        </button>
+      ))}
     </div>
   );
 }
