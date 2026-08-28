@@ -1,6 +1,5 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Warm Ivory Theme
-   Background: #F5F0EB · Cards: #FAF6F1 · Primary: #B85C3A
+   IJIDI OPERATING SYSTEM — Midnight Dark / Warm Ivory Theme
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -17,7 +16,7 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
-  /* --- Semantic color variables (shadcn) --- */
+  /* --- Semantic color variables --- */
   --color-background        : var(--background);
   --color-foreground        : var(--foreground);
   --color-card              : var(--card);
@@ -46,7 +45,7 @@
   --color-gold              : var(--gold);
   --color-teal              : var(--teal);
 
-  /* --- Chart / Sidebar (unused but defined) --- */
+  /* --- Chart / Sidebar --- */
   --color-chart-1           : var(--chart-1);
   --color-chart-2           : var(--chart-2);
   --color-chart-3           : var(--chart-3);
@@ -63,45 +62,133 @@
 }
 
 /* ============================================================
-   :ROOT — WARM IVORY / TERRACOTTA THEME
+   DEFAULT BASELINE & .DARK — MIDNIGHT DARK MODE (Edge Target)
    ============================================================ */
-:root {
-  /* --- Backgrounds --- */
-  --background: #F5F0EB;           /* Warm Ivory */
-  --foreground: #1A1614;            /* Warm Black */
+:root,
+.dark {
+  color-scheme: dark;
 
-  /* --- Cards & Surfaces --- */
-  --card: #FAF6F1;                 /* Soft Cream */
-  --card-foreground: #1A1614;
+  /* --- Backgrounds & Surfaces --- */
+  --background: #12100F;
+  --foreground: #F5F0EB;
 
-  --popover: #FFFCF8;              /* Warm White */
-  --popover-foreground: #1A1614;
+  --card: #1C1816;
+  --card-foreground: #F5F0EB;
 
-  /* --- Primary - Terracotta --- */
-  --primary: #B85C3A;
-  --primary-foreground: #F5F0EB;
+  --popover: #1C1816;
+  --popover-foreground: #F5F0EB;
 
-  /* --- Secondary - Warm Taupe --- */
-  --secondary: #E8DDD2;
-  --secondary-foreground: #1A1614;
+  /* --- Brand Accents --- */
+  --primary: #C6A15B;             /* Champagne Gold */
+  --primary-foreground: #12100F;
 
-  /* --- Muted --- */
-  --muted: #E8DDD2;
-  --muted-foreground: #6B5F55;      /* Warm Grey */
+  --secondary: #2C241E;
+  --secondary-foreground: #F5F0EB;
 
-  /* --- Accent - Muted Gold --- */
-  --accent: #C6A15B;
-  --accent-foreground: #1A1614;
+  --muted: #25201C;
+  --muted-foreground: #A6978A;     /* Muted Sand */
 
-  /* --- Destructive - Rust --- */
+  --accent: #B85C3A;            /* Terracotta */
+  --accent-foreground: #F5F0EB;
+
   --destructive: #C45A3C;
   --destructive-foreground: #F5F0EB;
 
-  /* --- Success - Sage --- */
   --success: #7A9B76;
   --success-foreground: #F5F0EB;
 
-  /* --- Borders --- */
+  /* --- Borders & Inputs --- */
+  --border: #2C241E;
+  --border-strong: #3C322A;
+  --border-accent: rgba(198, 161, 91, 0.25);
+
+  --input: #2C241E;
+  --ring: #C6A15B;
+
+  --panel: #1A1614;
+  --panel-elevated: #2C241E;
+
+  /* --- Hardware Tokens --- */
+  --navy: #12100F;
+  --navy-deep: #0A0807;
+  --line: #3C322A;
+  --line-dim: #2C241E;
+  --paper: #1C1816;
+  --paper-dim: #1A1614;
+  --steel: #6B5F55;
+  --charcoal: #25201C;
+  --amber: #C6A15B;
+  --amber-bright: #D4AF37;
+  --gold: #C6A15B;
+  --teal: #7A9B76;
+  --blue: #8A9BA8;
+  --slate: #6B5F55;
+  --danger: #C45A3C;
+  --blueprint-ok: #7A9B76;
+  --blue-glow: rgba(198, 161, 91, 0.12);
+
+  /* --- Shadows --- */
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
+
+  /* --- Charts & Navigation --- */
+  --chart-1: #C6A15B;
+  --chart-2: #7A9B76;
+  --chart-3: #B85C3A;
+  --chart-4: #8A9BA8;
+  --chart-5: #C45A3C;
+
+  --sidebar: #1A1614;
+  --sidebar-foreground: #F5F0EB;
+  --sidebar-primary: #C6A15B;
+  --sidebar-primary-foreground: #12100F;
+  --sidebar-accent: #B85C3A;
+  --sidebar-accent-foreground: #F5F0EB;
+  --sidebar-border: #2C241E;
+  --sidebar-ring: #C6A15B;
+
+  /* --- Opacity RGB Triples --- */
+  --primary-rgb: 198, 161, 91;
+  --accent-rgb: 184, 92, 58;
+  --gold-rgb: 198, 161, 91;
+  --teal-rgb: 122, 155, 118;
+  --destructive-rgb: 196, 90, 60;
+}
+
+/* ============================================================
+   .LIGHT MODE TOGGLE OVERRIDE
+   ============================================================ */
+.light {
+  color-scheme: light;
+
+  --background: #F5F0EB;
+  --foreground: #1A1614;
+
+  --card: #FAF6F1;
+  --card-foreground: #1A1614;
+
+  --popover: #FFFCF8;
+  --popover-foreground: #1A1614;
+
+  --primary: #B85C3A;
+  --primary-foreground: #F5F0EB;
+
+  --secondary: #E8DDD2;
+  --secondary-foreground: #1A1614;
+
+  --muted: #E8DDD2;
+  --muted-foreground: #6B5F55;
+
+  --accent: #C6A15B;
+  --accent-foreground: #1A1614;
+
+  --destructive: #C45A3C;
+  --destructive-foreground: #F5F0EB;
+
+  --success: #7A9B76;
+  --success-foreground: #F5F0EB;
+
   --border: #E8DDD2;
   --border-strong: #D6C9BC;
   --border-accent: rgba(184, 92, 58, 0.25);
@@ -109,11 +196,9 @@
   --input: #E8DDD2;
   --ring: #B85C3A;
 
-  /* --- Panel variants --- */
   --panel: #FAF6F1;
   --panel-elevated: #FFFCF8;
 
-  /* --- Warm theme brand tokens --- */
   --navy: #2C241E;
   --navy-deep: #1A1614;
   --line: #A6978A;
@@ -132,12 +217,10 @@
   --blueprint-ok: #7A9B76;
   --blue-glow: rgba(184, 92, 58, 0.12);
 
-  /* --- Shadow Colors --- */
   --shadow-sheet: 0 18px 40px -28px rgba(26, 22, 20, 0.15);
   --shadow-lift: 0 30px 60px -32px rgba(26, 22, 20, 0.2);
   --shadow-card: 0 4px 24px -12px rgba(26, 22, 20, 0.12);
 
-  /* --- Chart / Sidebar (warm values) --- */
   --chart-1: #B85C3A;
   --chart-2: #7A9B76;
   --chart-3: #C6A15B;
@@ -153,57 +236,12 @@
   --sidebar-border: #E8DDD2;
   --sidebar-ring: #B85C3A;
 
-  /* --- RGB triples for the color-mix fallback layer at the bottom
-     of this file. Derived directly from the hex values above. --- */
   --primary-rgb: 184, 92, 58;
   --accent-rgb: 198, 161, 91;
   --gold-rgb: 198, 161, 91;
   --teal-rgb: 122, 155, 118;
   --destructive-rgb: 196, 90, 60;
 }
-
-/* ============================================================
-   .DARK — Optional dark mode override (commented out)
-   Uncomment if you want a dark mode toggle later
-   ============================================================ */
-/*
-.dark {
-  --background: #1A1614;
-  --foreground: #F5F0EB;
-  --card: #2C241E;
-  --card-foreground: #F5F0EB;
-  --popover: #2C241E;
-  --popover-foreground: #F5F0EB;
-  --primary: #C6A15B;
-  --primary-foreground: #1A1614;
-  --secondary: #3C322A;
-  --secondary-foreground: #F5F0EB;
-  --muted: #3C322A;
-  --muted-foreground: #A6978A;
-  --accent: #B85C3A;
-  --accent-foreground: #F5F0EB;
-  --destructive: #C45A3C;
-  --destructive-foreground: #F5F0EB;
-  --success: #7A9B76;
-  --success-foreground: #F5F0EB;
-  --border: #3C322A;
-  --border-strong: #4A3F35;
-  --border-accent: rgba(198, 161, 91, 0.25);
-  --input: #3C322A;
-  --ring: #C6A15B;
-  --panel: #2C241E;
-  --panel-elevated: #3C322A;
-  --blue: #8A9BA8;
-  --slate: #6B5F55;
-  --danger: #C45A3C;
-  --gold: #C6A15B;
-  --teal: #7A9B76;
-  --blue-glow: rgba(198, 161, 91, 0.12);
-  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
-  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
-}
-*/
 
 /* ============================================================
    BASE RESETS
@@ -214,6 +252,7 @@
 
 html {
   background: var(--background);
+  color: var(--foreground);
 }
 
 body {
@@ -235,7 +274,6 @@ a {
 /* ============================================================
    DEMARCATION LINES
    ============================================================ */
-
 .divider-light {
   border-top: 1px solid var(--border);
 }
@@ -270,7 +308,7 @@ a {
   left: 30%;
   right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(184, 92, 58, 0.08), transparent);
+  background: radial-gradient(ellipse, rgba(198, 161, 91, 0.08), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -293,7 +331,7 @@ a {
 }
 
 /* ============================================================
-   SCROLLBAR — consistent across Chrome + Edge
+   SCROLLBAR — Consistent across Chrome & Edge
    ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
@@ -320,10 +358,6 @@ a {
   scrollbar-color: var(--border-strong) var(--background);
 }
 
-/* Custom scrollbar for specific elements — same muted, blended tone as
-   the global scrollbar above (was orange/primary against the ivory
-   background; --border-strong sits close enough to --background/--card
-   to read as a quiet track rather than a loud accent color). */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -568,7 +602,7 @@ a {
 }
 
 .table-demarcated tr:hover td {
-  background: rgba(184, 92, 58, 0.05);
+  background: rgba(198, 161, 91, 0.05);
 }
 
 /* ============================================================
@@ -582,7 +616,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(184, 92, 58, 0.06) 1px, transparent 0);
+  background-image: radial-gradient(rgba(198, 161, 91, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -659,12 +693,12 @@ a {
   background: var(--primary);
   color: var(--primary-foreground);
   border: 1px solid var(--border-strong);
-  box-shadow: 0 0 20px rgba(184, 92, 58, 0.15);
+  box-shadow: 0 0 20px rgba(198, 161, 91, 0.15);
   transition: all 0.2s ease;
 }
 
 .hex-badge:hover {
-  box-shadow: 0 0 30px rgba(184, 92, 58, 0.25);
+  box-shadow: 0 0 30px rgba(198, 161, 91, 0.25);
   transform: scale(1.02);
 }
 
@@ -682,49 +716,23 @@ a {
 }
 
 /* ============================================================
-   COLOR-MIX FALLBACK LAYER (added 2026-08-27)
-   ------------------------------------------------------------
-   Tailwind v4 compiles every opacity-modifier utility that reads
-   a CSS custom property (bg-primary/10, text-gold/60, border-
-   accent/40, etc. — used throughout index.tsx and igx-ai.tsx)
-   into color-mix(in oklab, var(--x) N%, transparent). Chrome and
-   Edge share the Blink engine, but color-mix() + oklab mixing
-   against hex-defined :root variables has shipped with
-   inconsistent rendering across recent stable channels — hence
-   gold in one, flat white/transparent in the other.
-
-   Fix: define plain rgba() fallbacks for the small set of tokens
-   actually referenced at opacity in this codebase, applied as
-   the DEFAULT (not gated behind @supports-not, since the bug is
-   inconsistent quality, not absence of support). Tailwind's own
-   generated color-mix() rules load earlier in the cascade via
-   @import "tailwindcss" at the top of this file; these plain
-   rgba() rules come later in file order and win on equal
-   specificity, so a browser that renders color-mix() correctly
-   sees no visual change, and one that doesn't still gets the
-   real gold instead of falling through to white/transparent.
-
-   RGB triples used below are declared once in :root above
-   (--primary-rgb, --accent-rgb, --gold-rgb, --teal-rgb,
-   --destructive-rgb) so there is one source of truth if the
-   base hex values ever change.
+   COLOR-MIX FALLBACK LAYER
    ============================================================ */
+.bg-primary\/5    { background-color: rgba(var(--primary-rgb), 0.05); }
+.bg-primary\/10   { background-color: rgba(var(--primary-rgb), 0.10); }
+.bg-primary\/16   { background-color: rgba(var(--primary-rgb), 0.16); }
+.bg-primary\/18   { background-color: rgba(var(--primary-rgb), 0.18); }
+.bg-primary\/20   { background-color: rgba(var(--primary-rgb), 0.20); }
 
-.bg-primary\/5   { background-color: rgba(var(--primary-rgb), 0.05); }
-.bg-primary\/10  { background-color: rgba(var(--primary-rgb), 0.10); }
-.bg-primary\/16  { background-color: rgba(var(--primary-rgb), 0.16); }
-.bg-primary\/18  { background-color: rgba(var(--primary-rgb), 0.18); }
-.bg-primary\/20  { background-color: rgba(var(--primary-rgb), 0.20); }
+.bg-accent\/5     { background-color: rgba(var(--accent-rgb), 0.05); }
+.bg-accent\/10    { background-color: rgba(var(--accent-rgb), 0.10); }
+.bg-accent\/20    { background-color: rgba(var(--accent-rgb), 0.20); }
 
-.bg-accent\/5    { background-color: rgba(var(--accent-rgb), 0.05); }
-.bg-accent\/10   { background-color: rgba(var(--accent-rgb), 0.10); }
-.bg-accent\/20   { background-color: rgba(var(--accent-rgb), 0.20); }
+.bg-gold\/10      { background-color: rgba(var(--gold-rgb), 0.10); }
+.bg-gold\/20      { background-color: rgba(var(--gold-rgb), 0.20); }
 
-.bg-gold\/10     { background-color: rgba(var(--gold-rgb), 0.10); }
-.bg-gold\/20     { background-color: rgba(var(--gold-rgb), 0.20); }
-
-.bg-teal\/10     { background-color: rgba(var(--teal-rgb), 0.10); }
-.bg-teal\/20     { background-color: rgba(var(--teal-rgb), 0.20); }
+.bg-teal\/10      { background-color: rgba(var(--teal-rgb), 0.10); }
+.bg-teal\/20      { background-color: rgba(var(--teal-rgb), 0.20); }
 
 .bg-destructive\/10 { background-color: rgba(var(--destructive-rgb), 0.10); }
 .bg-destructive\/20 { background-color: rgba(var(--destructive-rgb), 0.20); }
