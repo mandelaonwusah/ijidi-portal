@@ -29,7 +29,6 @@ import { HexBadge, Eyebrow } from "@/components/portal-ui";
 import { RadarBackground } from "@/components/RadarBackground";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
-import igxEmblem from "@/assets/igx-emblem.png";
 
 function NotFoundComponent() {
   return (
@@ -179,17 +178,8 @@ function PortalShell({ children }: { children: ReactNode }) {
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
 
-  // Activate WebSocket Realtime Cache Invalidation Engine
   usePortalRealtime();
 
-  // FIX (2026-08-27): the IGX AI floating trigger used to open a local
-  // slide-out "quick console" panel here. index.tsx ALSO had its own
-  // floating IGX button + slide-out panel, so two buttons rendered on the
-  // Command Center at once. Removed the duplicate in index.tsx and kept
-  // this one, since it's the global layout button (present on every route).
-  // Per request: tapping now navigates straight to the full /igx-ai chat
-  // console — no intermediate panel. ⌘J does the same, direct navigation,
-  // no interstitial state.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -207,10 +197,8 @@ function PortalShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
-      {/* 60fps Radar Canvas Vector Field */}
       <RadarBackground />
 
-      {/* Primary Operational Surface */}
       <div className="relative z-10 flex min-h-screen flex-col">
         <TickerBar />
         <div className="lg:flex">
@@ -321,11 +309,6 @@ function PortalShell({ children }: { children: ReactNode }) {
                   <span>Search modules</span>
                   <kbd className="rounded border border-border px-1.5 py-0.5 text-[9px]">⌘ K</kbd>
                 </button>
-                {/* Merged identity block — single top-right source of truth for
-                    access tier + identity. Previously "ACCESS TIER / ROOT" and
-                    "Governor online" lived separately in the left rail; that
-                    block is removed and folded in here, "online" text dropped
-                    per request. */}
                 <div className="flex items-center gap-3 border-l border-border pl-3">
                   <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-gold">
                     ROOT
@@ -354,7 +337,7 @@ function PortalShell({ children }: { children: ReactNode }) {
           aria-label="Open IGX AI"
           className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-gold/60 shadow-[0_8px_24px_var(--gold-glow)] transition-transform hover:scale-105"
         >
-          <img src={igxEmblem} alt="IGX AI" className="h-full w-full object-cover" />
+          <img src="/igx-emblem.png" alt="IGX AI" className="h-full w-full object-cover" />
         </button>
 
         <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
