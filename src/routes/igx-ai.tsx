@@ -40,6 +40,7 @@ import { supabase } from "@/lib/supabase";
 import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
+import igxEmblem from "@/assets/igx-emblem.png";
 
 export const Route = createFileRoute("/igx-ai")({
   head: () => ({
@@ -289,7 +290,15 @@ function IgxAi() {
   const recentActivities = activityLogs?.slice(0, 5) ?? [];
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] min-h-[600px] overflow-hidden rounded-xl border bg-background shadow-2xl">
+    // FIX (2026-08-28): this container had no `relative`, so the absolutely
+    // positioned mobile rail + menu-toggle button below anchored themselves
+    // to the nearest positioned ancestor UP THE TREE instead — which is
+    // PortalShell's page-wide `relative min-h-screen` wrapper in
+    // __root.tsx. That made the rail/toggle span and overlay the whole
+    // page (sticky ticker, header, dashboard) rather than just this card,
+    // which is what read as "the main dashboard covers the chat" on
+    // mobile. `relative` here scopes them correctly to this card.
+    <div className="relative flex h-[calc(100vh-5rem)] min-h-[600px] overflow-hidden rounded-xl border bg-background shadow-2xl">
       {/* Mobile Menu Toggle */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -308,8 +317,8 @@ function IgxAi() {
         <div className="flex h-full flex-col p-5">
           {/* Brand Header */}
           <div className="flex items-center gap-3 border-b pb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Bot className="h-5 w-5 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
+              <img src={igxEmblem} alt="IGX AI" className="h-full w-full object-cover" />
             </div>
             <div>
               <span className="font-sans text-lg font-bold tracking-tight text-foreground">
