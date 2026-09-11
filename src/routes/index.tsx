@@ -6,6 +6,7 @@ import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { entitySwitcherItems } from "@/lib/portal-data";
 import { 
   Bot, 
   Zap, 
@@ -80,6 +81,25 @@ function Eyebrow({ children, className = "" }: { children: React.ReactNode; clas
     <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${className}`}>
       {children}
     </span>
+  );
+}
+
+// Generalized top entity switcher — Group/Foundation/Atelier/Media.
+// Reusable across any route by importing entitySwitcherItems from portal-data.
+function EntitySwitcherBar({ activeKey }: { activeKey?: string }) {
+  return (
+    <div className="entity-switcher-bar">
+      {entitySwitcherItems.map((item) => (
+        <Link
+          key={item.key}
+          to={item.to}
+          className={cn("entity-chip", activeKey === item.key && "active")}
+        >
+          <span className={cn("entity-status-dot", item.status)} />
+          {item.label}
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -163,6 +183,11 @@ function CommandCenterOverview() {
               <div className="font-mono text-sm font-bold text-primary">v2026.08.27</div>
             </div>
           </div>
+        </div>
+
+        {/* Generalized top entity switcher */}
+        <div className="relative mt-6">
+          <EntitySwitcherBar />
         </div>
       </section>
 
