@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import {
   Bell,
@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eyebrow, Signal, StatusBadge } from "@/components/portal-ui";
 import { supabase } from "@/lib/supabase";
-import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
+import { igxPeople, igxOrgEntities, igxAllEntities, entitySwitcherItems } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 
@@ -93,6 +93,43 @@ function formatTime(isoString?: string): string {
   } catch {
     return "";
   }
+}
+
+// Generalized top entity switcher — Group/Foundation/Atelier/Media.
+// Same component/data contract as the one on the Command Center route.
+function EntitySwitcherBar() {
+  return (
+    <div className="entity-switcher-bar">
+      {entitySwitcherItems.map((item) => (
+        <Link key={item.key} to={item.to} className="entity-chip">
+          <span className={cn("entity-status-dot", item.status)} />
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// Bigger glowing reasoning orb — replaces the old thin Idle/Thinking/Routing strip.
+function ReasoningOrb({ stage }: { stage: (typeof STAGES)[number] }) {
+  const StageIcon = stage.icon;
+  return (
+    <div className="flex items-center gap-4 border-b bg-muted/30 px-6 py-3">
+      <div className="reasoning-orb-wrap">
+        <span className="reasoning-orb-ring" />
+        <span className="reasoning-orb-ring delay" />
+        <span className="reasoning-orb-core">
+          <StageIcon className="h-5 w-5 text-primary-foreground" />
+        </span>
+      </div>
+      <div>
+        <div className="font-mono text-sm font-semibold uppercase tracking-wide text-primary">
+          {stage.name}
+        </div>
+        <div className="font-mono text-xs text-muted-foreground">{stage.detail}</div>
+      </div>
+    </div>
+  );
 }
 
 function IgxAi() {
@@ -282,7 +319,6 @@ function IgxAi() {
   };
 
   const stage = STAGES[stageIndex];
-  const StageIcon = stage.icon;
 
   const recentActivities = activityLogs?.slice(0, 5) ?? [];
 
@@ -402,6 +438,11 @@ function IgxAi() {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden bg-background">
+        {/* Generalized top entity switcher */}
+        <div className="border-b bg-card/50 px-6 py-3">
+          <EntitySwitcherBar />
+        </div>
+
         {/* Header: Entity + Pills + Actions */}
         <div className="border-b bg-card/50 px-6 py-4">
           <div className="flex flex-wrap items-center gap-3">
@@ -432,7 +473,7 @@ function IgxAi() {
               ))}
             </div>
             <button
-              className="relative rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+              className="relative shrink-0 rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
               aria-label="Activity feed"
               onClick={() => setActivityOpen((v) => !v)}
             >
@@ -467,14 +508,8 @@ function IgxAi() {
           )}
         </div>
 
-        {/* Stage Indicator */}
-        <div className="flex items-center gap-3 border-b bg-muted/30 px-6 py-2">
-          <StageIcon className="h-4 w-4 text-primary animate-pulse" />
-          <span className="font-mono text-xs font-semibold uppercase text-primary">
-            {stage.name}
-          </span>
-          <span className="text-xs text-muted-foreground">— {stage.detail}</span>
-        </div>
+        {/* Reasoning Orb — bigger glowing status readout */}
+        <ReasoningOrb stage={stage} />
 
         {/* Chat Stream */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -562,11 +597,11 @@ function IgxAi() {
             }}
             className="flex items-center gap-3"
           >
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setAttachOpen((v) => !v)}
-                className="rounded-lg p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="shrink-0 rounded-lg p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Paperclip className="h-5 w-5" />
               </button>
@@ -593,13 +628,13 @@ function IgxAi() {
                   ? "Enter instructions for IGX AI..."
                   : "Select a module pill above to begin..."
               }
-              className="flex-1 rounded-lg border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+              className="min-w-0 flex-1 rounded-lg border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
             />
 
             <Button
               type="submit"
               disabled={!input.trim() || !activeSub || isSubmitting}
-              className="gap-2"
+              className="shrink-0 gap-2"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -619,7 +654,7 @@ function RailGroup({
   activeEntity,
   onSelect,
 }: {
-  group: Record<string, { label: string; subs: SubItem[] }>;
+  group: Record<string, { label: string; state?: string; subs: SubItem[] }>;
   activeEntity: EntityKey;
   onSelect: (key: EntityKey) => void;
 }) {
@@ -636,7 +671,15 @@ function RailGroup({
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <span>{item.label}</span>
+          <span className="flex items-center gap-2">
+            <span
+              className={cn(
+                "entity-status-dot",
+                item.state === "forming" ? "forming" : "standby"
+              )}
+            />
+            {item.label}
+          </span>
           <ChevronRight className="h-3.5 w-3.5 opacity-60" />
         </button>
       ))}
