@@ -703,6 +703,116 @@ a {
 }
 
 /* ============================================================
+   ENTITY SWITCHER BAR — generalized top switcher (Group/Foundation/Atelier/Media)
+   ============================================================ */
+.entity-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  background: var(--panel);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.entity-switcher-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.entity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--card);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.entity-chip:hover {
+  border-color: var(--border-accent);
+  color: var(--foreground);
+  background: var(--panel-elevated);
+}
+
+.entity-chip.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.entity-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.entity-status-dot.standby {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(122, 155, 118, 0.5);
+}
+
+.entity-status-dot.forming {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(198, 161, 91, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   REASONING ORB — bigger glowing status readout (replaces small stage strip)
+   ============================================================ */
+.reasoning-orb-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.reasoning-orb-core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--primary), var(--accent) 85%);
+  box-shadow: 0 0 24px rgba(var(--primary-rgb), 0.5), inset 0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+.reasoning-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--primary-rgb), 0.4);
+  animation: orb-pulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+.reasoning-orb-ring.delay {
+  animation-delay: 1.2s;
+}
+
+@keyframes orb-pulse {
+  0%   { transform: scale(0.7); opacity: 0.8; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* ============================================================
    REDUCED MOTION
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
