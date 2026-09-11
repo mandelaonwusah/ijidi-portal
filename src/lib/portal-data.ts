@@ -15,6 +15,17 @@ export const navItems = [
   { label: "Identity", to: "/settings", icon: "◌", key: "11" },
 ] as const;
 
+// Generalized top entity switcher bar — used on Command Center, IGX AI,
+// and any other page that renders <EntitySwitcherBar />. Status drives
+// the .entity-status-dot color in styles.css ("standby" = --success,
+// "forming" = --gold).
+export const entitySwitcherItems = [
+  { key: "group", label: "IJIDI Group", to: "/ecosystem", status: "standby" },
+  { key: "foundation", label: "IJIDI Foundation", to: "/foundation", status: "standby" },
+  { key: "atelier", label: "IJIDI Atelier", to: "/atelier", status: "forming" },
+  { key: "media", label: "IJIDI Media", to: "/media", status: "forming" },
+] as const;
+
 export const metricTiles = [
   {
     label: "Tracked capital",
@@ -164,6 +175,13 @@ export const decisions = [
     label: "IGX AI console — gold/purple/orange confirmed",
     detail:
       "IGX AI console palette confirmed: gold #C6A15B (primary/human actor), deep purple #5C3D8C (system/IGX actor), orange #D97B3F (reject/attention), background #0C0E2E/#07081C, text #F5F2EB. Scoped to the IGX AI console only — does not alter the 21 AUG Portal Deep Navy #101C36 / Electric Blue #356AE6 tokens. Mandela is personally handling the live Portal repo's global retouch if and when that happens; not queued as a build task here.",
+    state: "FROZEN",
+  },
+  {
+    date: "12 SEP 2026",
+    label: "Console overhaul — entity switcher + reasoning orb",
+    detail:
+      "Generalized top entity switcher bar (Group/Foundation/Atelier/Media, with status dots) added via entitySwitcherItems + .entity-switcher-bar/.entity-chip styles. Small Idle/Thinking/Routing strip in igx-ai.tsx replaced with a bigger glowing .reasoning-orb-wrap component.",
     state: "FROZEN",
   },
   { date: "—", label: "Next decision", detail: "No decision has been logged.", state: "OPEN" },
