@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eyebrow, Signal, StatusBadge } from "@/components/portal-ui";
 import { supabase } from "@/lib/supabase";
-import { igxPeople, igxOrgEntities, igxAllEntities, entitySwitcherItems } from "@/lib/portal-data";
+import { igxPeople, igxOrgEntities, igxAllEntities, personalBrand } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 
@@ -93,21 +93,6 @@ function formatTime(isoString?: string): string {
   } catch {
     return "";
   }
-}
-
-// Generalized top entity switcher — Group/Foundation/Atelier/Media.
-// Same component/data contract as the one on the Command Center route.
-function EntitySwitcherBar() {
-  return (
-    <div className="entity-switcher-bar">
-      {entitySwitcherItems.map((item) => (
-        <Link key={item.key} to={item.to} className="entity-chip">
-          <span className={cn("entity-status-dot", item.status)} />
-          {item.label}
-        </Link>
-      ))}
-    </div>
-  );
 }
 
 // Bigger glowing reasoning orb — replaces the old thin Idle/Thinking/Routing strip.
@@ -349,9 +334,16 @@ function IgxAi() {
               <span className="font-sans text-lg font-bold tracking-tight text-foreground">
                 IGX AI
               </span>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
-                <span className="font-mono text-[10px] text-muted-foreground">ONLINE</span>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-wide text-primary">
+                  Root
+                </span>
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  {personalBrand.name}
+                </span>
+              </div>
+              <div className="font-mono text-[9px] text-muted-foreground/60">
+                {personalBrand.handle} · Governor
               </div>
             </div>
             <div className="ml-auto flex gap-1">
@@ -438,11 +430,6 @@ function IgxAi() {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden bg-background">
-        {/* Generalized top entity switcher */}
-        <div className="border-b bg-card/50 px-6 py-3">
-          <EntitySwitcherBar />
-        </div>
-
         {/* Header: Entity + Pills + Actions */}
         <div className="border-b bg-card/50 px-6 py-4">
           <div className="flex flex-wrap items-center gap-3">
