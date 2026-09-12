@@ -20,7 +20,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { navItems } from "@/lib/portal-data";
+import { navItems, entitySwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
@@ -186,6 +186,29 @@ function TickerBar() {
   );
 }
 
+// Generalized top entity switcher — Group/Foundation/Atelier/Media.
+// Lives once here in the root shell so it renders on every route without
+// per-page duplication. Highlights the entity matching the current path.
+function EntitySwitcherBar() {
+  const currentPath = useRouterState({ select: (state) => state.location.pathname });
+  return (
+    <div className="entity-switcher-bar mx-4 my-2 sm:mx-6">
+      {entitySwitcherItems.map((item) => (
+        <Link
+          key={item.key}
+          to={item.to}
+          onMouseEnter={() => sounds.playHover()}
+          onClick={() => sounds.playClick()}
+          className={cn("entity-chip", currentPath === item.to && "active")}
+        >
+          <span className={cn("entity-status-dot", item.status)} />
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function PortalShell({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
@@ -232,6 +255,7 @@ function PortalShell({ children }: { children: ReactNode }) {
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <TickerBar />
+        <EntitySwitcherBar />
         <div className="lg:flex">
           <aside
             className={cn(
