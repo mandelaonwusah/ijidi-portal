@@ -200,6 +200,20 @@ function LoginPage() {
     navigate({ to: "/" });
   }
 
+  async function handleSocialAuth(provider: 'google' | 'github') {
+    setError(null);
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (authError) {
+      setError(authError.message);
+    }
+  }
+
   return (
     <div className="ijidi-login">
       <StarfieldCanvas />
@@ -280,6 +294,37 @@ function LoginPage() {
             <button className="btn" type="submit" disabled={busy}>
               {busy ? "Verifying…" : "Authenticate"}
             </button>
+
+            <div className="oauth-divider">
+              <span>OR ACCESS VIA</span>
+            </div>
+
+            <div className="oauth-buttons">
+              <button
+                type="button"
+                className="btn-oauth"
+                onClick={() => handleSocialAuth("google")}
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                  <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-1.9z"/>
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/>
+                </svg>
+                Google
+              </button>
+
+              <button
+                type="button"
+                className="btn-oauth"
+                onClick={() => handleSocialAuth("github")}
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                GitHub
+              </button>
+            </div>
           </form>
 
           <div className="altlink">Trouble signing in? <b>Contact Governance</b></div>
@@ -387,6 +432,15 @@ function LoginPage() {
         .btn:hover{color:#fff;text-shadow:0 0 10px var(--hud);
           background:linear-gradient(180deg,rgba(var(--hud-rgb),.36),rgba(var(--hud-rgb),.12));
           box-shadow:0 0 26px rgba(var(--hud-rgb),.4),inset 0 0 20px rgba(var(--hud-rgb),.18)}
+        
+        /* OAuth UI Additions */
+        .oauth-divider{display:flex;align-items:center;margin:18px 0 14px;color:rgba(255,255,255,.3);font:600 9px/1 var(--mono);letter-spacing:.18em}
+        .oauth-divider::before,.oauth-divider::after{content:"";flex:1;height:1px;background:var(--stroke)}
+        .oauth-divider span{padding:0 10px}
+        .oauth-buttons{display:flex;gap:10px}
+        .btn-oauth{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:10px;border:1px solid var(--stroke);background:rgba(255,255,255,.03);color:var(--ink);font:600 11px/1 var(--mono);letter-spacing:.08em;cursor:pointer;transition:all .25s var(--ease)}
+        .btn-oauth:hover{background:rgba(var(--hud-rgb),.1);border-color:rgba(var(--hud-rgb),.4);color:#fff}
+
         .altlink{margin-top:16px;font:500 10.5px/1 var(--mono);letter-spacing:.1em;color:rgba(255,255,255,.4)}
         .altlink b{color:var(--hud);font-weight:600;cursor:pointer}
         .foot-tick{margin-top:22px;font:500 9.5px/1.6 var(--mono);letter-spacing:.08em;color:rgba(255,255,255,.32)}
