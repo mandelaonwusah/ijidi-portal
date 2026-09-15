@@ -153,12 +153,12 @@ function RootComponent() {
   );
 }
 
-// The login screen is a full-bleed standalone experience — it must not be
-// wrapped in the sidebar/ticker/header chrome. Every other route keeps
-// PortalShell exactly as before.
+// The login screen and console (cinematic HUD) are full-bleed standalone
+// experiences — they must not be wrapped in the sidebar/ticker/header chrome.
+// Every other route keeps PortalShell exactly as before.
 function ChromeGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/console") {
     return <>{children}</>;
   }
   return <PortalShell>{children}</PortalShell>;
