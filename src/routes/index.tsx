@@ -1,4 +1,3 @@
-// src/routes/index.tsx
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -341,7 +340,7 @@ function CommandCenterOverview() {
           </div>
         </section>
 
-        {/* Navigation Matrix - Updated */}
+        {/* Navigation Matrix */}
         <section>
           <div className="h-full rounded-xl border bg-card p-6">
             <div className="flex items-center gap-3 border-b pb-4">
@@ -467,7 +466,7 @@ function CommandCenterOverview() {
                               <span className={cn(
                                 "h-1.5 w-1.5 rounded-full",
                                 item.status === "standby" && "bg-teal-400",
-                                item.status === "forming" && "bg-gold-500"
+                                item.status === "forming" && "bg-amber-400"
                               )} />
                             </div>
                             <p className="font-mono text-[9px] text-muted-foreground/60">
