@@ -21,6 +21,8 @@ const BOOT_LINES = [
   ["HANDING OFF TO ACCESS SHELL", "READY"],
 ] as const;
 
+const REMEMBER_KEY = "ijidi_remember_email";
+
 function StarfieldCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -140,11 +142,21 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [booted, setBooted] = useState(false);
   const [visibleLines, setVisibleLines] = useState(0);
   const [tickIndex, setTickIndex] = useState(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRemember(true);
+    }
+  }, []);
 
   useEffect(() => {
     let i = 0;
@@ -179,6 +191,11 @@ function LoginPage() {
     if (authError) {
       setError(authError.message);
       return;
+    }
+    if (remember) {
+      localStorage.setItem(REMEMBER_KEY, email);
+    } else {
+      localStorage.removeItem(REMEMBER_KEY);
     }
     navigate({ to: "/" });
   }
@@ -230,14 +247,33 @@ function LoginPage() {
             </div>
             <div className="field">
               <label>Passkey</label>
-              <input
-                type="password"
-                placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="password-wrap">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="toggle-eye"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
+
+            <label className="remember-row">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              <span>Remember Access ID</span>
+            </label>
 
             {error && <div className="auth-error">{error}</div>}
 
@@ -311,7 +347,7 @@ function LoginPage() {
         .medallion-wrap{position:relative;width:150px;height:150px;margin:0 auto 18px}
         .medallion-ring{position:absolute;inset:-10px;border-radius:50%;border:1px solid var(--stroke-strong);
           filter:drop-shadow(0 0 14px rgba(var(--hud-rgb),.5));animation:ijidiSpin 16s linear infinite}
-        .medallion{width:150px;height:150px;border-radius:50%;
+        .medallion{width:150px;height:150px;border-radius:50%;object-fit:cover;background:#0b0d14;
           filter:drop-shadow(0 0 22px rgba(var(--hud-rgb),.35));animation:ijidiFloat 5s ease-in-out infinite}
         @keyframes ijidiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         .brand-line{font:600 20px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase;margin-top:6px;
@@ -332,6 +368,15 @@ function LoginPage() {
           outline:none;transition:border-color .25s,box-shadow .25s}
         .field input::placeholder{color:rgba(255,255,255,.28)}
         .field input:focus{border-color:rgba(var(--hud-rgb),.6);box-shadow:0 0 0 3px rgba(var(--hud-rgb),.12)}
+        .password-wrap{position:relative}
+        .password-wrap input{padding-right:58px}
+        .toggle-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);
+          background:transparent;border:none;cursor:pointer;
+          font:700 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hud);
+          padding:6px 8px}
+        .remember-row{display:flex;align-items:center;gap:8px;cursor:pointer;
+          font:500 10.5px/1 var(--mono);letter-spacing:.06em;color:rgba(255,255,255,.6);margin-top:-2px}
+        .remember-row input{width:14px;height:14px;accent-color:var(--hud);cursor:pointer}
         .auth-error{font:600 10.5px/1.5 var(--mono);color:#ff6b8a;letter-spacing:.04em}
         .btn{position:relative;overflow:hidden;cursor:pointer;width:100%;margin-top:8px;
           padding:13px 22px;border-radius:10px;border:1px solid rgba(var(--hud-rgb),.45);
