@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 
-export const Route = createFileRoute("/console")({
+export const Route = createFileRoute("/console")({ 
   component: ConsolePage,
 });
 
