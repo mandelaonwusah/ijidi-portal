@@ -1,5 +1,4 @@
 # IJIDI Portal
-
 Good — got them, 2 minutes each. pull frames across each to see the actual UI. Do you actually see it. This is a completely different tier than what I built — a full "sovereign command center" aesthetic: dark near-black UI, gold/amber + teal accents, hexagon shield badges, encrypted vault cards, a live ticker bar, an AI intelligence console styled like a terminal feed, a visual ecosystem hierarchy (root node branching into corporate/philanthropic arms), and a proper settings/identity panel with role badges. I get why the flat version felt like a downgrade now — it wasn't close. build toward this, and get me something genuinely strong. But two honest things I need to flag before you do, because getting them wrong wastes your build:
 
 **1. Naming conflict.** This app is branded "IJIDI Global Nexus" throughout, with "Sovereign" language everywhere (Sovereign Capital Engine, Sovereign Root, Paramount Trust). My own frozen architecture explicitly retired "IGXNexus" as a name — memory states it should never be used, only "IGX AI" and "IJIDI Portal." So you have two paths: rebuild this exact aesthetic under my *locked* naming, 
