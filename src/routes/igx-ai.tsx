@@ -5,7 +5,7 @@ import {
   Bot,
   Check,
   ChevronDown,
-  Copy as CopyIcon,
+  Copy as CopyIcon, 
   History,
   Mic,
   MoreHorizontal,
