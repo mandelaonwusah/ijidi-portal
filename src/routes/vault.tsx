@@ -4,7 +4,7 @@ import { vaultItems } from "@/lib/portal-data";
 import { Eyebrow, RestrictedMark, SectionHeader, StatusBadge } from "@/components/portal-ui";
 export const Route = createFileRoute("/vault")({
   head: () => ({
-    meta: [
+    meta: [ 
       { title: "The Vault · IJIDI Portal" },
       {
         name: "description",
