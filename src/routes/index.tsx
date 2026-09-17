@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { 
   Bot, 
-  Zap, 
+  Zap,  
   Shield, 
   Globe, 
   Users, 
