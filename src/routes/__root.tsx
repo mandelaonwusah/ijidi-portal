@@ -262,6 +262,15 @@ function PortalShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
+      {/* HUD overlays — carry the login skin across the whole portal */}
+      <div className="portal-hud-grid" aria-hidden="true" />
+      <div className="portal-hud-scanlines" aria-hidden="true" />
+      <div className="portal-hud-vignette" aria-hidden="true" />
+      <div className="portal-hud-frame" aria-hidden="true">
+        <span className="c tl" /><span className="c tr" />
+        <span className="c bl" /><span className="c br" />
+      </div>
+
       <RadarBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">

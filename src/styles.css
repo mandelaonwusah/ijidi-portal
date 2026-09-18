@@ -1,5 +1,5 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Midnight Dark / Warm Ivory Theme
+   IJIDI OPERATING SYSTEM — Cyber HUD / Cyan Terminal Theme
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -69,91 +69,91 @@
   color-scheme: dark;
 
   /* --- Backgrounds & Surfaces --- */
-  --background: #12100F;
-  --foreground: #F5F0EB;
+  --background: #02040a;
+  --foreground: #eaf6ff;
 
-  --card: #1C1816;
-  --card-foreground: #F5F0EB;
+  --card: #050b16;
+  --card-foreground: #eaf6ff;
 
-  --popover: #1C1816;
-  --popover-foreground: #F5F0EB;
+  --popover: #050b16;
+  --popover-foreground: #eaf6ff;
 
   /* --- Brand Accents --- */
-  --primary: #C6A15B;             /* Champagne Gold */
-  --primary-foreground: #12100F;
+  --primary: #00f0ff;             /* HUD Cyan */
+  --primary-foreground: #02040a;
 
-  --secondary: #2C241E;
-  --secondary-foreground: #F5F0EB;
+  --secondary: #0a1422;
+  --secondary-foreground: #eaf6ff;
 
-  --muted: #25201C;
-  --muted-foreground: #A6978A;     /* Muted Sand */
+  --muted: #0a1422;
+  --muted-foreground: #5a7a90;     /* Muted Cyan-Grey */
 
-  --accent: #B85C3A;            /* Terracotta */
-  --accent-foreground: #F5F0EB;
+  --accent: #8a6bff;            /* HUD Violet */
+  --accent-foreground: #eaf6ff;
 
-  --destructive: #C45A3C;
-  --destructive-foreground: #F5F0EB;
+  --destructive: #ff6b8a;
+  --destructive-foreground: #eaf6ff;
 
-  --success: #7A9B76;
-  --success-foreground: #F5F0EB;
+  --success: #00f0ff;
+  --success-foreground: #02040a;
 
   /* --- Borders & Inputs --- */
-  --border: #2C241E;
-  --border-strong: #3C322A;
-  --border-accent: rgba(198, 161, 91, 0.25);
+  --border: rgba(0, 240, 255, 0.18);
+  --border-strong: rgba(0, 240, 255, 0.35);
+  --border-accent: rgba(0, 240, 255, 0.25);
 
-  --input: #2C241E;
-  --ring: #C6A15B;
+  --input: #0a1422;
+  --ring: #00f0ff;
 
-  --panel: #1A1614;
-  --panel-elevated: #2C241E;
+  --panel: #050b16;
+  --panel-elevated: #0a1422;
 
   /* --- Hardware Tokens --- */
-  --navy: #12100F;
-  --navy-deep: #0A0807;
-  --line: #3C322A;
-  --line-dim: #2C241E;
-  --paper: #1C1816;
-  --paper-dim: #1A1614;
-  --steel: #6B5F55;
-  --charcoal: #25201C;
-  --amber: #C6A15B;
-  --amber-bright: #D4AF37;
-  --gold: #C6A15B;
-  --teal: #7A9B76;
-  --blue: #8A9BA8;
-  --slate: #6B5F55;
-  --danger: #C45A3C;
-  --blueprint-ok: #7A9B76;
-  --blue-glow: rgba(198, 161, 91, 0.12);
+  --navy: #02040a;
+  --navy-deep: #010206;
+  --line: rgba(0, 240, 255, 0.35);
+  --line-dim: rgba(0, 240, 255, 0.18);
+  --paper: #050b16;
+  --paper-dim: #03060d;
+  --steel: #5a7a90;
+  --charcoal: #0a1422;
+  --amber: #00f0ff;
+  --amber-bright: #00f0ff;
+  --gold: #00f0ff;
+  --teal: #00f0ff;
+  --blue: #8a6bff;
+  --slate: #5a7a90;
+  --danger: #ff6b8a;
+  --blueprint-ok: #00f0ff;
+  --blue-glow: rgba(0, 240, 255, 0.12);
 
   /* --- Shadows --- */
-  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
-  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.5);
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.75);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.6);
 
   /* --- Charts & Navigation --- */
-  --chart-1: #C6A15B;
-  --chart-2: #7A9B76;
-  --chart-3: #B85C3A;
-  --chart-4: #8A9BA8;
-  --chart-5: #C45A3C;
+  --chart-1: #00f0ff;
+  --chart-2: #8a6bff;
+  --chart-3: #00d4a0;
+  --chart-4: #4a8fff;
+  --chart-5: #ff6b8a;
 
-  --sidebar: #1A1614;
-  --sidebar-foreground: #F5F0EB;
-  --sidebar-primary: #C6A15B;
-  --sidebar-primary-foreground: #12100F;
-  --sidebar-accent: #B85C3A;
-  --sidebar-accent-foreground: #F5F0EB;
-  --sidebar-border: #2C241E;
-  --sidebar-ring: #C6A15B;
+  --sidebar: #050b16;
+  --sidebar-foreground: #eaf6ff;
+  --sidebar-primary: #00f0ff;
+  --sidebar-primary-foreground: #02040a;
+  --sidebar-accent: #8a6bff;
+  --sidebar-accent-foreground: #eaf6ff;
+  --sidebar-border: rgba(0, 240, 255, 0.18);
+  --sidebar-ring: #00f0ff;
 
   /* --- Opacity RGB Triples --- */
-  --primary-rgb: 198, 161, 91;
-  --accent-rgb: 184, 92, 58;
-  --gold-rgb: 198, 161, 91;
-  --teal-rgb: 122, 155, 118;
-  --destructive-rgb: 196, 90, 60;
+  --primary-rgb: 0, 240, 255;
+  --accent-rgb: 138, 107, 255;
+  --gold-rgb: 0, 240, 255;
+  --teal-rgb: 0, 240, 255;
+  --destructive-rgb: 255, 107, 138;
 }
 
 /* ============================================================
@@ -162,85 +162,85 @@
 .light {
   color-scheme: light;
 
-  --background: #F5F0EB;
-  --foreground: #1A1614;
+  --background: #02040a;
+  --foreground: #eaf6ff;
 
-  --card: #FAF6F1;
-  --card-foreground: #1A1614;
+  --card: #050b16;
+  --card-foreground: #eaf6ff;
 
-  --popover: #FFFCF8;
-  --popover-foreground: #1A1614;
+  --popover: #050b16;
+  --popover-foreground: #eaf6ff;
 
-  --primary: #B85C3A;
-  --primary-foreground: #F5F0EB;
+  --primary: #00f0ff;
+  --primary-foreground: #02040a;
 
-  --secondary: #E8DDD2;
-  --secondary-foreground: #1A1614;
+  --secondary: #0a1422;
+  --secondary-foreground: #eaf6ff;
 
-  --muted: #E8DDD2;
-  --muted-foreground: #6B5F55;
+  --muted: #0a1422;
+  --muted-foreground: #5a7a90;
 
-  --accent: #C6A15B;
-  --accent-foreground: #1A1614;
+  --accent: #8a6bff;
+  --accent-foreground: #eaf6ff;
 
-  --destructive: #C45A3C;
-  --destructive-foreground: #F5F0EB;
+  --destructive: #ff6b8a;
+  --destructive-foreground: #eaf6ff;
 
-  --success: #7A9B76;
-  --success-foreground: #F5F0EB;
+  --success: #00f0ff;
+  --success-foreground: #02040a;
 
-  --border: #E8DDD2;
-  --border-strong: #D6C9BC;
-  --border-accent: rgba(184, 92, 58, 0.25);
+  --border: rgba(0, 240, 255, 0.18);
+  --border-strong: rgba(0, 240, 255, 0.35);
+  --border-accent: rgba(0, 240, 255, 0.25);
 
-  --input: #E8DDD2;
-  --ring: #B85C3A;
+  --input: #0a1422;
+  --ring: #00f0ff;
 
-  --panel: #FAF6F1;
-  --panel-elevated: #FFFCF8;
+  --panel: #050b16;
+  --panel-elevated: #0a1422;
 
-  --navy: #2C241E;
-  --navy-deep: #1A1614;
-  --line: #A6978A;
-  --line-dim: #C4B8AB;
-  --paper: #F5F0EB;
-  --paper-dim: #EAE3DA;
-  --steel: #8A7E72;
-  --charcoal: #3C322A;
-  --amber: #C6A15B;
-  --amber-bright: #D4AF37;
-  --gold: #C6A15B;
-  --teal: #7A9B76;
-  --blue: #8A9BA8;
-  --slate: #8A7E72;
-  --danger: #C45A3C;
-  --blueprint-ok: #7A9B76;
-  --blue-glow: rgba(184, 92, 58, 0.12);
+  --navy: #02040a;
+  --navy-deep: #010206;
+  --line: rgba(0, 240, 255, 0.35);
+  --line-dim: rgba(0, 240, 255, 0.18);
+  --paper: #050b16;
+  --paper-dim: #03060d;
+  --steel: #5a7a90;
+  --charcoal: #0a1422;
+  --amber: #00f0ff;
+  --amber-bright: #00f0ff;
+  --gold: #00f0ff;
+  --teal: #00f0ff;
+  --blue: #8a6bff;
+  --slate: #5a7a90;
+  --danger: #ff6b8a;
+  --blueprint-ok: #00f0ff;
+  --blue-glow: rgba(0, 240, 255, 0.12);
 
-  --shadow-sheet: 0 18px 40px -28px rgba(26, 22, 20, 0.15);
-  --shadow-lift: 0 30px 60px -32px rgba(26, 22, 20, 0.2);
-  --shadow-card: 0 4px 24px -12px rgba(26, 22, 20, 0.12);
+  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.75);
+  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.6);
 
-  --chart-1: #B85C3A;
-  --chart-2: #7A9B76;
-  --chart-3: #C6A15B;
-  --chart-4: #8A9BA8;
-  --chart-5: #C45A3C;
+  --chart-1: #00f0ff;
+  --chart-2: #8a6bff;
+  --chart-3: #00d4a0;
+  --chart-4: #4a8fff;
+  --chart-5: #ff6b8a;
 
-  --sidebar: #FAF6F1;
-  --sidebar-foreground: #1A1614;
-  --sidebar-primary: #B85C3A;
-  --sidebar-primary-foreground: #F5F0EB;
-  --sidebar-accent: #C6A15B;
-  --sidebar-accent-foreground: #1A1614;
-  --sidebar-border: #E8DDD2;
-  --sidebar-ring: #B85C3A;
+  --sidebar: #050b16;
+  --sidebar-foreground: #eaf6ff;
+  --sidebar-primary: #00f0ff;
+  --sidebar-primary-foreground: #02040a;
+  --sidebar-accent: #8a6bff;
+  --sidebar-accent-foreground: #eaf6ff;
+  --sidebar-border: rgba(0, 240, 255, 0.18);
+  --sidebar-ring: #00f0ff;
 
-  --primary-rgb: 184, 92, 58;
-  --accent-rgb: 198, 161, 91;
-  --gold-rgb: 198, 161, 91;
-  --teal-rgb: 122, 155, 118;
-  --destructive-rgb: 196, 90, 60;
+  --primary-rgb: 0, 240, 255;
+  --accent-rgb: 138, 107, 255;
+  --gold-rgb: 0, 240, 255;
+  --teal-rgb: 0, 240, 255;
+  --destructive-rgb: 255, 107, 138;
 }
 
 /* ============================================================
@@ -308,7 +308,7 @@ a {
   left: 30%;
   right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(198, 161, 91, 0.08), transparent);
+  background: radial-gradient(ellipse, rgba(0, 240, 255, 0.08), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -533,7 +533,7 @@ a {
 
 .metric-tile .status-indicator.online {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(122, 155, 118, 0.4);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
 }
 
 .metric-tile .status-indicator.offline {
@@ -564,7 +564,7 @@ a {
   height: 5px;
   border-radius: 50%;
   background: var(--success);
-  box-shadow: 0 0 10px rgba(122, 155, 118, 0.5);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -602,7 +602,7 @@ a {
 }
 
 .table-demarcated tr:hover td {
-  background: rgba(198, 161, 91, 0.05);
+  background: rgba(0, 240, 255, 0.05);
 }
 
 /* ============================================================
@@ -616,7 +616,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(198, 161, 91, 0.06) 1px, transparent 0);
+  background-image: radial-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -693,12 +693,12 @@ a {
   background: var(--primary);
   color: var(--primary-foreground);
   border: 1px solid var(--border-strong);
-  box-shadow: 0 0 20px rgba(198, 161, 91, 0.15);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
   transition: all 0.2s ease;
 }
 
 .hex-badge:hover {
-  box-shadow: 0 0 30px rgba(198, 161, 91, 0.25);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
   transform: scale(1.02);
 }
 
@@ -759,7 +759,7 @@ a {
 
 .entity-status-dot.standby {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(122, 155, 118, 0.5);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
 }
 
 .entity-status-dot.forming {
@@ -852,3 +852,70 @@ a {
 .border-accent\/30     { border-color: rgba(var(--accent-rgb), 0.30); }
 .border-teal-400\/30   { border-color: rgba(var(--teal-rgb), 0.30); }
 .border-destructive\/30 { border-color: rgba(var(--destructive-rgb), 0.30); }
+
+/* ============================================================
+   PORTAL HUD OVERLAYS — login skin carried across the whole app
+   ============================================================ */
+.portal-hud-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
+  opacity: 0.6;
+  animation: portalGridDrift 28s linear infinite;
+}
+@keyframes portalGridDrift { to { background-position: 64px 64px, 64px 64px; } }
+
+.portal-hud-scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+  animation: portalScanMove 10s linear infinite;
+}
+@keyframes portalScanMove { to { background-position: 0 300px; } }
+
+.portal-hud-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.portal-hud-frame {
+  position: fixed;
+  inset: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+.portal-hud-frame .c {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.4));
+  animation: portalCornerPulse 4s ease-in-out infinite;
+  opacity: 0.5;
+}
+@keyframes portalCornerPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
+.portal-hud-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
+.portal-hud-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 12px; animation-delay: .6s; }
+.portal-hud-frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 12px; animation-delay: 1.2s; }
+.portal-hud-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; animation-delay: 1.8s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-hud-grid, .portal-hud-scanlines, .portal-hud-frame .c {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

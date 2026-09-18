@@ -12,11 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as CapitalRouteImport } from './routes/capital'
+import { Route as ConsoleRouteImport } from './routes/console'
+import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as EcosystemRouteImport } from './routes/ecosystem'
 import { Route as FoundationRouteImport } from './routes/foundation'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as IgxAiRouteImport } from './routes/igx-ai'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MediaRouteImport } from './routes/media'
+import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as VaultRouteImport } from './routes/vault'
 
@@ -33,6 +37,16 @@ const AtelierRoute = AtelierRouteImport.update({
 const CapitalRoute = CapitalRouteImport.update({
   id: '/capital',
   path: '/capital',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectoryRoute = DirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EcosystemRoute = EcosystemRouteImport.update({
@@ -55,9 +69,19 @@ const IgxAiRoute = IgxAiRouteImport.update({
   path: '/igx-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaRoute = MediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposalsRoute = ProposalsRouteImport.update({
+  id: '/proposals',
+  path: '/proposals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -75,11 +99,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
   '/capital': typeof CapitalRoute
+  '/console': typeof ConsoleRoute
+  '/directory': typeof DirectoryRoute
   '/ecosystem': typeof EcosystemRoute
   '/foundation': typeof FoundationRoute
   '/governance': typeof GovernanceRoute
   '/igx-ai': typeof IgxAiRoute
+  '/login': typeof LoginRoute
   '/media': typeof MediaRoute
+  '/proposals': typeof ProposalsRoute
   '/settings': typeof SettingsRoute
   '/vault': typeof VaultRoute
 }
@@ -87,11 +115,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
   '/capital': typeof CapitalRoute
+  '/console': typeof ConsoleRoute
+  '/directory': typeof DirectoryRoute
   '/ecosystem': typeof EcosystemRoute
   '/foundation': typeof FoundationRoute
   '/governance': typeof GovernanceRoute
   '/igx-ai': typeof IgxAiRoute
+  '/login': typeof LoginRoute
   '/media': typeof MediaRoute
+  '/proposals': typeof ProposalsRoute
   '/settings': typeof SettingsRoute
   '/vault': typeof VaultRoute
 }
@@ -100,11 +132,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/atelier': typeof AtelierRoute
   '/capital': typeof CapitalRoute
+  '/console': typeof ConsoleRoute
+  '/directory': typeof DirectoryRoute
   '/ecosystem': typeof EcosystemRoute
   '/foundation': typeof FoundationRoute
   '/governance': typeof GovernanceRoute
   '/igx-ai': typeof IgxAiRoute
+  '/login': typeof LoginRoute
   '/media': typeof MediaRoute
+  '/proposals': typeof ProposalsRoute
   '/settings': typeof SettingsRoute
   '/vault': typeof VaultRoute
 }
@@ -114,11 +150,15 @@ export interface FileRouteTypes {
     | '/'
     | '/atelier'
     | '/capital'
+    | '/console'
+    | '/directory'
     | '/ecosystem'
     | '/foundation'
     | '/governance'
     | '/igx-ai'
+    | '/login'
     | '/media'
+    | '/proposals'
     | '/settings'
     | '/vault'
   fileRoutesByTo: FileRoutesByTo
@@ -126,11 +166,15 @@ export interface FileRouteTypes {
     | '/'
     | '/atelier'
     | '/capital'
+    | '/console'
+    | '/directory'
     | '/ecosystem'
     | '/foundation'
     | '/governance'
     | '/igx-ai'
+    | '/login'
     | '/media'
+    | '/proposals'
     | '/settings'
     | '/vault'
   id:
@@ -138,11 +182,15 @@ export interface FileRouteTypes {
     | '/'
     | '/atelier'
     | '/capital'
+    | '/console'
+    | '/directory'
     | '/ecosystem'
     | '/foundation'
     | '/governance'
     | '/igx-ai'
+    | '/login'
     | '/media'
+    | '/proposals'
     | '/settings'
     | '/vault'
   fileRoutesById: FileRoutesById
@@ -151,11 +199,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtelierRoute: typeof AtelierRoute
   CapitalRoute: typeof CapitalRoute
+  ConsoleRoute: typeof ConsoleRoute
+  DirectoryRoute: typeof DirectoryRoute
   EcosystemRoute: typeof EcosystemRoute
   FoundationRoute: typeof FoundationRoute
   GovernanceRoute: typeof GovernanceRoute
   IgxAiRoute: typeof IgxAiRoute
+  LoginRoute: typeof LoginRoute
   MediaRoute: typeof MediaRoute
+  ProposalsRoute: typeof ProposalsRoute
   SettingsRoute: typeof SettingsRoute
   VaultRoute: typeof VaultRoute
 }
@@ -181,6 +233,20 @@ declare module '@tanstack/react-router' {
       path: '/capital'
       fullPath: '/capital'
       preLoaderRoute: typeof CapitalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/directory': {
+      id: '/directory'
+      path: '/directory'
+      fullPath: '/directory'
+      preLoaderRoute: typeof DirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ecosystem': {
@@ -211,11 +277,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IgxAiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media': {
       id: '/media'
       path: '/media'
       fullPath: '/media'
       preLoaderRoute: typeof MediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposals': {
+      id: '/proposals'
+      path: '/proposals'
+      fullPath: '/proposals'
+      preLoaderRoute: typeof ProposalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -239,11 +319,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtelierRoute: AtelierRoute,
   CapitalRoute: CapitalRoute,
+  ConsoleRoute: ConsoleRoute,
+  DirectoryRoute: DirectoryRoute,
   EcosystemRoute: EcosystemRoute,
   FoundationRoute: FoundationRoute,
   GovernanceRoute: GovernanceRoute,
   IgxAiRoute: IgxAiRoute,
+  LoginRoute: LoginRoute,
   MediaRoute: MediaRoute,
+  ProposalsRoute: ProposalsRoute,
   SettingsRoute: SettingsRoute,
   VaultRoute: VaultRoute,
 }

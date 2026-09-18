@@ -45,7 +45,7 @@ export function RadarBackground() {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(212, 175, 55, ${node.alpha})`;
+        ctx.fillStyle = `rgba(0, 240, 255, ${node.alpha})`;
         ctx.fill();
       });
 
@@ -60,7 +60,7 @@ export function RadarBackground() {
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(212, 175, 55, ${0.1 * (1 - dist / 130)})`;
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.1 * (1 - dist / 130)})`;
             ctx.lineWidth = 0.75;
             ctx.stroke();
           }
