@@ -7,10 +7,11 @@ import {
   useRouterState,
   useNavigate,
   HeadContent,
-  Scripts, 
+  Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Brain } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -576,7 +577,7 @@ function TickerBar() {
         {loop.map((item, i) => (
           <span
             key={i}
-            className="mx-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground"
+            className="mx-5 flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-foreground"
           >
             <span className="text-gold live-pulse">◆</span> {item}
           </span>
@@ -605,6 +606,44 @@ function EntitySwitcherBar() {
         </Link>
       ))}
     </div>
+  );
+}
+
+// Floating IGX AI shortcut (bottom right). The badge is the real number of
+// proposals waiting in review; it is hidden if the count can't be loaded.
+function IgxFloatingButton({ hidden }: { hidden: boolean }) {
+  const { data: pending } = useQuery({
+    queryKey: ["igx-pending-count"],
+    refetchInterval: 15_000,
+    retry: 1,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("proposals")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending_review");
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  if (hidden) return null;
+  const label = pending ? `Open IGX AI — ${pending} pending review` : "Open IGX AI";
+
+  return (
+    <Link to="/igx-ai"
+      title={label}
+      aria-label={label}
+      onMouseEnter={() => sounds.playHover()}
+      onClick={() => sounds.playClick()}
+      className="group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#C6A15B] to-[#D4AF37] text-black shadow-lg shadow-black/40 ring-1 ring-black/10 transition-all hover:scale-105 hover:shadow-[0_0_24px_rgba(212,175,55,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:bottom-8 sm:right-8"
+    >
+      <Brain className="h-6 w-6" strokeWidth={2.25} aria-hidden="true" />
+      {pending !== undefined && pending > 0 && (
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D97B3F] px-1 font-mono text-[10px] font-bold text-white ring-2 ring-background">
+          {pending > 99 ? "99+" : pending}
+        </span>
+      )}
+    </Link>
   );
 }
 
@@ -1041,6 +1080,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           </div>
         </div>
       </div>
+
+      <IgxFloatingButton hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/")} />
 
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <CommandInput placeholder="Type a command or search modules..." />
