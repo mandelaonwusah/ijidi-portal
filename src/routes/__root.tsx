@@ -586,6 +586,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [signingOut, setSigningOut] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
@@ -661,6 +662,40 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
     setCollapsed(next);
     try {
       localStorage.setItem("ijidi_rail_collapsed", next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Sidebar parents (COMMAND / ECOSYSTEM / KNOWLEDGE / IDENTITY) fold and unfold.
+  // Restore what was open last time, then always keep the current page's group open.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("ijidi_nav_open");
+      if (!raw) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setOpenGroups(parsed.filter((g): g is string => typeof g === "string"));
+      }
+    } catch {
+      /* ignore — start with only the active group open */
+    }
+  }, []);
+
+  const activeGroup = activeItem?.group;
+  useEffect(() => {
+    if (!activeGroup) return;
+    setOpenGroups((prev) => (prev.includes(activeGroup) ? prev : [...prev, activeGroup]));
+  }, [activeGroup]);
+
+  const toggleGroup = (label: string) => {
+    sounds.playClick();
+    const next = openGroups.includes(label)
+      ? openGroups.filter((g) => g !== label)
+      : [...openGroups, label];
+    setOpenGroups(next);
+    try {
+      localStorage.setItem("ijidi_nav_open", JSON.stringify(next));
     } catch {
       /* ignore */
     }
@@ -751,62 +786,103 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
 
               <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
-                {navSections.map((section, sectionIndex) => (
-                  <div key={section.label} className={cn(sectionIndex > 0 && "mt-5")}>
-                    {/* Expanded: group heading with a thin gold rule */}
-                    <div className={cn("mb-2 flex items-center gap-2 px-3", collapsed && "lg:hidden")}>
-                      <Eyebrow className="text-[9px]">{section.label}</Eyebrow>
-                      <span className="h-px flex-1 bg-gold/20" />
-                    </div>
-                    {/* Collapsed: plain divider between groups */}
-                    {sectionIndex > 0 && (
-                      <div
-                        className={cn("mx-3 mb-3 hidden h-px bg-border", collapsed && "lg:block")}
-                        aria-hidden="true"
-                      />
-                    )}
-                    {section.items.map((item) => {
-                      const active = isNavActive(currentPath, item.to);
-                      return (
-                        <Link key={item.to}
-                          to={item.to}
-                          title={item.label}
-                          aria-current={active ? "page" : undefined}
-                          onMouseEnter={() => sounds.playHover()}
-                          onClick={() => {
-                            sounds.playClick();
-                            setRailOpen(false);
-                          }}
+                {navSections.map((section, sectionIndex) => {
+                  const isOpen = openGroups.includes(section.label);
+                  const hasActive = section.items.some((item) => isNavActive(currentPath, item.to));
+                  const groupId = `nav-group-${section.label.toLowerCase()}`;
+                  return (
+                    <div key={section.label} className={cn(sectionIndex > 0 && "mt-2")}>
+                      {/* Icon rail: plain divider between groups */}
+                      {sectionIndex > 0 && (
+                        <div
+                          className={cn("mx-3 mb-3 mt-1 hidden h-px bg-border", collapsed && "lg:block")}
+                          aria-hidden="true"
+                        />
+                      )}
+
+                      {/* Parent row — click to fold or unfold its pages */}
+                      <button type="button"
+                        onClick={() => toggleGroup(section.label)}
+                        onMouseEnter={() => sounds.playHover()}
+                        aria-expanded={isOpen}
+                        aria-controls={groupId}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2.5 text-left font-mono text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                          hasActive ? "text-gold" : "text-foreground/80 hover:text-foreground",
+                          collapsed && "lg:hidden"
+                        )}
+                      >
+                        <span
+                          aria-hidden="true"
                           className={cn(
-                            "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
-                            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                            collapsed && "lg:justify-center lg:gap-0 lg:px-0",
-                            active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                            "inline-block text-[8px] text-gold/70 transition-transform duration-150",
+                            isOpen && "rotate-90"
                           )}
                         >
-                          <span
-                            aria-hidden="true"
-                            className={cn(
-                              "absolute inset-y-2 left-0 w-0.5 rounded-full bg-gold opacity-0 transition-opacity",
-                              active && "opacity-100"
-                            )}
-                          />
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
-                            {item.icon}
-                          </span>
-                          <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
-                            {item.label}
-                          </span>
-                          <span
-                            className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
-                          >
-                            {item.key}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ))}
+                          ▶
+                        </span>
+                        <span className="flex-1">{section.label}</span>
+                        {hasActive && !isOpen && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
+                        )}
+                        <span className="text-[9px] font-normal tracking-normal text-muted-foreground/60">
+                          {section.items.length}
+                        </span>
+                      </button>
+
+                      {/* Child pages — hidden while the parent is folded (the icon rail always shows them) */}
+                      <div
+                        id={groupId}
+                        className={cn(
+                          "mt-1",
+                          isOpen ? "block" : collapsed ? "hidden lg:block" : "hidden",
+                          !collapsed && "ml-4 border-l border-gold/15 pl-1"
+                        )}
+                      >
+                        {section.items.map((item) => {
+                          const active = isNavActive(currentPath, item.to);
+                          return (
+                            <Link key={item.to}
+                              to={item.to}
+                              title={item.label}
+                              aria-current={active ? "page" : undefined}
+                              onMouseEnter={() => sounds.playHover()}
+                              onClick={() => {
+                                sounds.playClick();
+                                setRailOpen(false);
+                              }}
+                              className={cn(
+                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                                collapsed && "lg:justify-center lg:gap-0 lg:px-0",
+                                active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                              )}
+                            >
+                              <span
+                                aria-hidden="true"
+                                className={cn(
+                                  "absolute inset-y-2 left-0 w-0.5 rounded-full bg-gold opacity-0 transition-opacity",
+                                  active && "opacity-100"
+                                )}
+                              />
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
+                                {item.icon}
+                              </span>
+                              <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
+                                {item.label}
+                              </span>
+                              <span
+                                className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
+                              >
+                                {item.key}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </nav>
 
               {/* Settings replaces the old visible ⌘K button; Ctrl/⌘ + K still opens the palette */}
