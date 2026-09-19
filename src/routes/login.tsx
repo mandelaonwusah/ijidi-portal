@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-// Google/GitHub buttons stay hidden until those providers are enabled in
-// Supabase AND new sign-ups are deliberately allowed. Flip to true only then.
+// Keep false until Google/GitHub are enabled in Supabase AND new sign-ups are
+// restricted there. Otherwise any Google/GitHub account could create a session.
 const OAUTH_ENABLED = false;
 
 const REMEMBER_KEY = "ijidi_remember_email";
@@ -37,14 +37,18 @@ function LoginPage() {
   }, [navigate]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(REMEMBER_KEY);
-    if (saved) {
-      setEmail(saved);
-      setRemember(true);
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        setEmail(saved);
+        setRemember(true);
+      }
+    } catch {
+      // storage unavailable: ignore
     }
   }, []);
 
-  async function handleAuth(e: React.FormEvent) {
+  async function handleAuth(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
@@ -54,10 +58,14 @@ function LoginPage() {
       setError(authError.message);
       return;
     }
-    if (remember) {
-      localStorage.setItem(REMEMBER_KEY, email);
-    } else {
-      localStorage.removeItem(REMEMBER_KEY);
+    try {
+      if (remember) {
+        localStorage.setItem(REMEMBER_KEY, email);
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+    } catch {
+      // storage unavailable: ignore
     }
     navigate({ to: "/", replace: true });
   }
@@ -67,11 +75,8 @@ function LoginPage() {
     setOauthBusy(provider);
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
+      options: { redirectTo: `${window.location.origin}/` },
     });
-
     // On success the browser leaves for the provider; only failures land here.
     if (authError) {
       setOauthBusy(null);
@@ -82,98 +87,59 @@ function LoginPage() {
   const anyBusy = busy || oauthBusy !== null;
 
   return (
-    <div className="ijl">
-      <main className="ijl-stage">
-        <div className="ijl-inner">
+    <div className="ijidi-login">
+      <div className="login-stage">
+        <main className="login-card">
           {emblemOk && (
-            <img
-              className="ijl-emblem"
-              src="/ijidi-fan-emblem.png"
-              alt="IJIDI"
-              onError={() => setEmblemOk(false)}
-            />
+            <img className="emblem" src="/ijidi-fan-emblem.png" alt="IJIDI Portal emblem" onError={() => setEmblemOk(false)} />
           )}
-          <h1 className="ijl-wordmark">IJIDI Portal</h1>
-          <p className="ijl-note">Authorised access only.</p>
+          <div className="portal-name">
+            IJIDI <span>PORTAL</span>
+          </div>
+          <h1 className="form-title">Sign in</h1>
+          <p className="form-sub">Enter your Access ID and Passkey to continue.</p>
 
-          <form className="ijl-form" onSubmit={handleAuth}>
-            <div className="ijl-field">
+          <form className="fields" onSubmit={handleAuth}>
+            <div className="field">
               <label htmlFor="ijidi-access-id">Access ID</label>
-              <input
-                id="ijidi-access-id"
-                type="email"
-                name="email"
-                placeholder="Your email address"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <input id="ijidi-access-id" type="email" name="email" placeholder="you@example.com" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
-            <div className="ijl-field">
+            <div className="field">
               <label htmlFor="ijidi-passkey">Passkey</label>
-              <div className="ijl-password">
-                <input
-                  id="ijidi-passkey"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Your passkey"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="ijl-toggle"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Hide passkey" : "Show passkey"}
-                >
+              <div className="password-wrap">
+                <input id="ijidi-passkey" type={showPassword ? "text" : "password"} name="password" placeholder="••••••••••••" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <button type="button" className="toggle-eye" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
 
-            <label className="ijl-remember">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-              />
-              <span>Remember my Access ID</span>
+            <label className="remember-row">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              <span>Remember Access ID</span>
             </label>
 
             {error && (
-              <div className="ijl-error" role="alert">
+              <div className="auth-error" role="alert">
                 {error}
               </div>
             )}
 
-            <button className="ijl-submit" type="submit" disabled={anyBusy}>
-              {busy ? "Signing in…" : "Sign in"}
+            <button className="btn" type="submit" disabled={anyBusy}>
+              {busy ? "Verifying…" : "Authenticate"}
             </button>
 
             {OAUTH_ENABLED && (
               <>
-                <div className="ijl-divider">
-                  <span>or continue with</span>
+                <div className="oauth-divider">
+                  <span>OR CONTINUE WITH</span>
                 </div>
-                <div className="ijl-oauth">
-                  <button
-                    type="button"
-                    className="ijl-oauth-btn"
-                    disabled={anyBusy}
-                    onClick={() => handleSocialAuth("google")}
-                  >
+                <div className="oauth-buttons">
+                  <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("google")}>
                     {oauthBusy === "google" ? "Opening…" : "Google"}
                   </button>
-                  <button
-                    type="button"
-                    className="ijl-oauth-btn"
-                    disabled={anyBusy}
-                    onClick={() => handleSocialAuth("github")}
-                  >
+                  <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("github")}>
                     {oauthBusy === "github" ? "Opening…" : "GitHub"}
                   </button>
                 </div>
@@ -181,102 +147,117 @@ function LoginPage() {
             )}
           </form>
 
-          <p className="ijl-help">
-            Trouble signing in? <b>Contact the Governor.</b>
-          </p>
-        </div>
-      </main>
+          <div className="card-foot">
+            <span>Authorised access only</span>
+            <span>
+              Trouble signing in? <b>Contact the Governor</b>
+            </span>
+          </div>
+        </main>
+      </div>
 
       <style>{`
-        .ijl{
-          --gold:#C6A15B;--gold-hi:#E0C58A;--gold-rgb:198,161,91;
-          --ivory:#F5F1E8;--ivory-rgb:245,241,232;--obsidian:#111111;
-          --line:rgba(var(--gold-rgb),.3);
-          --sans:"Karla","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-          --serif:"Fraunces",Georgia,"Times New Roman",serif;
-          position:fixed;inset:0;z-index:100;overflow-x:hidden;overflow-y:auto;
-          color:var(--ivory);font-family:var(--sans);
+        .ijidi-login{--gold:#C6A15B;--gold-hi:#E2C688;--gold-lo:#A98443;--gold-rgb:198,161,91;
+          --ivory:#F5F1E8;--line:rgba(198,161,91,.24);
+          --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+          --display:"Fraunces",Georgia,"Times New Roman",serif;
+          --ease:cubic-bezier(.2,.8,.2,1);
+          position:fixed;inset:0;z-index:100;overflow-x:hidden;overflow-y:auto;color:var(--ivory);
+          font-family:"Karla","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
           background:
-            radial-gradient(ellipse 62% 46% at 50% 26%,rgba(var(--gold-rgb),.16),transparent 70%),
-            var(--obsidian);
+            radial-gradient(ellipse 60% 48% at 50% 26%,rgba(var(--gold-rgb),.17),transparent 70%),
+            radial-gradient(ellipse 90% 60% at 50% 105%,rgba(var(--gold-rgb),.07),transparent 70%),
+            #0d0d0e;}
+        .ijidi-login *{box-sizing:border-box}
+
+        .login-stage{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+          padding:32px 20px}
+
+        .login-card{position:relative;width:100%;max-width:420px;padding:40px 36px 28px;
+          border:1px solid var(--line);border-radius:20px;
+          background:linear-gradient(180deg,rgba(26,25,22,.88),rgba(14,14,14,.94));
+          backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%);
+          box-shadow:0 34px 90px rgba(0,0,0,.6),0 0 60px rgba(var(--gold-rgb),.06),inset 0 1px 0 rgba(255,255,255,.05);
+          animation:ijidiRise .7s var(--ease) both}
+        .login-card::before{content:"";position:absolute;top:-1px;left:14%;right:14%;height:1px;
+          background:linear-gradient(90deg,transparent,var(--gold-hi),transparent)}
+        @keyframes ijidiRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+        .emblem{display:block;width:140px;height:140px;margin:-6px auto 14px;object-fit:contain;
+          filter:drop-shadow(0 8px 28px rgba(var(--gold-rgb),.4))}
+        .portal-name{text-align:center;font:600 12px/1 var(--mono);letter-spacing:.44em;color:var(--ivory)}
+        .portal-name span{color:var(--gold)}
+        .form-title{margin:22px 0 0;text-align:center;font:500 32px/1.1 var(--display);letter-spacing:.01em;color:var(--ivory)}
+        .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Karla","Segoe UI",sans-serif;color:rgba(245,241,232,.55)}
+
+        .fields{margin-top:28px;display:flex;flex-direction:column;gap:16px;text-align:left}
+        .field label{display:block;margin-bottom:8px;font:600 9.5px/1 var(--mono);letter-spacing:.22em;
+          text-transform:uppercase;color:var(--gold)}
+        .field input{width:100%;padding:14px 15px;border-radius:10px;border:1px solid var(--line);
+          background:rgba(255,255,255,.035);color:var(--ivory);font:500 14.5px/1.2 "Karla","Segoe UI",sans-serif;
+          letter-spacing:.02em;outline:none;transition:border-color .25s,box-shadow .25s,background .25s}
+        .field input::placeholder{color:rgba(245,241,232,.28)}
+        .field input:focus{border-color:rgba(var(--gold-rgb),.75);background:rgba(255,255,255,.05);
+          box-shadow:0 0 0 3px rgba(var(--gold-rgb),.16)}
+        .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #1b1a17 inset;
+          -webkit-text-fill-color:#F5F1E8;caret-color:#F5F1E8}
+        .password-wrap{position:relative}
+        .password-wrap input{padding-right:68px}
+        .toggle-eye{position:absolute;top:50%;right:6px;transform:translateY(-50%);background:transparent;border:none;
+          cursor:pointer;padding:10px;border-radius:6px;font:700 9px/1 var(--mono);letter-spacing:.16em;
+          text-transform:uppercase;color:var(--gold);transition:color .2s}
+        .toggle-eye:hover{color:var(--gold-hi)}
+
+        .remember-row{display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:-2px;
+          font:500 11px/1 var(--mono);letter-spacing:.06em;color:rgba(245,241,232,.6)}
+        .remember-row input{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
+
+        .auth-error{padding:10px 13px;border-radius:8px;border:1px solid rgba(217,123,63,.45);
+          background:rgba(217,123,63,.09);font:600 11px/1.5 var(--mono);letter-spacing:.03em;color:#e9a06f}
+
+        .btn{width:100%;margin-top:6px;min-height:52px;padding:14px 22px;border-radius:10px;cursor:pointer;
+          border:1px solid rgba(255,255,255,.14);
+          background:linear-gradient(180deg,var(--gold-hi),var(--gold) 55%,var(--gold-lo));
+          color:#15120a;font:700 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;
+          box-shadow:0 10px 28px rgba(var(--gold-rgb),.24),inset 0 1px 0 rgba(255,255,255,.35);
+          transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .25s}
+        .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06);
+          box-shadow:0 14px 36px rgba(var(--gold-rgb),.34),inset 0 1px 0 rgba(255,255,255,.4)}
+        .btn:active:not(:disabled){transform:translateY(0)}
+        .btn:disabled{opacity:.6;cursor:default}
+
+        .oauth-divider{display:flex;align-items:center;margin:20px 0 14px;color:rgba(245,241,232,.35);
+          font:600 9px/1 var(--mono);letter-spacing:.18em}
+        .oauth-divider::before,.oauth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+        .oauth-divider span{padding:0 10px}
+        .oauth-buttons{display:flex;gap:10px}
+        .btn-oauth{flex:1;min-height:46px;padding:10px;border-radius:10px;border:1px solid var(--line);
+          background:rgba(255,255,255,.03);color:var(--ivory);font:600 11.5px/1 var(--mono);letter-spacing:.08em;
+          cursor:pointer;transition:all .25s var(--ease)}
+        .btn-oauth:hover:not(:disabled){background:rgba(var(--gold-rgb),.1);border-color:rgba(var(--gold-rgb),.5)}
+        .btn-oauth:disabled{opacity:.55;cursor:default}
+
+        .btn:focus-visible,.btn-oauth:focus-visible,.toggle-eye:focus-visible,.remember-row input:focus-visible{
+          outline:2px solid var(--gold-hi);outline-offset:2px}
+
+        .card-foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;
+          gap:8px;align-items:center;text-align:center;font:500 10px/1.5 var(--mono);letter-spacing:.1em;
+          color:rgba(245,241,232,.38)}
+        .card-foot b{color:var(--gold);font-weight:600}
+
+        @media (max-width:520px){
+          .login-stage{align-items:flex-start;padding:28px 16px 24px}
+          .login-card{padding:32px 22px 24px;border-radius:18px}
+          .emblem{width:120px;height:120px}
+          .form-title{font-size:28px}
+          /* 16px inputs stop iPhones zooming in when a field is tapped */
+          .field input{font-size:16px;min-height:52px}
+          .btn{min-height:54px}
         }
-        .ijl *{box-sizing:border-box}
 
-        .ijl-stage{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
-          padding:40px 22px}
-        .ijl-inner{width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;
-          text-align:center;animation:ijlIn .9s cubic-bezier(.2,.8,.2,1) both}
-        @keyframes ijlIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
-        /* The emblem is the one bold element on the page */
-        .ijl-emblem{display:block;width:clamp(150px,38vw,196px);height:auto;
-          filter:drop-shadow(0 0 26px rgba(var(--gold-rgb),.38)) drop-shadow(0 2px 6px rgba(0,0,0,.6))}
-        .ijl-wordmark{margin:14px 0 0;font:500 clamp(1.7rem,6vw,2.1rem)/1.1 var(--serif);
-          letter-spacing:.14em;text-transform:uppercase;color:var(--ivory)}
-        .ijl-note{margin:10px 0 0;font:400 14px/1.4 var(--sans);letter-spacing:.02em;
-          color:rgba(var(--ivory-rgb),.62)}
-
-        .ijl-form{width:100%;margin-top:34px;padding-top:30px;border-top:1px solid var(--line);
-          display:flex;flex-direction:column;gap:18px;text-align:left}
-        .ijl-field label{display:block;margin-bottom:8px;font:600 13px/1 var(--sans);letter-spacing:.02em;
-          color:var(--gold-hi)}
-        .ijl-field input[type="email"],
-        .ijl-field input[type="password"],
-        .ijl-field input[type="text"]{
-          width:100%;min-height:52px;padding:14px 16px;border-radius:10px;
-          border:1px solid var(--line);background:rgba(var(--ivory-rgb),.05);
-          color:var(--ivory);font:400 16px/1.2 var(--sans);outline:none;
-          transition:border-color .2s,box-shadow .2s,background .2s}
-        .ijl-field input::placeholder{color:rgba(var(--ivory-rgb),.36)}
-        .ijl-field input:focus{border-color:var(--gold);background:rgba(var(--ivory-rgb),.07);
-          box-shadow:0 0 0 3px rgba(var(--gold-rgb),.2)}
-        .ijl-password{position:relative}
-        .ijl-password input{padding-right:72px}
-        .ijl-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);
-          min-width:56px;min-height:40px;padding:0 10px;border:0;border-radius:8px;background:transparent;
-          color:var(--gold);font:600 13px/1 var(--sans);cursor:pointer;transition:color .2s}
-        .ijl-toggle:hover{color:var(--gold-hi)}
-
-        .ijl-remember{display:flex;align-items:center;gap:10px;cursor:pointer;
-          font:400 14px/1 var(--sans);color:rgba(var(--ivory-rgb),.72)}
-        .ijl-remember input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
-
-        .ijl-error{padding:12px 14px;border-radius:10px;border:1px solid rgba(224,122,107,.45);
-          background:rgba(224,122,107,.1);color:#F0A79C;font:500 14px/1.45 var(--sans)}
-
-        .ijl-submit{width:100%;min-height:54px;margin-top:4px;padding:14px 22px;border:0;border-radius:10px;
-          background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:var(--obsidian);
-          font:700 16px/1 var(--sans);letter-spacing:.04em;cursor:pointer;
-          box-shadow:0 8px 28px rgba(var(--gold-rgb),.22);
-          transition:transform .15s,box-shadow .2s,filter .2s}
-        .ijl-submit:hover:not(:disabled){filter:brightness(1.07);box-shadow:0 10px 34px rgba(var(--gold-rgb),.34)}
-        .ijl-submit:active:not(:disabled){transform:translateY(1px)}
-        .ijl-submit:disabled{opacity:.6;cursor:default}
-
-        .ijl-divider{display:flex;align-items:center;gap:12px;margin-top:6px;
-          font:400 13px/1 var(--sans);color:rgba(var(--ivory-rgb),.5)}
-        .ijl-divider::before,.ijl-divider::after{content:"";flex:1;height:1px;background:var(--line)}
-        .ijl-oauth{display:flex;gap:10px}
-        .ijl-oauth-btn{flex:1;min-height:50px;border-radius:10px;border:1px solid var(--line);
-          background:rgba(var(--ivory-rgb),.04);color:var(--ivory);font:600 15px/1 var(--sans);cursor:pointer;
-          transition:border-color .2s,background .2s}
-        .ijl-oauth-btn:hover:not(:disabled){border-color:var(--gold);background:rgba(var(--gold-rgb),.1)}
-        .ijl-oauth-btn:disabled{opacity:.55;cursor:default}
-
-        .ijl-help{margin:26px 0 0;font:400 14px/1.4 var(--sans);color:rgba(var(--ivory-rgb),.55)}
-        .ijl-help b{font-weight:600;color:var(--gold)}
-
-        /* Keyboard focus */
-        .ijl-submit:focus-visible,.ijl-oauth-btn:focus-visible,.ijl-toggle:focus-visible,
-        .ijl-remember input:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
-
-        @media (max-width:480px){
-          .ijl-stage{align-items:flex-start;padding:48px 22px 32px}
-          .ijl-form{margin-top:28px;padding-top:26px}
-        }
         @media (prefers-reduced-motion:reduce){
-          .ijl-inner{animation:none}
-          .ijl *{transition-duration:.001ms!important}
+          .ijidi-login *{animation-duration:.001ms!important;animation-iteration-count:1!important;
+            transition-duration:.001ms!important}
         }
       `}</style>
     </div>
