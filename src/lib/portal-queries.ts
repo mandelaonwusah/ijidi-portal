@@ -8,14 +8,36 @@ export interface ActivityEntry {
   type?: string;
 }
 
-export interface GovernanceProposal {
+export type ProposalStatus = "pending_review" | "approved" | "rejected";
+
+// Mirrors the real `proposals` table columns.
+export interface ProposalRecord {
   id: string;
-  title: string;
-  status: "ACTIVE" | "PASSED" | "FAILED" | "PENDING";
-  votesFor: number;
-  votesAgainst: number;
-  quorumPct: number;
-  endsIn: string;
+  created_at: string;
+  updated_at: string;
+  actor_type: string;
+  source: string | null;
+  intent: string;
+  suggested_action: string;
+  reasoning: string | null;
+  confidence_score: number | null;
+  status: ProposalStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+}
+
+// Kept so any older import of this name still compiles. It now describes the
+// real proposals table, not the old made-up shape.
+export type GovernanceProposal = ProposalRecord;
+
+// Mirrors the real `decisions` table columns.
+export interface DecisionRecord {
+  id: number;
+  date: string;
+  label: string;
+  detail: string;
+  state: string;
 }
 
 export interface NodeStatus {
@@ -34,93 +56,99 @@ export interface EcosystemMetrics {
   uptime: string;
 }
 
-// 1. Live Activity Log (Real data only — honest empty state if none exists)
-// Columns: id, timestamp, actor, action, entity_id
+// 1. Live Activity Log — real rows only. The real column is `timestamp`
+//    (there is no `created_at`). Errors are thrown, not hidden, so the UI can
+//    show "unavailable" instead of pretending the log is empty.
 export async function getActivity(): Promise<ActivityEntry[]> {
-  try {
-    const { data, error } = await supabase
-      .from("activity_log")
-      .select("*")
-      .order("timestamp", { ascending: false })
-      .limit(10);
+  const { data, error } = await supabase
+    .from("activity_log")
+    .select("id, actor, action, timestamp")
+    .order("timestamp", { ascending: false })
+    .limit(10);
 
-    if (error) {
-      console.error("Failed to load activity_log:", error);
-      return [];
-    }
-
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-    return data.map((d: Record<string, any>) => ({
-      id: String(d.id),
-      actor: d.actor || "GOVERNOR",
-      action: d.action || "Executed system command",
-      timestamp: d.timestamp || "",
-      type: "SYSTEM", // activity_log has no type column
-    }));
-  } catch (err) {
-    console.error("getActivity failed:", err);
-    return [];
+  if (error) {
+    console.error("Failed to load activity_log:", error);
+    throw error;
   }
+
+  return (data ?? []).map((d) => ({
+    id: String(d.id),
+    actor: d.actor,
+    action: d.action,
+    timestamp: d.timestamp,
+  }));
 }
 
-// 2. Governance Proposals — honest stub until a real `proposals` table exists
-export async function getProposals(): Promise<GovernanceProposal[]> {
-  try {
-    const { data, error } = await supabase.from("proposals").select("*").limit(5);
+// 2. Proposals — real rows from `proposals`. Empty array means genuinely none;
+//    a failure throws so the page can say so honestly.
+export async function getProposals(): Promise<ProposalRecord[]> {
+  const { data, error } = await supabase
+    .from("proposals")
+    .select(
+      "id, created_at, updated_at, actor_type, source, intent, suggested_action, reasoning, confidence_score, status, reviewed_by, reviewed_at, review_note"
+    )
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-    if (error) {
-      // Table likely doesn't exist yet — not an error state, just NOT TRACKED
-      return [];
-    }
-
-    return (data as GovernanceProposal[]) ?? [];
-  } catch (err) {
-    console.error("getProposals failed:", err);
-    return [];
+  if (error) {
+    console.error("Failed to load proposals:", error);
+    throw error;
   }
+
+  return (data ?? []) as ProposalRecord[];
 }
 
-// 3. Node Telemetry — honest stub until real infrastructure monitoring exists
+// 3. Decision log — real rows from `decisions`.
+export async function getDecisions(): Promise<DecisionRecord[]> {
+  const { data, error } = await supabase
+    .from("decisions")
+    .select("id, date, label, detail, state")
+    .order("id", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("Failed to load decisions:", error);
+    throw error;
+  }
+
+  return (data ?? []) as DecisionRecord[];
+}
+
+// 4. Node Telemetry — honest stub until real infrastructure monitoring exists
 export async function getNodeTelemetry(): Promise<NodeStatus[]> {
   // No real node/infra monitoring wired up yet. Return empty rather than
   // simulated/random data, per Honest-State Protocol.
   return [];
 }
 
-// 4. Ecosystem Top-Level Metrics — real data from `decisions`, honest NOT TRACKED elsewhere
+// 5. Ecosystem Top-Level Metrics — real proposal count, honest NOT TRACKED elsewhere
 export async function getEcosystemMetrics(): Promise<EcosystemMetrics> {
+  const notTracked: EcosystemMetrics = {
+    totalVaultAssets: "NOT TRACKED",
+    activeProposals: "NOT TRACKED",
+    governanceStatus: "NOT TRACKED",
+    uptime: "NOT TRACKED",
+  };
+
   try {
-    const { count: openDecisionCount, error } = await supabase
-      .from("decisions")
+    const { count: pendingCount, error } = await supabase
+      .from("proposals")
       .select("*", { count: "exact", head: true })
-      .eq("state", "OPEN");
+      .eq("status", "pending_review");
 
     if (error) {
-      console.error("Failed to load decisions for metrics:", error);
-      return {
-        totalVaultAssets: "NOT TRACKED",
-        activeProposals: "NOT TRACKED",
-        governanceStatus: "NOT TRACKED",
-        uptime: "NOT TRACKED",
-      };
+      console.error("Failed to load proposals for metrics:", error);
+      return notTracked;
     }
 
     return {
       totalVaultAssets: "NOT TRACKED", // no vault/finance table exists yet
-      activeProposals: String(openDecisionCount ?? 0).padStart(2, "0"),
+      activeProposals: String(pendingCount ?? 0).padStart(2, "0"), // proposals awaiting review
       governanceStatus: "NOT TRACKED", // no real governance-state source yet
       uptime: "NOT TRACKED", // no real uptime monitoring wired up yet
     };
   } catch (err) {
     console.error("getEcosystemMetrics failed:", err);
-    return {
-      totalVaultAssets: "NOT TRACKED",
-      activeProposals: "NOT TRACKED",
-      governanceStatus: "NOT TRACKED",
-      uptime: "NOT TRACKED",
-    };
+    return notTracked;
   }
 }
