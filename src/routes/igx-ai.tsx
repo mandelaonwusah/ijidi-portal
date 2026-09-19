@@ -65,6 +65,8 @@ type ThreadMessage = {
   moreOpen: boolean;
 };
 
+type PendingProposal = { id: string; intent: string; created_at: string };
+
 // Honest-state readout: every stage below maps to something that really
 // happens in this console. No model is called yet (IGX AI Step B is not wired),
 // so there are no "thinking / routing / orchestrating" stages to show.
@@ -92,6 +94,19 @@ function formatTime(isoString?: string): string {
   } catch {
     return "";
   }
+}
+
+function formatDateTime(isoString?: string): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 // Generalized top entity switcher — Group/Foundation/Atelier/Media.
@@ -139,6 +154,10 @@ function IgxAi() {
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resolving, setResolving] = useState<number | null>(null);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [pendingList, setPendingList] = useState<PendingProposal[]>([]);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingActionError, setPendingActionError] = useState<string | null>(null);
   const [activityOpen, setActivityOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -153,19 +172,25 @@ function IgxAi() {
   const entity = igxAllEntities[activeEntity];
   const key = activeSub ? threadKey(activeEntity, activeSub) : null;
   const messages = key ? threads[key] ?? [] : [];
+  const busy = resolving !== null || resolvingId !== null;
 
+  // Loads the real pending queue from the database (count + the rows), so
+  // proposals survive a page refresh and can always be reviewed.
   const fetchPendingCount = async () => {
-    const { count, error } = await supabase
+    const { data, count, error } = await supabase
       .from("proposals")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending_review");
+      .select("id, intent, created_at", { count: "exact" })
+      .eq("status", "pending_review")
+      .order("created_at", { ascending: false })
+      .limit(20);
 
     if (error) {
       setPendingCountError(error.message);
       return;
     }
     setPendingCountError(null);
-    setPendingCount(count ?? 0);
+    setPendingList((data ?? []) as PendingProposal[]);
+    setPendingCount(count ?? data?.length ?? 0);
   };
 
   useEffect(() => {
@@ -253,36 +278,41 @@ function IgxAi() {
   };
 
   // Approve / reject. The reviewer is the signed-in user (from the live session),
-  // never a hardcoded id. A failed or blocked update leaves the proposal pending
-  // so it can be retried, and a zero-row update is reported instead of ignored.
+  // never a hardcoded id. Returns an error message, or undefined on success.
+  // A zero-row update is reported instead of being ignored.
+  const reviewProposal = async (
+    id: string,
+    nextStatus: "approved" | "rejected"
+  ): Promise<string | undefined> => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      return userError?.message ?? "No signed-in user — the reviewer cannot be recorded.";
+    }
+    const { data, error } = await supabase
+      .from("proposals")
+      .update({
+        status: nextStatus,
+        reviewed_by: userData.user.id,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("status", "pending_review")
+      .select("id");
+    if (error) return error.message;
+    if (!data || data.length === 0) {
+      return "Not updated — the proposal was already decided or the change was blocked.";
+    }
+    return undefined;
+  };
+
+  // From a chat thread. A failure leaves the proposal pending so it can be retried.
   const resolveProposal = async (msgIndex: number, nextStatus: "approved" | "rejected") => {
-    if (!key || resolving !== null) return;
+    if (!key || busy) return;
     const message = threads[key]?.[msgIndex];
     if (!message?.proposalId) return;
 
     setResolving(msgIndex);
-    let failure: string | undefined;
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      failure = userError?.message ?? "No signed-in user — the reviewer cannot be recorded.";
-    } else {
-      const { data, error } = await supabase
-        .from("proposals")
-        .update({
-          status: nextStatus,
-          reviewed_by: userData.user.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq("id", message.proposalId)
-        .eq("status", "pending_review")
-        .select("id");
-      if (error) {
-        failure = error.message;
-      } else if (!data || data.length === 0) {
-        failure = "Not updated — the proposal was already decided or the change was blocked.";
-      }
-    }
+    const failure = await reviewProposal(message.proposalId, nextStatus);
 
     setThreads((prev) => {
       const updated = [...(prev[key] ?? [])];
@@ -293,7 +323,32 @@ function IgxAi() {
     });
 
     setResolving(null);
-    if (!failure) fetchPendingCount();
+    fetchPendingCount();
+  };
+
+  // From the pending list (works after a refresh, for any saved proposal).
+  const resolvePending = async (id: string, nextStatus: "approved" | "rejected") => {
+    if (busy) return;
+    setResolvingId(id);
+    setPendingActionError(null);
+    const failure = await reviewProposal(id, nextStatus);
+    if (failure) {
+      setPendingActionError(failure);
+    } else {
+      // Keep any open chat card for the same proposal in sync.
+      setThreads((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).map(([k, list]) => [
+            k,
+            list.map((m) =>
+              m.proposalId === id ? { ...m, status: nextStatus, errorMessage: undefined } : m
+            ),
+          ])
+        )
+      );
+    }
+    setResolvingId(null);
+    fetchPendingCount();
   };
 
   const toggleDetails = (msgIndex: number) => {
@@ -412,9 +467,17 @@ function IgxAi() {
             />
           </div>
 
-          {/* Pending Review */}
+          {/* Pending Review — opens the full pending list */}
           <div className="mt-auto border-t pt-4">
-            <div className="rounded-lg border bg-card p-3.5 shadow-sm">
+            <button type="button"
+              onClick={() => setPendingOpen((v) => !v)}
+              aria-expanded={pendingOpen}
+              className={cn(
+                "w-full rounded-lg border bg-card p-3.5 text-left shadow-sm transition-all hover:border-primary/50",
+                (pendingCount ?? 0) > 0 && "border-primary/40",
+                pendingOpen && "border-primary bg-primary/5"
+              )}
+            >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase text-muted-foreground">
                   Pending Review
@@ -439,10 +502,11 @@ function IgxAi() {
                   }}
                 />
               </div>
-              <p className="mt-2 font-mono text-[9px] text-muted-foreground/60">
-                Proposals awaiting your review
+              <p className="mt-2 flex items-center justify-between font-mono text-[9px] text-muted-foreground/60">
+                <span>Proposals awaiting your review</span>
+                <span className="text-primary">{pendingOpen ? "Hide" : "View"}</span>
               </p>
-            </div>
+            </button>
           </div>
 
           {/* Settings */}
@@ -536,6 +600,81 @@ function IgxAi() {
           )}
         </div>
 
+        {/* Pending review list — real proposals from the database */}
+        {pendingOpen && (
+          <div className="border-b bg-card/60 px-6 py-4">
+            <div className="mb-3 flex items-center justify-between">
+              <Eyebrow className="text-primary">PENDING REVIEW · {pendingCount ?? 0}</Eyebrow>
+              <button
+                onClick={() => setPendingOpen(false)}
+                aria-label="Close pending list"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {pendingActionError && (
+              <div className="mb-3 flex items-center gap-2 font-mono text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{pendingActionError}</span>
+              </div>
+            )}
+
+            {pendingCountError ? (
+              <p className="font-mono text-xs text-destructive">
+                Could not load the pending list: {pendingCountError}
+              </p>
+            ) : pendingList.length === 0 ? (
+              <p className="font-mono text-xs text-muted-foreground">
+                Nothing is awaiting review.
+              </p>
+            ) : (
+              <div className="max-h-64 space-y-2 overflow-y-auto">
+                {pendingList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-l-2 border-l-primary bg-card p-3 shadow-sm"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-sans text-sm font-medium text-foreground">
+                        {item.intent}
+                      </p>
+                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                        Saved {formatDateTime(item.created_at)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => resolvePending(item.id, "approved")}
+                        className="gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
+                      >
+                        {resolvingId === item.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}{" "}
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => resolvePending(item.id, "rejected")}
+                        className="gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="h-4 w-4" /> Reject
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Status orb — real console state */}
         <ReasoningOrb stage={stage} />
 
@@ -589,7 +728,7 @@ function IgxAi() {
                     <div className="flex items-center gap-3 pt-2">
                       <Button
                         size="sm"
-                        disabled={resolving !== null}
+                        disabled={busy}
                         onClick={() => resolveProposal(idx, "approved")}
                         className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
                       >
@@ -603,7 +742,7 @@ function IgxAi() {
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={resolving !== null}
+                        disabled={busy}
                         onClick={() => resolveProposal(idx, "rejected")}
                         className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10"
                       >
