@@ -7,9 +7,10 @@ import {
   useRouterState,
   useNavigate,
   HeadContent,
-  Scripts, 
+  Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
 import {
   CommandDialog,
   CommandEmpty,
@@ -22,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { navItems, entitySwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -153,15 +155,93 @@ function RootComponent() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// AUTH GATE
+// The Supabase session lives in the browser (localStorage), so the server can
+// never see it. The gate therefore runs on the client: the server and the very
+// first client render both show the "checking" screen, so protected content is
+// never present in the server HTML and there is no hydration mismatch.
+// ---------------------------------------------------------------------------
+type AuthState =
+  | { status: "checking" }
+  | { status: "anon" }
+  | { status: "authed"; session: Session };
+
+function useAuthState(): AuthState {
+  const [state, setState] = useState<AuthState>({ status: "checking" });
+
+  useEffect(() => {
+    let active = true;
+
+    // getSession() waits for Supabase to finish initialising, which includes
+    // processing an OAuth redirect in the URL — so a fresh OAuth sign-in is not
+    // bounced back to /login before its session has been read.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        setState(data.session ? { status: "authed", session: data.session } : { status: "anon" });
+      })
+      .catch(() => {
+        if (active) setState({ status: "anon" });
+      });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setState(session ? { status: "authed", session } : { status: "anon" });
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  return state;
+}
+
+function AccessCheckScreen({ status }: { status: "checking" | "anon" }) {
+  return (
+    <div
+      className="flex min-h-screen items-center justify-center bg-[#111111] p-6 text-[#F5F1E8]"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="text-center">
+        <div className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border border-[#C6A15B]/25 border-t-[#C6A15B]" />
+        <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#C6A15B]">
+          IJIDI Portal
+        </div>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#F5F1E8]/60">
+          {status === "checking" ? "Verifying session…" : "Redirecting to secure access…"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // The login screen is a full-bleed standalone experience — it must not be
-// wrapped in the sidebar/ticker/header chrome. Every other route keeps
-// PortalShell exactly as before.
+// wrapped in the sidebar/ticker/header chrome. Every other route requires a
+// signed-in session and otherwise redirects to /login.
 function ChromeGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  if (pathname === "/login") {
+  const navigate = useNavigate();
+  const auth = useAuthState();
+  const isLogin = pathname === "/login";
+
+  useEffect(() => {
+    if (auth.status === "anon" && !isLogin) {
+      navigate({ to: "/login", replace: true });
+    }
+  }, [auth.status, isLogin, navigate]);
+
+  if (isLogin) {
     return <>{children}</>;
   }
-  return <PortalShell>{children}</PortalShell>;
+  if (auth.status !== "authed") {
+    return <AccessCheckScreen status={auth.status} />;
+  }
+  return <PortalShell session={auth.session}>{children}</PortalShell>;
 }
 
 function TickerBar() {
@@ -183,7 +263,7 @@ function TickerBar() {
 
   return (
     <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel/90 backdrop-blur-sm">
-      <div className="ticker-track flex h-8 items-center">
+      <div className="ticker-track flex h-8 items-center hover:[animation-play-state:paused]">
         {loop.map((item, i) => (
           <span
             key={i}
@@ -220,12 +300,14 @@ function EntitySwitcherBar() {
   );
 }
 
-function PortalShell({ children }: { children: ReactNode }) {
+function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
+  const signedInEmail = session.user.email ?? "Signed in";
 
   usePortalRealtime();
 
@@ -245,6 +327,19 @@ function PortalShell({ children }: { children: ReactNode }) {
     document.documentElement.classList.add(nextTheme);
   };
 
+  // Signing out clears the session; the gate in ChromeGate then redirects to
+  // /login on its own. If sign-out fails, stay put and say so.
+  const handleSignOut = async () => {
+    sounds.playClick();
+    setSigningOut(true);
+    const { error } = await supabase.auth.signOut();
+    setSigningOut(false);
+    if (error) {
+      console.error("Sign-out failed:", error);
+      alert(`Sign-out failed: ${error.message}`);
+    }
+  };
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -254,6 +349,9 @@ function PortalShell({ children }: { children: ReactNode }) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
         event.preventDefault();
         navigate({ to: "/igx-ai" });
+      }
+      if (event.key === "Escape") {
+        setRailOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -272,6 +370,15 @@ function PortalShell({ children }: { children: ReactNode }) {
       </div>
 
       <RadarBackground />
+
+      {/* Mobile: dim the page behind the open sidebar; tap to close */}
+      {railOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[1px] lg:hidden"
+          onClick={() => setRailOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <TickerBar />
@@ -300,6 +407,7 @@ function PortalShell({ children }: { children: ReactNode }) {
                   <Link
                     key={item.to}
                     to={item.to}
+                    aria-current={currentPath === item.to ? "page" : undefined}
                     onMouseEnter={() => sounds.playHover()}
                     onClick={() => {
                       sounds.playClick();
@@ -307,6 +415,7 @@ function PortalShell({ children }: { children: ReactNode }) {
                     }}
                     className={cn(
                       "group mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                       currentPath === item.to && "border-gold/30 bg-gold/10 text-gold font-bold"
                     )}
                   >
@@ -320,7 +429,7 @@ function PortalShell({ children }: { children: ReactNode }) {
               </nav>
               <div className="border-t border-border p-4">
                 <button
-                  className="flex w-full items-center gap-2 text-left transition-opacity hover:opacity-80"
+                  className="flex w-full items-center gap-2 rounded-md text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
@@ -338,7 +447,7 @@ function PortalShell({ children }: { children: ReactNode }) {
               </div>
             </div>
           </aside>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="flex h-8 items-center justify-between border-b border-border bg-panel/90 backdrop-blur-sm px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-teal">
@@ -350,8 +459,8 @@ function PortalShell({ children }: { children: ReactNode }) {
               </div>
               <span>UTC 15:03 · 08 AUG 2026</span>
             </div>
-            <header className="flex h-[76px] items-center justify-between border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-6">
-              <div className="flex items-center gap-3">
+            <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -361,27 +470,44 @@ function PortalShell({ children }: { children: ReactNode }) {
                     sounds.playClick();
                     setRailOpen(!railOpen);
                   }}
-                  aria-label="Open navigation"
+                  aria-label={railOpen ? "Close navigation" : "Open navigation"}
+                  aria-expanded={railOpen}
                 >
                   ☰
                 </Button>
-                <div>
+                <div className="min-w-0">
                   <Eyebrow className="text-gold">IJIDI OPERATING SYSTEM</Eyebrow>
-                  <div className="mt-1 text-sm font-medium text-foreground">
+                  <div className="mt-1 truncate text-sm font-medium text-foreground">
                     Operational clarity over theatre
                   </div>
                 </div>
               </div>
 
-              {/* Theme Switcher Button */}
-              <div className="flex items-center gap-3">
+              {/* Session identity, theme switcher and sign-out */}
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                <span
+                  className="hidden max-w-[200px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+                  title={signedInEmail}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse" />
+                  <span className="truncate">{signedInEmail}</span>
+                </span>
                 <button
                   onClick={toggleTheme}
                   onMouseEnter={() => sounds.playHover()}
-                  className="flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold"
+                  className="flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
                   title="Toggle Light/Dark Theme"
                 >
                   <span>{theme === "dark" ? "🌙 DARK" : "☀️ LIGHT"}</span>
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  onMouseEnter={() => sounds.playHover()}
+                  disabled={signingOut}
+                  className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+                  title="Sign out of the portal"
+                >
+                  {signingOut ? "Signing out…" : "Sign out"}
                 </button>
               </div>
             </header>
