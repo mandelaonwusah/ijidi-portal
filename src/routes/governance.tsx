@@ -1,8 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpenCheck, FileCheck2, Scale, RefreshCw } from "lucide-react";
-import { decisions as fallbackDecisions } from "@/lib/portal-data";
-import { getProposals } from "@/lib/portal-queries";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  FileCheck2,
+  ListChecks,
+  RefreshCw,
+  Scale,
+} from "lucide-react";
+import { getDecisions, getProposals } from "@/lib/portal-queries";
+import { supabase } from "@/lib/supabase";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
 
 export const Route = createFileRoute("/governance")({
@@ -20,22 +28,86 @@ export const Route = createFileRoute("/governance")({
   component: Governance,
 });
 
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="border border-dashed border-border px-5 py-8 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+      {text}
+    </div>
+  );
+}
+
+function ErrorState({ what, message }: { what: string; message: string }) {
+  return (
+    <div
+      role="alert"
+      className="border border-red-400/30 bg-red-400/5 px-5 py-5 text-center font-mono text-[11px] text-red-400"
+    >
+      Could not load {what}: {message}
+      <div className="mt-1 text-muted-foreground">Retrying automatically.</div>
+    </div>
+  );
+}
+
+function SkeletonRows() {
+  return (
+    <div className="space-y-3">
+      {[0, 1].map((i) => (
+        <div key={i} className="space-y-3 border border-border bg-background/50 p-4">
+          <div className="h-3 w-1/4 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Governance() {
-  const { data: proposals, isLoading, refetch, isRefetching } = useQuery({
+  const proposalsQ = useQuery({
     queryKey: ["governance-proposals"],
     queryFn: getProposals,
-    refetchInterval: 5000, // Live poll every 5 seconds
+    refetchInterval: 10000,
+  });
+  const decisionsQ = useQuery({
+    queryKey: ["governance-decisions"],
+    queryFn: getDecisions,
+    refetchInterval: 10000,
   });
 
-  // Map dynamic live proposals into decision log format if present, else fallback
-  const records = proposals && proposals.length > 0
-    ? proposals.map((p) => ({
-        label: `${p.id}: ${p.title}`,
-        date: p.endsIn === "CLOSED" ? "RESOLVED" : `CLOSES IN ${p.endsIn}`,
-        state: p.status,
-        detail: `Quorum: ${p.quorumPct}% · Votes: ${p.votesFor} FOR / ${p.votesAgainst} AGAINST`,
-      }))
-    : fallbackDecisions;
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  // The "Active session" indicator reflects the real auth session.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setSessionEmail(data.session?.user.email ?? null);
+      setSessionChecked(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setSessionEmail(session?.user.email ?? null);
+    });
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const proposals = proposalsQ.data ?? [];
+  const decisions = decisionsQ.data ?? [];
+  const isSyncing = proposalsQ.isRefetching || decisionsQ.isRefetching;
+
+  const counts = {
+    pending: proposals.filter((p) => p.status === "pending_review").length,
+    approved: proposals.filter((p) => p.status === "approved").length,
+    rejected: proposals.filter((p) => p.status === "rejected").length,
+  };
+
+  const sync = () => {
+    proposalsQ.refetch();
+    decisionsQ.refetch();
+  };
 
   return (
     <div className="space-y-6 tactical-grid">
@@ -46,10 +118,10 @@ function Governance() {
         action={
           <div className="flex items-center gap-3">
             <button
-              onClick={() => refetch()}
-              className="flex items-center gap-1.5 font-mono text-[10px] uppercase text-muted-foreground hover:text-gold transition-colors"
+              onClick={sync}
+              className="flex items-center gap-1.5 font-mono text-[10px] uppercase text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
-              <RefreshCw className={`h-3 w-3 ${isRefetching ? "animate-spin text-gold" : ""}`} />
+              <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin text-gold" : ""}`} />
               Sync
             </button>
             <StatusBadge status="active" label="SINGLE GOVERNOR" />
@@ -58,6 +130,7 @@ function Governance() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
+        {/* Governor record */}
         <section className="panel-bracket p-5">
           <div className="flex items-center gap-3">
             <Scale className="h-5 w-5 text-gold" />
@@ -72,11 +145,28 @@ function Governance() {
               <span className="font-mono text-[10px] text-gold">ROOT</span>
             </div>
             <div className="mt-4 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-teal live-pulse" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-teal">
-                Active session
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  sessionEmail ? "bg-teal live-pulse" : "bg-muted-foreground/40"
+                }`}
+              />
+              <span
+                className={`font-mono text-[10px] uppercase tracking-widest ${
+                  sessionEmail ? "text-teal" : "text-muted-foreground"
+                }`}
+              >
+                {!sessionChecked
+                  ? "Checking session…"
+                  : sessionEmail
+                  ? "Active session"
+                  : "No active session"}
               </span>
             </div>
+            {sessionEmail && (
+              <p className="mt-2 break-all font-mono text-[10px] text-muted-foreground">
+                {sessionEmail}
+              </p>
+            )}
           </div>
           <div className="mt-8 border-t border-border pt-5">
             <Eyebrow>Mandate</Eyebrow>
@@ -86,44 +176,136 @@ function Governance() {
           </div>
         </section>
 
-        <section className="panel-bracket p-5">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <BookOpenCheck className="h-5 w-5 text-teal" />
-              <div>
-                <Eyebrow className="text-teal">Architecture decisions</Eyebrow>
-                <h2 className="mt-1 font-display text-lg font-semibold">Decision log</h2>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-[9px] uppercase text-muted-foreground">
-              {isLoading && <span className="text-gold live-pulse">FETCHING…</span>}
-              <span>{records.length} records</span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {records.map((decision) => (
-              <div key={decision.label} className="border border-border bg-background/50 p-4 transition-all hover:border-gold/30">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <FileCheck2 className="h-3.5 w-3.5 text-gold" />
-                    <Eyebrow>{decision.date}</Eyebrow>
-                  </div>
-                  <StatusBadge
-                    status={
-                      decision.state === "FROZEN" || decision.state === "PASSED"
-                        ? "frozen"
-                        : "open"
-                    }
-                    label={decision.state}
-                  />
+        <div className="space-y-6">
+          {/* Proposals */}
+          <section className="panel-bracket p-5">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <ListChecks className="h-5 w-5 text-gold" />
+                <div>
+                  <Eyebrow className="text-gold">IGX AI proposals</Eyebrow>
+                  <h2 className="mt-1 font-display text-lg font-semibold">Proposal queue</h2>
                 </div>
-                <h3 className="mt-4 font-display font-semibold">{decision.label}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{decision.detail}</p>
               </div>
-            ))}
-          </div>
-        </section>
+              <Link
+                to="/proposals"
+                className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              >
+                Open review
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+
+            {proposalsQ.isLoading ? (
+              <SkeletonRows />
+            ) : proposalsQ.isError ? (
+              <ErrorState
+                what="proposals"
+                message={(proposalsQ.error as Error | null)?.message ?? "unknown error"}
+              />
+            ) : proposals.length === 0 ? (
+              <EmptyState text="No verified proposals found." />
+            ) : (
+              <>
+                <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <span>
+                    <span className="text-gold">{counts.pending}</span> pending
+                  </span>
+                  <span>
+                    <span className="text-teal">{counts.approved}</span> approved
+                  </span>
+                  <span>
+                    <span className="text-foreground">{counts.rejected}</span> rejected
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {proposals.slice(0, 5).map((p) => (
+                    <div
+                      key={p.id}
+                      className="border border-border bg-background/50 p-4 transition-all hover:border-gold/30"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Eyebrow>{new Date(p.created_at).toLocaleDateString()}</Eyebrow>
+                        <StatusBadge
+                          status={p.status === "pending_review" ? "open" : "frozen"}
+                          label={p.status.replace("_", " ").toUpperCase()}
+                        />
+                      </div>
+                      <h3 className="mt-3 break-words font-display font-semibold">{p.intent}</h3>
+                      <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
+                        {p.suggested_action}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {proposals.length > 5 && (
+                  <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Showing 5 of {proposals.length} · see the full queue in Open review
+                  </p>
+                )}
+              </>
+            )}
+          </section>
+
+          {/* Decision log */}
+          <section className="panel-bracket p-5">
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <BookOpenCheck className="h-5 w-5 text-teal" />
+                <div>
+                  <Eyebrow className="text-teal">Architecture decisions</Eyebrow>
+                  <h2 className="mt-1 font-display text-lg font-semibold">Decision log</h2>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 font-mono text-[9px] uppercase text-muted-foreground">
+                {decisionsQ.isLoading && <span className="text-gold live-pulse">FETCHING…</span>}
+                {!decisionsQ.isLoading && !decisionsQ.isError && (
+                  <span>{decisions.length} records</span>
+                )}
+              </div>
+            </div>
+
+            {decisionsQ.isLoading ? (
+              <SkeletonRows />
+            ) : decisionsQ.isError ? (
+              <ErrorState
+                what="the decision log"
+                message={(decisionsQ.error as Error | null)?.message ?? "unknown error"}
+              />
+            ) : decisions.length === 0 ? (
+              <EmptyState text="No verified decisions found." />
+            ) : (
+              <div className="space-y-3">
+                {decisions.map((decision) => {
+                  const state = String(decision.state).toUpperCase();
+                  return (
+                    <div
+                      key={decision.id}
+                      className="border border-border bg-background/50 p-4 transition-all hover:border-gold/30"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <FileCheck2 className="h-3.5 w-3.5 text-gold" />
+                          <Eyebrow>{decision.date}</Eyebrow>
+                        </div>
+                        <StatusBadge
+                          status={state === "FROZEN" || state === "PASSED" ? "frozen" : "open"}
+                          label={state}
+                        />
+                      </div>
+                      <h3 className="mt-4 break-words font-display font-semibold">
+                        {decision.label}
+                      </h3>
+                      <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
+                        {decision.detail}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
