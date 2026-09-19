@@ -7,7 +7,7 @@ import {
   useRouterState,
   useNavigate,
   HeadContent,
-  Scripts,
+  Scripts, 
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
