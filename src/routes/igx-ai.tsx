@@ -2,27 +2,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import {
   Bell,
-  Bot,
   Check,
-  ChevronDown,
-  Copy as CopyIcon, 
+  Copy as CopyIcon,
   History,
-  Mic,
-  MoreHorizontal,
   Paperclip,
   PlusCircle,
   Send,
   Settings,
   Volume2,
   X,
-  Sparkles,
   Zap,
   Shield,
   Brain,
-  Globe,
-  Users,
   Building2,
-  ArrowRight,
   MessageSquare,
   Loader2,
   AlertCircle,
@@ -31,10 +23,9 @@ import {
   ChevronRight,
   Menu,
   X as XClose,
-  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Eyebrow, Signal, StatusBadge } from "@/components/portal-ui";
+import { Eyebrow, StatusBadge } from "@/components/portal-ui";
 import { supabase } from "@/lib/supabase";
 import {
   igxPeople,
@@ -74,13 +65,14 @@ type ThreadMessage = {
   moreOpen: boolean;
 };
 
+// Honest-state readout: every stage below maps to something that really
+// happens in this console. No model is called yet (IGX AI Step B is not wired),
+// so there are no "thinking / routing / orchestrating" stages to show.
 const STAGES = [
-  { name: "Idle", detail: "Waiting for a scoped request", icon: Brain },
-  { name: "Thinking", detail: "Parsing intent", icon: Zap },
-  { name: "Routing", detail: "Selecting the right model", icon: Globe },
-  { name: "Orchestrating", detail: "Coordinating sub-agents", icon: Users },
-  { name: "Synthesizing", detail: "Drafting the proposal", icon: Sparkles },
-  { name: "Responding", detail: "Awaiting your review", icon: Shield },
+  { name: "Idle", detail: "No request in flight", icon: Brain },
+  { name: "Submitting", detail: "Writing the proposal to the database", icon: Zap },
+  { name: "Awaiting review", detail: "Saved — waiting for your decision", icon: Shield },
+  { name: "Error", detail: "The last request failed", icon: AlertCircle },
 ] as const;
 
 function threadKey(entity: EntityKey, sub: string) {
@@ -91,6 +83,7 @@ function formatTime(isoString?: string): string {
   if (!isoString) return "";
   try {
     const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return "";
     return date.toLocaleTimeString("en-US", {
       hour12: false,
       hour: "2-digit",
@@ -116,7 +109,7 @@ function EntitySwitcherBar() {
   );
 }
 
-// Bigger glowing reasoning orb — replaces the old thin Idle/Thinking/Routing strip.
+// Glowing status orb — shows the console's real state (see STAGES above).
 function ReasoningOrb({ stage }: { stage: (typeof STAGES)[number] }) {
   const StageIcon = stage.icon;
   return (
@@ -145,7 +138,7 @@ function IgxAi() {
   const [threads, setThreads] = useState<Record<string, ThreadMessage[]>>({});
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [stageIndex, setStageIndex] = useState(0);
+  const [resolving, setResolving] = useState<number | null>(null);
   const [activityOpen, setActivityOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -200,20 +193,6 @@ function IgxAi() {
     setSubState((prev) => ({ ...prev, [activeEntity]: subId }));
   };
 
-  const runStages = () => {
-    setStageIndex(1);
-    let i = 1;
-    const timer = setInterval(() => {
-      i += 1;
-      if (i >= STAGES.length) {
-        clearInterval(timer);
-        i = STAGES.length - 1;
-      }
-      setStageIndex(i);
-    }, 700);
-    return () => clearInterval(timer);
-  };
-
   const submit = async () => {
     const trimmed = input.trim();
     if (!trimmed || !activeSub || isSubmitting) return;
@@ -224,7 +203,6 @@ function IgxAi() {
 
     setInput("");
     setIsSubmitting(true);
-    runStages();
 
     setThreads((prev) => ({
       ...prev,
@@ -259,9 +237,14 @@ function IgxAi() {
       const current = prev[k] ?? [];
       const updated = [...current];
       const lastIndex = updated.length - 1;
-      updated[lastIndex] = error
-        ? { ...updated[lastIndex], status: "error", errorMessage: error.message }
-        : { ...updated[lastIndex], proposalId: data.id };
+      updated[lastIndex] =
+        error || !data
+          ? {
+              ...updated[lastIndex],
+              status: "error",
+              errorMessage: error?.message ?? "The proposal was not saved.",
+            }
+          : { ...updated[lastIndex], proposalId: data.id };
       return { ...prev, [k]: updated };
     });
 
@@ -269,27 +252,48 @@ function IgxAi() {
     if (!error) fetchPendingCount();
   };
 
+  // Approve / reject. The reviewer is the signed-in user (from the live session),
+  // never a hardcoded id. A failed or blocked update leaves the proposal pending
+  // so it can be retried, and a zero-row update is reported instead of ignored.
   const resolveProposal = async (msgIndex: number, nextStatus: "approved" | "rejected") => {
-    if (!key) return;
+    if (!key || resolving !== null) return;
     const message = threads[key]?.[msgIndex];
     if (!message?.proposalId) return;
 
-    const { error } = await supabase
-      .from("proposals")
-      .update({ status: nextStatus })
-      .eq("id", message.proposalId);
+    setResolving(msgIndex);
+    let failure: string | undefined;
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      failure = userError?.message ?? "No signed-in user — the reviewer cannot be recorded.";
+    } else {
+      const { data, error } = await supabase
+        .from("proposals")
+        .update({
+          status: nextStatus,
+          reviewed_by: userData.user.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", message.proposalId)
+        .eq("status", "pending_review")
+        .select("id");
+      if (error) {
+        failure = error.message;
+      } else if (!data || data.length === 0) {
+        failure = "Not updated — the proposal was already decided or the change was blocked.";
+      }
+    }
 
     setThreads((prev) => {
       const updated = [...(prev[key] ?? [])];
-      updated[msgIndex] = {
-        ...updated[msgIndex],
-        status: error ? "error" : nextStatus,
-        errorMessage: error?.message,
-      };
+      updated[msgIndex] = failure
+        ? { ...updated[msgIndex], errorMessage: failure }
+        : { ...updated[msgIndex], status: nextStatus, errorMessage: undefined };
       return { ...prev, [key]: updated };
     });
 
-    if (!error) fetchPendingCount();
+    setResolving(null);
+    if (!failure) fetchPendingCount();
   };
 
   const toggleDetails = (msgIndex: number) => {
@@ -297,15 +301,6 @@ function IgxAi() {
     setThreads((prev) => {
       const updated = [...(prev[key] ?? [])];
       updated[msgIndex] = { ...updated[msgIndex], detailsOpen: !updated[msgIndex].detailsOpen };
-      return { ...prev, [key]: updated };
-    });
-  };
-
-  const toggleMore = (msgIndex: number) => {
-    if (!key) return;
-    setThreads((prev) => {
-      const updated = [...(prev[key] ?? [])];
-      updated[msgIndex] = { ...updated[msgIndex], moreOpen: !updated[msgIndex].moreOpen };
       return { ...prev, [key]: updated };
     });
   };
@@ -324,7 +319,16 @@ function IgxAi() {
     navigator.clipboard?.writeText(text);
   };
 
-  const stage = STAGES[stageIndex];
+  // Console state, derived from what is really happening in this thread.
+  const lastMessage = messages[messages.length - 1];
+  const hasPendingSaved = messages.some((m) => m.status === "pending_review" && !!m.proposalId);
+  const stage = isSubmitting
+    ? STAGES[1]
+    : lastMessage?.status === "error"
+    ? STAGES[3]
+    : hasPendingSaved
+    ? STAGES[2]
+    : STAGES[0];
 
   const recentActivities = activityLogs?.slice(0, 5) ?? [];
 
@@ -333,6 +337,7 @@ function IgxAi() {
       {/* Mobile Menu Toggle */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
         className="absolute left-4 top-4 z-50 rounded-lg border bg-card p-2 shadow-sm lg:hidden"
       >
         {mobileMenuOpen ? <XClose className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -348,10 +353,10 @@ function IgxAi() {
         <div className="flex h-full flex-col p-5">
           {/* Brand Header */}
           <div className="flex items-center gap-3 border-b pb-4">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
-              <img src="/igx-emblem.png" alt="IGX AI" className="h-full w-full object-cover" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10">
+              <Brain className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <span className="font-sans text-lg font-bold tracking-tight text-foreground">
                 IGX AI
               </span>
@@ -359,7 +364,7 @@ function IgxAi() {
                 <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-wide text-primary">
                   Root
                 </span>
-                <span className="font-mono text-[10px] text-muted-foreground">
+                <span className="truncate font-mono text-[10px] text-muted-foreground">
                   {personalBrand.name}
                 </span>
               </div>
@@ -369,14 +374,16 @@ function IgxAi() {
             </div>
             <div className="ml-auto flex gap-1">
               <button
-                className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
-                aria-label="New chat"
+                disabled
+                className="rounded-lg p-1.5 text-muted-foreground disabled:pointer-events-none disabled:opacity-40"
+                aria-label="New chat (not available yet)"
               >
                 <PlusCircle className="h-4 w-4" />
               </button>
               <button
-                className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
-                aria-label="Chat history"
+                disabled
+                className="rounded-lg p-1.5 text-muted-foreground disabled:pointer-events-none disabled:opacity-40"
+                aria-label="Chat history (not available yet)"
               >
                 <History className="h-4 w-4" />
               </button>
@@ -439,13 +446,13 @@ function IgxAi() {
           </div>
 
           {/* Settings */}
-          <button
+          <Link to="/settings"
             className="mt-3 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
             title="Settings"
           >
             <Settings className="h-4 w-4" />
             <span>Settings</span>
-          </button>
+          </Link>
         </div>
       </aside>
 
@@ -504,14 +511,22 @@ function IgxAi() {
                 <div className="flex items-center justify-center gap-3 px-4 py-4">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   <span className="font-mono text-xs text-muted-foreground">
-                    Loading telemetry...
+                    Loading activity...
                   </span>
                 </div>
               ) : recentActivities.length > 0 ? (
                 recentActivities.map((log: any, i: number) => (
-                  <div key={log.id || i} className="flex items-center justify-between border-b p-3 last:border-0 font-mono text-xs">
-                    <span className="text-foreground">{log.action || log.message || "System event"}</span>
-                    <span className="text-muted-foreground">{formatTime(log.created_at)}</span>
+                  <div
+                    key={log.id || i}
+                    className="flex items-center justify-between gap-3 border-b p-3 font-mono text-xs last:border-0"
+                  >
+                    <span className="min-w-0 truncate text-foreground">
+                      {log.actor ? `${String(log.actor).toUpperCase()} · ` : ""}
+                      {log.action || log.message || "System event"}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {formatTime(log.timestamp ?? log.created_at)}
+                    </span>
                   </div>
                 ))
               ) : (
@@ -521,82 +536,115 @@ function IgxAi() {
           )}
         </div>
 
-        {/* Reasoning Orb — bigger glowing status readout */}
+        {/* Status orb — real console state */}
         <ReasoningOrb stage={stage} />
 
         {/* Chat Stream */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6">
           {!activeSub ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <MessageSquare className="h-12 w-12 text-muted-foreground/40 mb-3" />
+              <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground/40" />
               <h3 className="font-sans text-lg font-semibold text-foreground">Select a Sub-Module</h3>
-              <p className="font-mono text-xs text-muted-foreground mt-1 max-w-sm">
+              <p className="mt-1 max-w-sm font-mono text-xs text-muted-foreground">
                 Choose a targeted scope from the top pills to open an intelligence thread.
               </p>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <Brain className="h-12 w-12 text-primary/40 mb-3" />
+              <Brain className="mb-3 h-12 w-12 text-primary/40" />
               <h3 className="font-sans text-lg font-semibold text-foreground">Console Ready</h3>
-              <p className="font-mono text-xs text-muted-foreground mt-1 max-w-sm">
+              <p className="mt-1 max-w-sm font-mono text-xs text-muted-foreground">
                 Dispatch an instruction for evaluation and proposal synthesis.
               </p>
             </div>
           ) : (
-            messages.map((msg, idx) => (
-              <div key={idx} className="rounded-lg border bg-card p-5 space-y-4 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <p className="font-sans text-sm font-medium text-foreground">{msg.intent}</p>
-                  <StatusBadge status={msg.status} />
-                </div>
-
-                {msg.errorMessage && (
-                  <div className="flex items-center gap-2 text-xs text-destructive font-mono">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{msg.errorMessage}</span>
+            messages.map((msg, idx) => {
+              const accent =
+                msg.status === "approved"
+                  ? "border-l-emerald-500"
+                  : msg.status === "rejected" || msg.status === "error"
+                  ? "border-l-destructive"
+                  : "border-l-primary";
+              return (
+                <div
+                  key={idx}
+                  className={cn(
+                    "space-y-4 rounded-lg border border-l-2 bg-card p-5 shadow-sm transition-colors",
+                    accent
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="font-sans text-sm font-medium text-foreground">{msg.intent}</p>
+                    <StatusBadge status={msg.status} />
                   </div>
-                )}
 
-                {msg.status === "pending_review" && (
-                  <div className="flex items-center gap-3 pt-2">
-                    <Button
-                      size="sm"
-                      onClick={() => resolveProposal(idx, "approved")}
-                      className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  {msg.errorMessage && (
+                    <div className="flex items-center gap-2 font-mono text-xs text-destructive">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{msg.errorMessage}</span>
+                    </div>
+                  )}
+
+                  {msg.status === "pending_review" && msg.proposalId && (
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button
+                        size="sm"
+                        disabled={resolving !== null}
+                        onClick={() => resolveProposal(idx, "approved")}
+                        className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                      >
+                        {resolving === idx ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}{" "}
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={resolving !== null}
+                        onClick={() => resolveProposal(idx, "rejected")}
+                        className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="h-4 w-4" /> Reject
+                      </Button>
+                    </div>
+                  )}
+
+                  {msg.detailsOpen && (
+                    <div className="space-y-1 rounded border bg-muted/40 p-3 font-mono text-xs text-muted-foreground">
+                      <div>Proposal ID: {msg.proposalId || "Saving..."}</div>
+                      <div>Status: {msg.status}</div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-1 text-muted-foreground">
+                    <button
+                      onClick={() => toggleDetails(idx)}
+                      aria-label="Toggle details"
+                      className="p-1 hover:text-foreground"
                     >
-                      <Check className="h-4 w-4" /> Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => resolveProposal(idx, "rejected")}
-                      className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/10"
+                      {msg.detailsOpen ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => copyText(msg.intent)}
+                      aria-label="Copy request"
+                      className="p-1 hover:text-foreground"
                     >
-                      <X className="h-4 w-4" /> Reject
-                    </Button>
+                      <CopyIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => readAloud(msg.intent)}
+                      aria-label="Read aloud"
+                      className="p-1 hover:text-foreground"
+                    >
+                      <Volume2 className="h-4 w-4" />
+                    </button>
                   </div>
-                )}
-
-                {msg.detailsOpen && (
-                  <div className="rounded border bg-muted/40 p-3 font-mono text-xs text-muted-foreground space-y-1">
-                    <div>Proposal ID: {msg.proposalId || "Generating..."}</div>
-                    <div>Status: {msg.status}</div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 pt-1 text-muted-foreground">
-                  <button onClick={() => toggleDetails(idx)} className="p-1 hover:text-foreground">
-                    {msg.detailsOpen ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                  <button onClick={() => copyText(msg.intent)} className="p-1 hover:text-foreground">
-                    <CopyIcon className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => readAloud(msg.intent)} className="p-1 hover:text-foreground">
-                    <Volume2 className="h-4 w-4" />
-                  </button>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -614,17 +662,26 @@ function IgxAi() {
               <button
                 type="button"
                 onClick={() => setAttachOpen((v) => !v)}
+                aria-label="Attach"
                 className="shrink-0 rounded-lg p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Paperclip className="h-5 w-5" />
               </button>
               {attachOpen && (
-                <div className="absolute bottom-12 left-0 z-50 w-48 rounded-lg border bg-card p-2 shadow-lg font-mono text-xs space-y-1">
-                  <button className="flex w-full items-center gap-2 px-3 py-2 hover:bg-muted rounded">
-                    Attach Document
+                <div className="absolute bottom-12 left-0 z-50 w-56 space-y-1 rounded-lg border bg-card p-2 font-mono text-xs shadow-lg">
+                  <button
+                    type="button"
+                    disabled
+                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left disabled:opacity-40"
+                  >
+                    Attach Document · soon
                   </button>
-                  <button className="flex w-full items-center gap-2 px-3 py-2 hover:bg-muted rounded">
-                    Attach Telemetry Log
+                  <button
+                    type="button"
+                    disabled
+                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-left disabled:opacity-40"
+                  >
+                    Attach Activity Log · soon
                   </button>
                 </div>
               )}
@@ -636,6 +693,7 @@ function IgxAi() {
               value={input}
               disabled={!activeSub || isSubmitting}
               onChange={(e) => setInput(e.target.value)}
+              aria-label="Instruction for IGX AI"
               placeholder={
                 activeSub
                   ? "Enter instructions for IGX AI..."
@@ -647,6 +705,7 @@ function IgxAi() {
             <Button
               type="submit"
               disabled={!input.trim() || !activeSub || isSubmitting}
+              aria-label="Send"
               className="shrink-0 gap-2"
             >
               {isSubmitting ? (
@@ -680,7 +739,7 @@ function RailGroup({
           className={cn(
             "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-mono text-xs transition-all",
             activeEntity === key
-              ? "bg-primary/10 text-primary font-semibold"
+              ? "bg-primary/10 font-semibold text-primary"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
