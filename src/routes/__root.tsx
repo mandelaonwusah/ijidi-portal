@@ -21,7 +21,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { navItems, entitySwitcherItems } from "@/lib/portal-data";
+import { navItems, navGroupOrder, entitySwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/logger";
@@ -33,6 +33,18 @@ import { RadarBackground } from "@/components/RadarBackground";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
 
+// Sidebar sections, built once from the flat navItems list in portal-data.ts.
+const navSections = navGroupOrder.map((label) => ({
+  label,
+  items: navItems.filter((item) => item.group === label),
+}));
+
+// A nav item is active on its own path and on any nested path under it.
+function isNavActive(pathname: string, to: string) {
+  if (to === "/") return pathname === "/";
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
@@ -40,8 +52,7 @@ function NotFoundComponent() {
         <Eyebrow>ROUTE NOT FOUND</Eyebrow>
         <h1 className="mt-3 font-display text-5xl text-gold">404</h1>
         <p className="mt-3 text-sm text-muted-foreground">This command path does not exist.</p>
-        <Link
-          to="/"
+        <Link to="/"
           onMouseEnter={() => sounds.playHover()}
           onClick={() => sounds.playClick()}
           className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-gold"
@@ -557,8 +568,7 @@ function EntitySwitcherBar() {
   return (
     <div className="entity-switcher-bar mx-4 my-2 sm:mx-6">
       {entitySwitcherItems.map((item) => (
-        <Link
-          key={item.key}
+        <Link key={item.key}
           to={item.to}
           onMouseEnter={() => sounds.playHover()}
           onClick={() => sounds.playClick()}
@@ -575,6 +585,7 @@ function EntitySwitcherBar() {
 function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
@@ -582,6 +593,32 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const signedInEmail = session.user.email ?? "Signed in";
 
   usePortalRealtime();
+
+  // Real governor identity from the profiles row (falls back to the email).
+  const { data: governor } = useQuery({
+    queryKey: ["own-profile-identity", session.user.id],
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name, handle")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { display_name?: string | null; handle?: string | null } | null;
+    },
+  });
+  const governorName = governor?.display_name || signedInEmail;
+  const governorHandle = governor?.handle
+    ? governor.handle.startsWith("@")
+      ? governor.handle
+      : `@${governor.handle}`
+    : null;
+
+  // Header label: which page and sidebar group the governor is on.
+  const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
+  const pageLabel = activeItem?.label ?? "Portal";
 
   // Log one "session started" entry per browser tab (only the governor shell
   // mounts this). The flag is set only after a successful insert.
@@ -608,6 +645,26 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
     document.documentElement.classList.remove("dark", "light");
     document.documentElement.classList.add(savedTheme);
   }, []);
+
+  // Remember whether the desktop sidebar was collapsed.
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem("ijidi_rail_collapsed") === "1");
+    } catch {
+      /* localStorage unavailable — stay expanded */
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    sounds.playClick();
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      localStorage.setItem("ijidi_rail_collapsed", next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
 
   const toggleTheme = () => {
     sounds.playClick();
@@ -671,64 +728,109 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         <div className="lg:flex">
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel/95 backdrop-blur-md transition-transform duration-200",
+              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel/95 backdrop-blur-md transition-[transform,width] duration-200 ease-out",
               "lg:sticky lg:top-8 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0",
+              collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
               railOpen ? "translate-x-0" : "-translate-x-full"
             )}
           >
             <div className="flex h-full flex-col">
-              <div className="flex h-[76px] items-center gap-3 border-b border-border px-5">
+              <div
+                className={cn(
+                  "flex h-[76px] items-center gap-3 border-b border-border px-5",
+                  collapsed && "lg:justify-center lg:px-0"
+                )}
+              >
                 <HexBadge small />
-                <div>
+                <div className={cn(collapsed && "lg:hidden")}>
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
                   </div>
                   <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
                 </div>
               </div>
-              <nav className="flex-1 overflow-y-auto px-3 py-5">
-                <Eyebrow className="px-3 pb-3">NAVIGATION</Eyebrow>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    aria-current={currentPath === item.to ? "page" : undefined}
-                    onMouseEnter={() => sounds.playHover()}
-                    onClick={() => {
-                      sounds.playClick();
-                      setRailOpen(false);
-                    }}
-                    className={cn(
-                      "group mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
-                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                      currentPath === item.to && "border-gold/30 bg-gold/10 text-gold font-bold"
+
+              <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
+                {navSections.map((section, sectionIndex) => (
+                  <div key={section.label} className={cn(sectionIndex > 0 && "mt-5")}>
+                    {/* Expanded: group heading with a thin gold rule */}
+                    <div className={cn("mb-2 flex items-center gap-2 px-3", collapsed && "lg:hidden")}>
+                      <Eyebrow className="text-[9px]">{section.label}</Eyebrow>
+                      <span className="h-px flex-1 bg-gold/20" />
+                    </div>
+                    {/* Collapsed: plain divider between groups */}
+                    {sectionIndex > 0 && (
+                      <div
+                        className={cn("mx-3 mb-3 hidden h-px bg-border", collapsed && "lg:block")}
+                        aria-hidden="true"
+                      />
                     )}
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center text-xs text-gold/80">
-                      {item.icon}
-                    </span>
-                    <span className="flex-1">{item.label}</span>
-                    <span className="text-[9px] text-muted-foreground/60">{item.key}</span>
-                  </Link>
+                    {section.items.map((item) => {
+                      const active = isNavActive(currentPath, item.to);
+                      return (
+                        <Link key={item.to}
+                          to={item.to}
+                          title={item.label}
+                          aria-current={active ? "page" : undefined}
+                          onMouseEnter={() => sounds.playHover()}
+                          onClick={() => {
+                            sounds.playClick();
+                            setRailOpen(false);
+                          }}
+                          className={cn(
+                            "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                            collapsed && "lg:justify-center lg:gap-0 lg:px-0",
+                            active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                          )}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "absolute inset-y-2 left-0 w-0.5 rounded-full bg-gold opacity-0 transition-opacity",
+                              active && "opacity-100"
+                            )}
+                          />
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
+                            {item.icon}
+                          </span>
+                          <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
+                            {item.label}
+                          </span>
+                          <span
+                            className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
+                          >
+                            {item.key}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 ))}
               </nav>
+
+              {/* Settings replaces the old visible ⌘K button; Ctrl/⌘ + K still opens the palette */}
               <div className="border-t border-border p-4">
-                <button
-                  className="flex w-full items-center gap-2 rounded-md text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                <Link to="/settings"
+                  title="Settings"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
-                    setPaletteOpen(true);
+                    setRailOpen(false);
                   }}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    collapsed && "lg:justify-center lg:gap-0"
+                  )}
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border font-mono text-xs text-teal">
-                    ⌘K
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-gold">
+                    ⚙
                   </div>
-                  <div>
-                    <Eyebrow className="text-[8px]">Quick navigation</Eyebrow>
-                    <span className="text-xs text-muted-foreground">Open command palette</span>
+                  <div className={cn(collapsed && "lg:hidden")}>
+                    <Eyebrow className="text-[8px]">Account</Eyebrow>
+                    <span className="text-xs text-muted-foreground">Settings</span>
                   </div>
-                </button>
+                </Link>
               </div>
             </div>
           </aside>
@@ -760,23 +862,46 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 >
                   ☰
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden lg:inline-flex"
+                  onMouseEnter={() => sounds.playHover()}
+                  onClick={toggleCollapsed}
+                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                  aria-pressed={collapsed}
+                  title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {collapsed ? "»" : "«"}
+                </Button>
                 <div className="min-w-0">
-                  <Eyebrow className="text-gold">IJIDI OPERATING SYSTEM</Eyebrow>
-                  <div className="mt-1 truncate text-sm font-medium text-foreground">
-                    Operational clarity over theatre
+                  <div className="truncate font-display text-sm font-semibold tracking-wide text-foreground">
+                    IJIDI <span className="text-gold">PORTAL</span>
+                    <span className="mx-2 text-muted-foreground/50">·</span>
+                    <span className="font-medium text-muted-foreground">{pageLabel}</span>
                   </div>
+                  {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
                 </div>
               </div>
 
-              {/* Session identity, theme switcher and sign-out */}
+              {/* Governor identity, theme switcher and sign-out */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <span
-                  className="hidden max-w-[200px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+                <div
+                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-panel px-3 py-1.5 md:flex"
                   title={signedInEmail}
                 >
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse" />
-                  <span className="truncate">{signedInEmail}</span>
-                </span>
+                  <span className="rounded border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+                    Governor
+                  </span>
+                  <div className="min-w-0 leading-tight">
+                    <div className="max-w-[170px] truncate text-xs font-medium text-foreground">
+                      {governorName}
+                    </div>
+                    <div className="max-w-[170px] truncate font-mono text-[9px] tracking-wider text-muted-foreground">
+                      {governorHandle ?? signedInEmail}
+                    </div>
+                  </div>
+                </div>
                 <button
                   onClick={toggleTheme}
                   onMouseEnter={() => sounds.playHover()}
@@ -805,21 +930,23 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         <CommandInput placeholder="Type a command or search modules..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Navigation">
-            {navItems.map((item) => (
-              <CommandItem
-                key={item.to}
-                onSelect={() => {
-                  sounds.playClick();
-                  navigate({ to: item.to });
-                  setPaletteOpen(false);
-                }}
-              >
-                <span>{item.label}</span>
-                <CommandShortcut>{item.key}</CommandShortcut>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {navSections.map((section) => (
+            <CommandGroup key={section.label} heading={section.label}>
+              {section.items.map((item) => (
+                <CommandItem
+                  key={item.to}
+                  onSelect={() => {
+                    sounds.playClick();
+                    navigate({ to: item.to });
+                    setPaletteOpen(false);
+                  }}
+                >
+                  <span>{item.label}</span>
+                  <CommandShortcut>{item.key}</CommandShortcut>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
     </div>
