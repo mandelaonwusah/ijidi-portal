@@ -1,18 +1,24 @@
 // src/lib/portal-data.ts
 export type DataStatus = "not-tracked" | "tracked" | "estimated";
 
+// Sidebar groups, in display order. Each navItem below carries one of these
+// in its `group` field; the shell builds the grouped sidebar from that.
+export const navGroupOrder = ["COMMAND", "ECOSYSTEM", "KNOWLEDGE", "IDENTITY"] as const;
+
+// Flat list, already in display order (groups are contiguous). Used by the
+// sidebar, the command palette and the header page label.
 export const navItems = [
-  { label: "Command Center", to: "/", icon: "⌂", key: "01" },
-  { label: "Ecosystem", to: "/ecosystem", icon: "⌘", key: "02" },
-  { label: "Capital Engine", to: "/capital", icon: "◈", key: "03" },
-  { label: "Foundation", to: "/foundation", icon: "✦", key: "04" },
-  { label: "Atelier", to: "/atelier", icon: "◆", key: "05" },
-  { label: "Media", to: "/media", icon: "▶", key: "06" },
-  { label: "The Vault", to: "/vault", icon: "▣", key: "07" },
-  { label: "IGX AI", to: "/igx-ai", icon: "›_", key: "08" },
-  { label: "Governance", to: "/governance", icon: "◎", key: "09" },
-  { label: "Directory", to: "/directory", icon: "⊞", key: "10" },
-  { label: "Identity", to: "/settings", icon: "◌", key: "11" },
+  { label: "Command Center", to: "/", icon: "⌂", key: "01", group: "COMMAND" },
+  { label: "IGX AI", to: "/igx-ai", icon: "›_", key: "02", group: "COMMAND" },
+  { label: "Governance", to: "/governance", icon: "◎", key: "03", group: "COMMAND" },
+  { label: "Ecosystem", to: "/ecosystem", icon: "⌘", key: "04", group: "ECOSYSTEM" },
+  { label: "Capital Engine", to: "/capital", icon: "◈", key: "05", group: "ECOSYSTEM" },
+  { label: "Foundation", to: "/foundation", icon: "✦", key: "06", group: "ECOSYSTEM" },
+  { label: "Atelier", to: "/atelier", icon: "◆", key: "07", group: "ECOSYSTEM" },
+  { label: "Media", to: "/media", icon: "▶", key: "08", group: "ECOSYSTEM" },
+  { label: "Directory", to: "/directory", icon: "⊞", key: "09", group: "ECOSYSTEM" },
+  { label: "The Vault", to: "/vault", icon: "▣", key: "10", group: "KNOWLEDGE" },
+  { label: "Identity", to: "/settings", icon: "◌", key: "11", group: "IDENTITY" },
 ] as const;
 
 // Generalized top entity switcher bar — used on Command Center, IGX AI,
