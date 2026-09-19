@@ -319,6 +319,32 @@ function LiveClock() {
 }
 
 // ---------------------------------------------------------------------------
+// SESSION TIMER — real time elapsed since the account's last sign-in
+// (Supabase `last_sign_in_at`). Shows dashes if that timestamp is missing.
+// ---------------------------------------------------------------------------
+function formatElapsed(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+}
+
+function SessionTimer({ since }: { since: string | null | undefined }) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const start = since ? Date.parse(since) : Number.NaN;
+  const valid = now !== null && !Number.isNaN(start);
+  return (
+    <span className="tabular-nums" suppressHydrationWarning>
+      {valid ? formatElapsed(now - start) : "--:--:--"}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // HUD OVERLAYS — shared by the governor shell and the member shell.
 // ---------------------------------------------------------------------------
 function HudOverlays() {
@@ -617,6 +643,17 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       : `@${governor.handle}`
     : null;
 
+  // Honest data-link status: reflects the real activity_log query the ticker runs
+  // (same query key, so this adds no extra request).
+  const { isSuccess: linkOk, isError: linkError } = useQuery({
+    queryKey: ["activity-ticker"],
+    queryFn: getActivity,
+    refetchInterval: 5000,
+  });
+  const linkLabel = linkOk ? "Data link verified" : linkError ? "Data link unavailable" : "Checking data link…";
+  const linkText = linkOk ? "text-teal" : linkError ? "text-destructive" : "text-muted-foreground";
+  const linkDot = linkOk ? "bg-teal" : linkError ? "bg-destructive" : "bg-muted-foreground";
+
   // Header label: which page and sidebar group the governor is on.
   const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
   const pageLabel = activeItem?.label ?? "Portal";
@@ -913,12 +950,15 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           <div className="min-w-0 flex-1">
             <div className="flex h-8 items-center justify-between border-b border-border bg-panel/90 backdrop-blur-sm px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
               <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5 text-teal">
-                  <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
-                  System nominal
+                <span className={cn("flex items-center gap-1.5", linkText)}>
+                  <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkOk && "live-pulse")} />
+                  {linkLabel}
                 </span>
-                <span className="hidden sm:inline">Build / 01</span>
-                <span className="hidden md:inline">Data / honest-state protocol</span>
+                <span className="hidden sm:inline">
+                  Session <SessionTimer since={session.user.last_sign_in_at} />
+                </span>
+                <span className="hidden md:inline">Build / 01</span>
+                <span className="hidden xl:inline">Data / honest-state protocol</span>
               </div>
               <LiveClock />
             </div>
