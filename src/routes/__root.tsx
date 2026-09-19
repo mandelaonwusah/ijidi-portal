@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { navItems, entitySwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
+import { logActivity } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -200,7 +201,13 @@ function useAuthState(): AuthState {
   return state;
 }
 
-function AccessCheckScreen({ status }: { status: "checking" | "anon" }) {
+function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" }) {
+  const label =
+    status === "checking"
+      ? "Verifying session…"
+      : status === "tier"
+      ? "Verifying access level…"
+      : "Redirecting to secure access…";
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-[#111111] p-6 text-[#F5F1E8]"
@@ -213,7 +220,7 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" }) {
           IJIDI Portal
         </div>
         <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#F5F1E8]/60">
-          {status === "checking" ? "Verifying session…" : "Redirecting to secure access…"}
+          {label}
         </p>
       </div>
     </div>
@@ -221,13 +228,37 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" }) {
 }
 
 // The login screen is a full-bleed standalone experience — it must not be
-// wrapped in the sidebar/ticker/header chrome. Every other route requires a
-// signed-in session and otherwise redirects to /login.
+// wrapped in any chrome. Every other route requires a signed-in session and
+// otherwise redirects to /login.
+//
+// Signed-in users are split by tier: the governor (is_sovereign() — the same
+// function the database RLS policies use) gets the full PortalShell; everyone
+// else gets the slim MemberShell. This is presentation only — RLS remains the
+// real enforcement. Any failure while checking falls back to the member shell.
 function ChromeGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
   const auth = useAuthState();
   const isLogin = pathname === "/login";
+  const uid = auth.status === "authed" ? auth.session.user.id : null;
+
+  const {
+    data: isSovereign,
+    isError: roleError,
+  } = useQuery({
+    queryKey: ["role-is-sovereign", uid],
+    enabled: !!uid,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("is_sovereign");
+      if (error) {
+        console.error("Role check failed:", error);
+        return false;
+      }
+      return data === true;
+    },
+  });
 
   useEffect(() => {
     if (auth.status === "anon" && !isLogin) {
@@ -241,7 +272,248 @@ function ChromeGate({ children }: { children: ReactNode }) {
   if (auth.status !== "authed") {
     return <AccessCheckScreen status={auth.status} />;
   }
-  return <PortalShell session={auth.session}>{children}</PortalShell>;
+  if (isSovereign === undefined && !roleError) {
+    return <AccessCheckScreen status="tier" />;
+  }
+  if (isSovereign === true) {
+    return <PortalShell session={auth.session}>{children}</PortalShell>;
+  }
+  return <MemberShell session={auth.session} />;
+}
+
+// ---------------------------------------------------------------------------
+// LIVE CLOCK — real UTC time, rendered on the client only.
+// ---------------------------------------------------------------------------
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+function formatUtc(d: Date) {
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  return `UTC ${hh}:${mm} · ${dd} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+function LiveClock() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 10_000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <span className="tabular-nums" suppressHydrationWarning>
+      {now ? formatUtc(now) : "UTC --:-- · -- --- ----"}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HUD OVERLAYS — shared by the governor shell and the member shell.
+// ---------------------------------------------------------------------------
+function HudOverlays() {
+  return (
+    <>
+      <div className="portal-hud-grid" aria-hidden="true" />
+      <div className="portal-hud-scanlines" aria-hidden="true" />
+      <div className="portal-hud-vignette" aria-hidden="true" />
+      <div className="portal-hud-frame" aria-hidden="true">
+        <span className="c tl" /><span className="c tr" />
+        <span className="c bl" /><span className="c br" />
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MEMBER SHELL — slim view for every non-governor tier.
+// No module sidebar, no activity ticker, no entity switcher. Shows the
+// member's own name, tier and the (publicly readable) entity_status rows.
+// ---------------------------------------------------------------------------
+function humanize(key: string) {
+  return key.replace(/_/g, " ").toUpperCase();
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+const HIDDEN_ENTITY_KEYS = new Set(["id", "created_at", "updated_at"]);
+const ENTITY_TITLE_KEYS = ["name", "entity", "entity_name", "entity_id", "label", "title"];
+
+function MemberShell({ session }: { session: Session }) {
+  const [signingOut, setSigningOut] = useState(false);
+  const email = session.user.email ?? "Signed in";
+  const meta = session.user.user_metadata as Record<string, unknown> | undefined;
+  const displayName =
+    (typeof meta?.full_name === "string" && meta.full_name) ||
+    (typeof meta?.name === "string" && meta.name) ||
+    email.split("@")[0];
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["own-profile", session.user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("access_tier")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { access_tier?: string } | null;
+    },
+  });
+
+  const {
+    data: entities,
+    isLoading: entitiesLoading,
+    isError: entitiesError,
+  } = useQuery({
+    queryKey: ["member-entity-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("entity_status").select("*");
+      if (error) throw error;
+      return (data ?? []) as Record<string, unknown>[];
+    },
+  });
+
+  const tier = profile?.access_tier ?? null;
+
+  const handleSignOut = async () => {
+    sounds.playClick();
+    setSigningOut(true);
+    const { error } = await supabase.auth.signOut();
+    setSigningOut(false);
+    if (error) {
+      console.error("Sign-out failed:", error);
+      alert(`Sign-out failed: ${error.message}`);
+    }
+  };
+
+  return (
+    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
+      <HudOverlays />
+      <RadarBackground />
+
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <HexBadge small />
+            <div className="min-w-0">
+              <div className="font-display text-sm font-semibold tracking-wide text-foreground">
+                IJIDI <span className="text-gold">PORTAL</span>
+              </div>
+              <Eyebrow className="mt-1 text-[8px]">Member Access</Eyebrow>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span
+              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+              title={email}
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse" />
+              <span className="truncate">{email}</span>
+            </span>
+            <button
+              onClick={handleSignOut}
+              onMouseEnter={() => sounds.playHover()}
+              disabled={signingOut}
+              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+              title="Sign out of the portal"
+            >
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          </div>
+        </header>
+
+        <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
+          {/* Member Home — identity card */}
+          <section className="relative overflow-hidden rounded-lg border border-gold/30 bg-panel/90 p-6 backdrop-blur-md sm:p-8">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
+            <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
+            <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
+              Welcome, <span className="text-gold">{displayName}</span>
+            </h1>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Access tier
+              </span>
+              <span className="rounded-md border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">
+                {profileLoading ? "…" : tier ?? "Unavailable"}
+              </span>
+            </div>
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Your account has a limited view of the portal. Operational modules are reserved for the
+              governor.
+            </p>
+          </section>
+
+          {/* Entity status */}
+          <section className="mt-8">
+            <Eyebrow className="pb-3">ENTITY STATUS</Eyebrow>
+            {entitiesLoading ? (
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Loading entity status…
+              </p>
+            ) : entitiesError ? (
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Entity status unavailable
+              </p>
+            ) : !entities || entities.length === 0 ? (
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                No entities reported
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {entities.map((row, i) => {
+                  const titleKey = ENTITY_TITLE_KEYS.find(
+                    (k) => typeof row[k] === "string" && row[k],
+                  );
+                  const title = titleKey ? String(row[titleKey]) : `Entity ${i + 1}`;
+                  const fields = Object.entries(row).filter(
+                    ([k, v]) =>
+                      !HIDDEN_ENTITY_KEYS.has(k) && k !== titleKey && v !== null && v !== undefined,
+                  );
+                  return (
+                    <div
+                      key={String(row.id ?? i)}
+                      className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
+                        <div className="font-display text-base text-foreground">{title}</div>
+                      </div>
+                      <dl className="mt-3 space-y-1.5">
+                        {fields.map(([k, v]) => (
+                          <div key={k} className="flex items-baseline justify-between gap-3">
+                            <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                              {humanize(k)}
+                            </dt>
+                            <dd className="break-words text-right text-xs text-foreground">
+                              {formatValue(v)}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </main>
+
+        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
+          <LiveClock />
+        </footer>
+      </div>
+    </div>
+  );
 }
 
 function TickerBar() {
@@ -311,6 +583,25 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
   usePortalRealtime();
 
+  // Log one "session started" entry per browser tab (only the governor shell
+  // mounts this). The flag is set only after a successful insert.
+  useEffect(() => {
+    const key = "ijidi_session_logged";
+    try {
+      if (sessionStorage.getItem(key) === session.user.id) return;
+    } catch {
+      /* sessionStorage unavailable — log anyway */
+    }
+    void logActivity("Governor session started", "Portal").then((ok) => {
+      if (!ok) return;
+      try {
+        sessionStorage.setItem(key, session.user.id);
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [session.user.id]);
+
   useEffect(() => {
     const savedTheme = (localStorage.getItem("ijidi_theme") as "dark" | "light") || "dark";
     setTheme(savedTheme);
@@ -361,13 +652,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
       {/* HUD overlays — carry the login skin across the whole portal */}
-      <div className="portal-hud-grid" aria-hidden="true" />
-      <div className="portal-hud-scanlines" aria-hidden="true" />
-      <div className="portal-hud-vignette" aria-hidden="true" />
-      <div className="portal-hud-frame" aria-hidden="true">
-        <span className="c tl" /><span className="c tr" />
-        <span className="c bl" /><span className="c br" />
-      </div>
+      <HudOverlays />
 
       <RadarBackground />
 
@@ -457,7 +742,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 <span className="hidden sm:inline">Build / 01</span>
                 <span className="hidden md:inline">Data / honest-state protocol</span>
               </div>
-              <span>UTC 15:03 · 08 AUG 2026</span>
+              <LiveClock />
             </div>
             <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">
