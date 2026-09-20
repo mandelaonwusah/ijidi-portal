@@ -22,7 +22,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { navItems, navGroupOrder, entitySwitcherItems } from "@/lib/portal-data";
+import { navItems, navGroupOrder, floatingSwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/logger";
@@ -587,25 +587,70 @@ function TickerBar() {
   );
 }
 
-// Generalized top entity switcher — Group/Foundation/Atelier/Media.
-// Lives once here in the root shell so it renders on every route without
-// per-page duplication. Highlights the entity matching the current path.
-function EntitySwitcherBar() {
+// Floating entity dock — a translucent pill at the bottom centre of every
+// governor page except the IGX AI console (which has its own rail).
+// Mandela / Ifeoma open the IGX AI console on that person; Group / Foundation
+// go to their pages. On small screens only the active chip shows its label.
+function EntityDock({ hidden }: { hidden: boolean }) {
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
+  if (hidden) return null;
   return (
-    <div className="entity-switcher-bar mx-4 my-2 sm:mx-6">
-      {entitySwitcherItems.map((item) => (
-        <Link key={item.key}
-          to={item.to}
-          onMouseEnter={() => sounds.playHover()}
-          onClick={() => sounds.playClick()}
-          className={cn("entity-chip", currentPath === item.to && "active")}
-        >
-          <span className={cn("entity-status-dot", item.status)} />
-          {item.label}
-        </Link>
-      ))}
-    </div>
+    <nav
+      aria-label="Entity switcher"
+      style={{
+        position: "fixed",
+        left: "50%",
+        transform: "translateX(-50%)",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+        zIndex: 50,
+      }}
+      className="flex items-center gap-1 rounded-full border border-border bg-panel/70 p-1.5 shadow-lg backdrop-blur-xl"
+    >
+      {floatingSwitcherItems.map((item) => {
+        const active = item.kind === "route" && isNavActive(currentPath, item.to);
+        const chipClass = cn(
+          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-all sm:px-3.5",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+          active
+            ? "border-gold/40 bg-gold/15 text-gold"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        );
+        const inner = (
+          <>
+            <span
+              aria-hidden="true"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-gold/40 text-[9px] font-semibold text-gold"
+            >
+              {item.label.charAt(0)}
+            </span>
+            <span className={cn(active ? "inline" : "hidden sm:inline")}>{item.label}</span>
+          </>
+        );
+        return item.kind === "person" ? (
+          <Link key={item.key}
+            to="/igx-ai"
+            search={{ entity: item.entity }}
+            title={`Open IGX AI — ${item.label}`}
+            onMouseEnter={() => sounds.playHover()}
+            onClick={() => sounds.playClick()}
+            className={chipClass}
+          >
+            {inner}
+          </Link>
+        ) : (
+          <Link key={item.key}
+            to={item.to}
+            title={item.label}
+            aria-current={active ? "page" : undefined}
+            onMouseEnter={() => sounds.playHover()}
+            onClick={() => sounds.playClick()}
+            className={chipClass}
+          >
+            {inner}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -638,7 +683,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       style={{
         position: "fixed",
         right: "1.5rem",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 5rem)",
         zIndex: 60,
         background: "linear-gradient(135deg, #C6A15B 0%, #D4AF37 100%)",
         color: "#111111",
@@ -847,7 +892,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <TickerBar />
-        <EntitySwitcherBar />
         <div className="lg:flex">
           <aside
             className={cn(
@@ -1087,12 +1131,15 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </button>
               </div>
             </header>
-            <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+            <main className="p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28">{children}</main>
           </div>
         </div>
       </div>
 
       <IgxFloatingButton hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/")} />
+      <EntityDock
+        hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/") || railOpen}
+      />
 
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <CommandInput placeholder="Type a command or search modules..." />
