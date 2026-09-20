@@ -22,12 +22,14 @@ const CW = 336; // board cell width
 const G = 6; // routing grid step
 const TAU = Math.PI * 2;
 
-const LINE = 0.46; // line thickness, as a share of the original
+const ZOOM = 1.5; // how far the board is scaled up on desktop (1 = whole board fits the screen height)
+const ZOOM_SMALL = 1.25; // same, on phones and narrow screens
+const LINE = 0.32; // line thickness, as a share of the original (kept fine because the board is zoomed)
 const HALO_WIDTH = 0.2; // thick glow bands, as a share of their original width
 const GLOW = 0.26; // thick glow brightness, as a share of the original
 const CORE = 0.75; // crisp line brightness
 const PULSE_ALPHA = 0.5;
-const PULSE_WIDTH = 0.6; // pulse thickness
+const PULSE_WIDTH = 0.42; // pulse thickness
 const SPEED = 0.34; // pulse and glow speed, as a share of the original
 const BASE_PULSES = 60; // ambient pulses per cell at medium intensity
 const FRAME_MS = 1000 / 30;
@@ -1079,11 +1081,11 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
   }
 
   /* ---------- sizing ---------- */
-  function resize(cssW: number, cssH: number, dpr: number, axis = false) {
+  function resize(cssW: number, cssH: number, dpr: number, axis = false, zoom = 1) {
     axisView = axis;
     canvas.width = Math.max(2, Math.round(cssW * dpr));
     canvas.height = Math.max(2, Math.round(cssH * dpr));
-    const s = cssH / H;
+    const s = (cssH / H) * zoom;
     ch = Math.max(2, Math.round(H * s * dpr));
     cw = Math.max(2, Math.round(CW * s * dpr));
     sx = cw / CW;
@@ -1148,7 +1150,7 @@ export function CircuitBackground() {
       const h = window.innerHeight;
       const dpr = w < 768 ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       // Phones and tall screens are centred on the dense chip side of the board.
-      engine.resize(w, h, dpr, w < 900 || w < h);
+      engine.resize(w, h, dpr, w < 900 || w < h, w < 768 ? ZOOM_SMALL : ZOOM);
     };
     fit();
 
