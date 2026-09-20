@@ -1,78 +1,79 @@
 // src/routes/index.tsx
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { 
-  Bot, 
-  Zap,  
-  Shield, 
-  Globe, 
-  Users,  
-  Building2, 
-  ArrowRight, 
-  Loader2, 
-  Activity, 
-  Clock, 
-  CheckCircle2, 
-  ChevronRight,
-  Sparkles,
-  Database,
-  Server,
-  Cpu,
-  Network,
-  Layers,
-  Target,
-  Crown,
-  X,
+import {
+  Shield,
+  Globe,
+  Users,
+  Building2,
+  ArrowRight,
+  Loader2,
+  Activity,
+  Clock,
   ChevronDown,
   Building,
   Briefcase,
   Film,
   Palette,
-  MessageSquare,
-  ExternalLink
+  Crown,
+  Database,
+  Target,
+  Server,
+  Layers,
+  ExternalLink,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: CommandCenterOverview,
 });
 
-function formatTacticalTime(isoString?: string): string {
-  if (!isoString) return "00:00:00";
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  } catch {
-    return "00:00:00";
-  }
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+// Database timestamps are "timestamp without time zone" (stored as UTC).
+// Without a zone marker, the browser would read them as local time, so
+// we mark them as UTC before parsing.
+function parseTimestamp(value?: string | null): Date | null {
+  if (!value) return null;
+  const hasZone = /(Z|[+-]\d{2}:?\d{2})$/.test(value);
+  const normalised = hasZone ? value : `${value.replace(" ", "T")}Z`;
+  const date = new Date(normalised);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function formatRelativeTime(isoString?: string): string {
-  if (!isoString) return "just now";
-  try {
-    const date = new Date(isoString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  } catch {
-    return "recently";
-  }
+function formatTacticalTime(value?: string | null): string {
+  const date = parseTimestamp(value);
+  if (!date) return "--:--:--";
+  return date.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function formatRelativeTime(value?: string | null): string {
+  const date = parseTimestamp(value);
+  if (!date) return "unknown";
+  const diffMs = Math.max(0, Date.now() - date.getTime());
+  const mins = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMs / 3600000);
+  const days = Math.floor(diffMs / 86400000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function displayValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  return String(value);
 }
 
 function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -83,19 +84,109 @@ function Eyebrow({ children, className = "" }: { children: React.ReactNode; clas
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Honest-state maps                                                   */
+/* ------------------------------------------------------------------ */
+
+type LinkState = "connecting" | "connected" | "unreachable";
+
+const LINK_META: Record<
+  LinkState,
+  { label: string; text: string; dot: string; border: string }
+> = {
+  connecting: {
+    label: "CONNECTING",
+    text: "text-amber-400",
+    dot: "bg-amber-400",
+    border: "border-l-amber-400",
+  },
+  connected: {
+    label: "CONNECTED",
+    text: "text-teal-400",
+    dot: "bg-teal-400",
+    border: "border-l-teal-400",
+  },
+  unreachable: {
+    label: "UNREACHABLE",
+    text: "text-destructive",
+    dot: "bg-destructive",
+    border: "border-l-destructive",
+  },
+};
+
+type EntityRow = {
+  entity_name: string;
+  current_state: string | null;
+  last_updated: string | null;
+};
+
+// Only routes that already exist are linked. Other entities show as plain rows.
+const ENTITY_ROUTES: Record<string, string> = {
+  Foundation: "/foundation",
+  Atelier: "/atelier",
+  Media: "/media",
+};
+
+const ENTITY_ICONS: Record<string, typeof Building> = {
+  Group: Briefcase,
+  Foundation: Building,
+  Atelier: Palette,
+  Media: Film,
+  Personal: Crown,
+};
+
+function stateTone(state?: string | null): { dot: string; text: string } {
+  const s = (state ?? "").toLowerCase();
+  if (s === "live") return { dot: "bg-teal-400", text: "text-teal-400" };
+  if (!s) return { dot: "bg-muted-foreground/40", text: "text-muted-foreground" };
+  return { dot: "bg-amber-400", text: "text-amber-400" };
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
 function CommandCenterOverview() {
-  const navigate = useNavigate();
   const [isEntitiesOpen, setIsEntitiesOpen] = useState(false);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setSessionEmail(data.session?.user?.email ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const {
     data: metrics,
     isLoading: metricsLoading,
     isError: metricsError,
+    dataUpdatedAt: metricsUpdatedAt,
   } = useQuery({
     queryKey: ["ecosystem-metrics"],
     queryFn: getEcosystemMetrics,
     refetchInterval: 10000,
     staleTime: 5000,
+  });
+
+  const {
+    data: entities,
+    isLoading: entitiesLoading,
+    isError: entitiesError,
+  } = useQuery({
+    queryKey: ["entity-status"],
+    queryFn: async (): Promise<EntityRow[]> => {
+      const { data, error } = await supabase
+        .from("entity_status")
+        .select("entity_name,current_state,last_updated")
+        .order("id", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as EntityRow[];
+    },
+    staleTime: 30000,
   });
 
   const { logs: activity, isLoading: activityLoading } = useLiveActivityLog();
@@ -104,116 +195,119 @@ function CommandCenterOverview() {
   const recentActivities = activity?.slice(0, 10) ?? [];
   const hasRealData = totalActivities > 0;
 
-  const entitySubItems = [
-    { label: "IJIDI Foundation", to: "/foundation", icon: Building, status: "standby" },
-    { label: "IJIDI Atelier", to: "/atelier", icon: Palette, status: "forming" },
-    { label: "IJIDI Media", to: "/media", icon: Film, status: "forming" },
+  const linkState: LinkState = metricsLoading
+    ? "connecting"
+    : metricsError
+    ? "unreachable"
+    : "connected";
+  const link = LINK_META[linkState];
+
+  const lastSyncIso = metricsUpdatedAt ? new Date(metricsUpdatedAt).toISOString() : undefined;
+  const lastSync = metricsUpdatedAt ? formatTacticalTime(lastSyncIso) : "--:--:--";
+
+  const entityList = entities ?? [];
+  const latestEntityUpdate = entityList
+    .map((e) => parseTimestamp(e.last_updated)?.getTime() ?? 0)
+    .reduce((max, t) => Math.max(max, t), 0);
+
+  const metricCards = [
+    { label: "TOTAL VAULT ASSETS", raw: metrics?.totalVaultAssets, icon: Database },
+    { label: "ACTIVE PROPOSALS", raw: metrics?.activeProposals, icon: Target },
+    { label: "GOVERNANCE STATUS", raw: metrics?.governanceStatus, icon: Shield },
+    { label: "SYSTEM UPTIME", raw: metrics?.uptime, icon: Server },
   ];
 
   return (
     <div className="space-y-8">
-      {/* Premium Header Banner */}
+      {/* Header banner */}
       <section className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/5 via-card to-accent/5 p-8">
         <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-accent/5 blur-3xl" />
-        
+
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 shadow-lg shadow-primary/10">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-lg shadow-primary/10 ring-1 ring-primary/20">
               <Crown className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
-                <span className="flex h-2 w-2 items-center justify-center">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-teal-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-400" />
-                </span>
-                <span className="font-mono text-[10px] text-teal-400">LIVE</span>
-              </div>
+              <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
               <h1 className="mt-2 font-sans text-3xl font-bold tracking-tight text-foreground md:text-4xl">
                 Ecosystem Command
               </h1>
-              <p className="mt-1 font-mono text-sm text-muted-foreground">
-                Real-time governance telemetry · Operational intelligence · Honest-state protocol
+              <p className="mt-1 max-w-xl font-mono text-sm text-muted-foreground">
+                Governance metrics, audit trail and entity status. Every state on this page comes
+                from a query; nothing is assumed.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="rounded-lg border bg-card px-5 py-3 shadow-sm">
-              <Eyebrow className="text-[8px] text-muted-foreground">GATEWAY STATUS</Eyebrow>
-              <div
-                className={`font-mono text-sm font-bold ${
-                  metricsLoading
-                    ? "text-muted-foreground"
-                    : metricsError
-                    ? "text-destructive"
-                    : "text-teal-400"
-                }`}
-              >
-                {metricsLoading
-                  ? "◆ INITIALIZING"
-                  : metricsError
-                  ? "◆ OFFLINE"
-                  : "◆ ONLINE"}
+
+          <div className="flex items-stretch gap-3">
+            <div
+              className={cn(
+                "rounded-lg border border-l-4 bg-card px-5 py-3 shadow-sm",
+                link.border
+              )}
+            >
+              <Eyebrow className="text-[8px] text-muted-foreground">DATA LINK</Eyebrow>
+              <div className={cn("mt-0.5 flex items-center gap-2 font-mono text-sm font-bold", link.text)}>
+                <span className="relative flex h-2 w-2">
+                  {linkState === "connected" && (
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60 motion-safe:animate-ping" />
+                  )}
+                  <span className={cn("relative inline-flex h-2 w-2 rounded-full", link.dot)} />
+                </span>
+                {link.label}
               </div>
             </div>
             <div className="hidden rounded-lg border bg-card px-5 py-3 shadow-sm md:block">
-              <Eyebrow className="text-[8px] text-muted-foreground">PROTOCOL</Eyebrow>
-              <div className="font-mono text-sm font-bold text-primary">v2026.08.27</div>
+              <Eyebrow className="text-[8px] text-muted-foreground">LAST SYNC</Eyebrow>
+              <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
+                {lastSync}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Premium Metrics Grid */}
+      {/* Metrics grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: "TOTAL VAULT ASSETS",
-            value: metricsLoading ? "---" : metricsError ? "ERR" : metrics?.totalVaultAssets ?? "—",
-            icon: Database,
-            status: "NOT TRACKED",
-          },
-          {
-            label: "ACTIVE PROPOSALS",
-            value: metricsLoading ? "---" : metricsError ? "ERR" : metrics?.activeProposals ?? "—",
-            icon: Target,
-            status: "NOT TRACKED",
-          },
-          {
-            label: "GOVERNANCE STATUS",
-            value: metricsLoading ? "---" : metricsError ? "ERR" : metrics?.governanceStatus ?? "—",
-            icon: Shield,
-            status: "NOT TRACKED",
-          },
-          {
-            label: "SYSTEM UPTIME",
-            value: metricsLoading ? "---" : metricsError ? "ERR" : metrics?.uptime ?? "—",
-            icon: Server,
-            status: "NOT TRACKED",
-          },
-        ].map((item, idx) => {
+        {metricCards.map((item) => {
           const Icon = item.icon;
+          const missing = item.raw === null || item.raw === undefined || item.raw === "";
+          const cardState = metricsLoading
+            ? "SYNCING"
+            : metricsError
+            ? "QUERY FAILED"
+            : missing
+            ? "NO DATA"
+            : "RECEIVED";
+          const cardTone = metricsLoading
+            ? "text-amber-400"
+            : metricsError
+            ? "text-destructive"
+            : missing
+            ? "text-muted-foreground/60"
+            : "text-teal-400";
+
           return (
             <div
-              key={idx}
-              className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+              key={item.label}
+              className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-colors hover:border-primary/30"
             >
-              <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/5 blur-2xl transition-opacity group-hover:opacity-100" />
+              <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/5 blur-2xl" />
               <div className="relative">
                 <div className="flex items-center justify-between">
                   <Eyebrow className="text-[9px] text-muted-foreground">{item.label}</Eyebrow>
-                  <div className="rounded-lg bg-primary/10 p-1.5">
+                  <div className="rounded-lg bg-primary/10 p-1.5 ring-1 ring-primary/10">
                     <Icon className="h-3.5 w-3.5 text-primary" />
                   </div>
                 </div>
-                <div className="mt-4 font-sans text-3xl font-bold text-foreground">
-                  {item.value}
+                <div className="mt-4 truncate font-sans text-3xl font-bold tabular-nums text-foreground">
+                  {metricsLoading ? "---" : metricsError ? "ERR" : displayValue(item.raw)}
                 </div>
-                <div className="mt-3 flex items-center justify-between font-mono text-[10px]">
-                  <span className="text-muted-foreground/50">{item.status}</span>
-                  <span className="text-muted-foreground/40">AWAITING RECORDS</span>
+                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px]">
+                  <span className={cardTone}>{cardState}</span>
+                  <span className="tabular-nums text-muted-foreground/50">{lastSync}</span>
                 </div>
               </div>
             </div>
@@ -221,99 +315,71 @@ function CommandCenterOverview() {
         })}
       </div>
 
-      {/* Main Telemetry Grid */}
+      {/* Main grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Real-Time Telemetry Feed */}
+        {/* Audit stream */}
         <section className="lg:col-span-2">
           <div className="h-full rounded-xl border bg-card p-6">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
-                <Eyebrow className="text-primary">SYSTEM TELEMETRY</Eyebrow>
+                <Eyebrow className="text-primary">AUDIT TRAIL</Eyebrow>
                 <div className="mt-1 flex items-center gap-3">
-                  <span className="font-sans text-base font-semibold text-foreground">Real-Time Audit Stream</span>
+                  <span className="font-sans text-base font-semibold text-foreground">
+                    Activity log
+                  </span>
                   {hasRealData && (
-                    <span className="rounded-full bg-teal-400/20 px-2.5 py-0.5 font-mono text-[9px] text-teal-400">
-                      {totalActivities} EVENTS
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[9px] text-primary">
+                      {totalActivities} LOADED
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 font-mono text-[10px]">
-                  <span className="flex h-2 w-2">
-                    <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-teal-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-400" />
-                  </span>
-                  <span className="text-teal-400">WEBSOCKET</span>
-                </div>
-                <div className="h-6 w-px bg-border" />
-                <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>REAL-TIME</span>
-                </div>
+              <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>Newest first</span>
               </div>
             </div>
 
-            <div className="mt-4 space-y-2 max-h-[440px] overflow-y-auto custom-scrollbar">
+            <div className="custom-scrollbar mt-4 max-h-[440px] space-y-2 overflow-y-auto pr-1">
               {activityLoading ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
-                  <div className="text-center">
-                    <p className="font-mono text-sm text-muted-foreground">Initializing telemetry socket...</p>
-                    <p className="font-mono text-xs text-muted-foreground/40">Secure connection establishing</p>
-                  </div>
+                  <Loader2 className="h-8 w-8 text-primary/40 motion-safe:animate-spin" />
+                  <p className="font-mono text-sm text-muted-foreground">Loading audit entries…</p>
                 </div>
               ) : recentActivities.length > 0 ? (
                 recentActivities.map((log, idx) => (
                   <div
                     key={log.id || idx}
-                    className="group rounded-lg border border-border/60 bg-background/40 p-4 transition-all hover:border-primary/30 hover:bg-background/60"
+                    className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-primary/40 bg-background/40 p-3 transition-colors hover:border-primary/30 hover:border-l-primary hover:bg-background/60"
                   >
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                          <Activity className="h-3.5 w-3.5 text-primary" />
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Activity className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate font-mono text-xs font-bold text-foreground">
+                          {log.actor ?? "unknown actor"}
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-foreground">
-                              {log.actor?.toUpperCase() ?? "SYSTEM"}
-                            </span>
-                            <span className="hidden h-1 w-1 rounded-full bg-muted-foreground/30 sm:block" />
-                            <span className="truncate font-mono text-xs text-muted-foreground">
-                              {log.action}
-                            </span>
-                          </div>
-                          <div className="mt-0.5 flex items-center gap-3">
-                            <span className="font-mono text-[10px] text-muted-foreground/40">
-                              {formatRelativeTime(log.timestamp)}
-                            </span>
-                            <span className="font-mono text-[10px] text-muted-foreground/30">
-                              {formatTacticalTime(log.timestamp)}
-                            </span>
-                          </div>
+                        <div className="truncate font-mono text-xs text-muted-foreground">
+                          {log.action}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[9px] text-primary">
-                          EVENT
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
-                      </div>
+                    </div>
+                    <div className="shrink-0 text-right font-mono text-[10px] tabular-nums">
+                      <div className="text-muted-foreground">{formatRelativeTime(log.timestamp)}</div>
+                      <div className="text-muted-foreground/50">{formatTacticalTime(log.timestamp)}</div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center gap-4 py-16">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/10">
-                    <Activity className="h-8 w-8 text-muted-foreground/20" />
+                <div className="flex flex-col items-center justify-center gap-3 py-16">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/10 ring-1 ring-border">
+                    <Activity className="h-6 w-6 text-muted-foreground/30" />
                   </div>
                   <div className="text-center">
-                    <p className="font-mono text-sm text-muted-foreground/60">
-                      No verified entries logged
-                    </p>
-                    <p className="font-mono text-xs text-muted-foreground/40">
-                      Activity feed will populate as operations commence
+                    <p className="font-mono text-sm text-muted-foreground">No audit entries yet</p>
+                    <p className="mt-1 font-mono text-xs text-muted-foreground/50">
+                      Entries appear here when an action is logged.
                     </p>
                   </div>
                 </div>
@@ -321,44 +387,35 @@ function CommandCenterOverview() {
             </div>
 
             {hasRealData && (
-              <div className="mt-4 flex items-center justify-between border-t pt-4">
-                <div className="flex items-center gap-4">
-                  <span className="font-mono text-[10px] text-muted-foreground/50">
-                    LAST UPDATE: {formatTacticalTime(recentActivities[0]?.timestamp)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] text-muted-foreground/40">
-                    {totalActivities} TOTAL
-                  </span>
-                  <span className="h-3 w-px bg-border" />
-                  <span className="font-mono text-[10px] text-teal-400/60">
-                    {totalActivities > 0 ? `${Math.min(totalActivities, 10)} DISPLAYED` : "AWAITING"}
-                  </span>
-                </div>
+              <div className="mt-4 flex items-center justify-between border-t pt-4 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+                <span>LATEST EVENT {formatTacticalTime(recentActivities[0]?.timestamp)}</span>
+                <span>
+                  SHOWING {recentActivities.length} OF {totalActivities}
+                </span>
               </div>
             )}
           </div>
         </section>
 
-        {/* Navigation Matrix - Updated */}
+        {/* Navigation + entities */}
         <section>
           <div className="h-full rounded-xl border bg-card p-6">
             <div className="flex items-center gap-3 border-b pb-4">
-              <div className="rounded-lg bg-primary/10 p-2">
+              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Layers className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <Eyebrow className="text-primary">NAVIGATION MATRIX</Eyebrow>
-                <div className="mt-0.5 font-sans text-sm font-semibold text-foreground">Primary Modules</div>
+                <Eyebrow className="text-primary">NAVIGATION</Eyebrow>
+                <div className="mt-0.5 font-sans text-sm font-semibold text-foreground">
+                  Primary modules
+                </div>
               </div>
             </div>
 
             <div className="mt-5 space-y-3">
-              {/* Governance */}
               <Link
                 to="/vault"
-                className="group block rounded-lg border bg-background/40 p-4 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/5"
+                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -375,7 +432,7 @@ function CommandCenterOverview() {
                         </span>
                       </div>
                       <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                        Proposals · Votes · Recovery
+                        Proposals, votes, recovery
                       </p>
                     </div>
                   </div>
@@ -383,10 +440,9 @@ function CommandCenterOverview() {
                 </div>
               </Link>
 
-              {/* Ecosystem */}
               <Link
                 to="/ecosystem"
-                className="group block rounded-lg border bg-background/40 p-4 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/5"
+                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -403,7 +459,7 @@ function CommandCenterOverview() {
                         </span>
                       </div>
                       <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                        Entities · Relations · Status
+                        Entities, relations, status
                       </p>
                     </div>
                   </div>
@@ -411,125 +467,148 @@ function CommandCenterOverview() {
                 </div>
               </Link>
 
-              {/* Entities Tile - Collapsed */}
-              <div className="relative">
+              {/* Entities (real status from entity_status) */}
+              <div className="rounded-lg border bg-background/40 transition-colors hover:border-accent/40">
                 <button
-                  onClick={() => setIsEntitiesOpen(!isEntitiesOpen)}
-                  className="w-full group block rounded-lg border bg-background/40 p-4 transition-all hover:border-accent/40 hover:bg-accent/5 hover:shadow-lg hover:shadow-accent/5"
+                  type="button"
+                  onClick={() => setIsEntitiesOpen((v) => !v)}
+                  aria-expanded={isEntitiesOpen}
+                  className="group flex w-full items-center justify-between rounded-lg p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-accent/10 p-2 group-hover:bg-accent/20">
-                        <Building2 className="h-4 w-4 text-accent" />
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-foreground group-hover:text-accent">
-                            [ENTITIES]
-                          </span>
-                          <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[8px] text-accent">
-                            3 ACTIVE
-                          </span>
-                        </div>
-                        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                          Foundation · Atelier · Media
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-accent/10 p-2 group-hover:bg-accent/20">
+                      <Building2 className="h-4 w-4 text-accent" />
                     </div>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 text-muted-foreground/30 transition-transform duration-200 group-hover:text-accent",
-                        isEntitiesOpen && "rotate-180"
-                      )}
-                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-accent">
+                          [ENTITIES]
+                        </span>
+                        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[8px] text-accent">
+                          {entitiesLoading
+                            ? "LOADING"
+                            : entitiesError
+                            ? "UNAVAILABLE"
+                            : `${entityList.length} ON RECORD`}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                        State as recorded per entity
+                      </p>
+                    </div>
                   </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground/30 transition-transform duration-200 group-hover:text-accent",
+                      isEntitiesOpen && "rotate-180"
+                    )}
+                  />
                 </button>
 
-                {/* Dropdown - Entities List */}
                 {isEntitiesOpen && (
-                  <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-lg border bg-card shadow-xl overflow-hidden">
-                    {entitySubItems.map((item, idx) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={idx}
-                          to={item.to}
-                          className="flex items-center gap-3 border-b border-border/50 px-4 py-3 transition-all hover:bg-primary/5 last:border-0"
-                        >
-                          <div className="rounded-lg bg-accent/10 p-2">
-                            <Icon className="h-3.5 w-3.5 text-accent" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-medium text-foreground">
-                                {item.label}
-                              </span>
-                              <span className={cn(
-                                "h-1.5 w-1.5 rounded-full",
-                                item.status === "standby" && "bg-teal-400",
-                                item.status === "forming" && "bg-gold-500"
-                              )} />
+                  <div className="border-t border-border/50">
+                    {entitiesLoading ? (
+                      <div className="flex items-center gap-2 px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                        <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
+                        Loading entity status…
+                      </div>
+                    ) : entitiesError ? (
+                      <div className="px-4 py-3 font-mono text-[10px] text-destructive">
+                        Entity status could not be loaded.
+                      </div>
+                    ) : entityList.length === 0 ? (
+                      <div className="px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                        No entities on record.
+                      </div>
+                    ) : (
+                      entityList.map((item) => {
+                        const Icon = ENTITY_ICONS[item.entity_name] ?? Building2;
+                        const tone = stateTone(item.current_state);
+                        const route = ENTITY_ROUTES[item.entity_name];
+                        const rowInner = (
+                          <>
+                            <div className="rounded-lg bg-accent/10 p-2">
+                              <Icon className="h-3.5 w-3.5 text-accent" />
                             </div>
-                            <p className="font-mono text-[9px] text-muted-foreground/60">
-                              {item.status.toUpperCase()}
-                            </p>
+                            <div className="flex-1">
+                              <span className="font-mono text-xs font-medium text-foreground">
+                                {item.entity_name}
+                              </span>
+                              <div className="mt-0.5 flex items-center gap-1.5">
+                                <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
+                                <span
+                                  className={cn("font-mono text-[9px] uppercase", tone.text)}
+                                >
+                                  {item.current_state ?? "no state"}
+                                </span>
+                              </div>
+                            </div>
+                            {route && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/30" />}
+                          </>
+                        );
+                        const rowClass =
+                          "flex items-center gap-3 border-b border-border/50 px-4 py-3 last:border-0";
+
+                        return route ? (
+                          <Link
+                            key={item.entity_name}
+                            to={route}
+                            className={cn(
+                              rowClass,
+                              "transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
+                            )}
+                          >
+                            {rowInner}
+                          </Link>
+                        ) : (
+                          <div key={item.entity_name} className={rowClass}>
+                            {rowInner}
                           </div>
-                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/30" />
-                        </Link>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="mt-6 border-t pt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-background text-[8px] font-mono text-muted-foreground">
-                      G
-                    </div>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-background text-[8px] font-mono text-muted-foreground">
-                      F
-                    </div>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-background text-[8px] font-mono text-muted-foreground">
-                      A
-                    </div>
-                  </div>
-                  <span className="font-mono text-[9px] text-muted-foreground/40">
-                    ACTIVE ENTITIES
-                  </span>
-                </div>
-                <span className="font-mono text-[10px] text-primary">v2026.08.27</span>
-              </div>
+            <div className="mt-6 border-t pt-4 font-mono text-[10px] text-muted-foreground/60">
+              {latestEntityUpdate > 0
+                ? `Entity records last changed ${formatRelativeTime(
+                    new Date(latestEntityUpdate).toISOString()
+                  )}`
+                : "No entity update on record"}
             </div>
           </div>
         </section>
       </div>
 
-      {/* Quick Stats Footer */}
+      {/* Verified session facts */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { label: "Active Sessions", value: "1", icon: Users },
-          { label: "System Load", value: "12%", icon: Cpu },
-          { label: "Network", value: "LIVE", icon: Network },
-          { label: "Data Integrity", value: "✓", icon: CheckCircle2 },
-        ].map((stat, idx) => {
+          { label: "Signed in as", value: sessionEmail ?? "—", icon: Users },
+          { label: "Audit entries loaded", value: activityLoading ? "…" : String(totalActivities), icon: Activity },
+          {
+            label: "Entities on record",
+            value: entitiesLoading ? "…" : entitiesError ? "ERR" : String(entityList.length),
+            icon: Building2,
+          },
+          { label: "Metrics last synced", value: lastSync, icon: Clock },
+        ].map((stat) => {
           const Icon = stat.icon;
           return (
             <div
-              key={idx}
+              key={stat.label}
               className="flex items-center gap-3 rounded-lg border bg-card p-3"
             >
-              <div className="rounded-lg bg-primary/10 p-2">
+              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Icon className="h-3.5 w-3.5 text-primary" />
               </div>
-              <div>
-                <div className="font-mono text-[8px] uppercase text-muted-foreground/50">
+              <div className="min-w-0">
+                <div className="font-mono text-[8px] uppercase tracking-wider text-muted-foreground/60">
                   {stat.label}
                 </div>
-                <div className="font-mono text-sm font-bold text-foreground">
+                <div className="truncate font-mono text-sm font-bold tabular-nums text-foreground">
                   {stat.value}
                 </div>
               </div>
