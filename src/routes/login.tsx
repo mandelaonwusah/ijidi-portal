@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
+import { CircuitBackground } from "@/components/CircuitBackground";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -88,8 +89,16 @@ function LoginPage() {
 
   return (
     <div className="ijidi-login">
+      {/* The same living circuit board as the rest of the portal */}
+      <CircuitBackground />
+
       <div className="login-stage">
         <main className="login-card">
+          <span className="corner tl" aria-hidden="true" />
+          <span className="corner tr" aria-hidden="true" />
+          <span className="corner bl" aria-hidden="true" />
+          <span className="corner br" aria-hidden="true" />
+
           {emblemOk && (
             <img className="emblem" src="/ijidi-fan-emblem.png" alt="IJIDI Portal emblem" onError={() => setEmblemOk(false)} />
           )}
@@ -158,83 +167,97 @@ function LoginPage() {
 
       <style>{`
         .ijidi-login{--gold:#C6A15B;--gold-hi:#E2C688;--gold-lo:#A98443;--gold-rgb:198,161,91;
-          --ivory:#F5F1E8;--line:rgba(198,161,91,.24);
+          --blue-rgb:79,134,247;
+          --ivory:#F5F1E8;--line:rgba(198,161,91,.3);
           --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
           --display:"Fraunces",Georgia,"Times New Roman",serif;
           --ease:cubic-bezier(.2,.8,.2,1);
           position:fixed;inset:0;z-index:100;overflow-x:hidden;overflow-y:auto;color:var(--ivory);
           font-family:"Karla","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-          background:
-            radial-gradient(ellipse 60% 48% at 50% 26%,rgba(var(--gold-rgb),.17),transparent 70%),
-            radial-gradient(ellipse 90% 60% at 50% 105%,rgba(var(--gold-rgb),.07),transparent 70%),
-            #0d0d0e;}
+          background:#03050a;}
         .ijidi-login *{box-sizing:border-box}
 
-        .login-stage{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
-          padding:32px 20px}
+        /* Soft gold and blue light over the circuit board, so the card sits in its own glow */
+        .ijidi-login::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+          background:
+            radial-gradient(ellipse 60% 48% at 50% 28%,rgba(var(--gold-rgb),.10),transparent 70%),
+            radial-gradient(ellipse 90% 60% at 50% 108%,rgba(var(--blue-rgb),.10),transparent 70%)}
 
+        .login-stage{position:relative;z-index:2;min-height:100vh;min-height:100dvh;display:flex;align-items:center;
+          justify-content:center;padding:32px 20px}
+
+        /* Glass card: the board shows through; the text stays solid and lifted */
         .login-card{position:relative;width:100%;max-width:420px;padding:40px 36px 28px;
           border:1px solid var(--line);border-radius:20px;
-          background:linear-gradient(180deg,rgba(26,25,22,.88),rgba(14,14,14,.94));
-          backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%);
-          box-shadow:0 34px 90px rgba(0,0,0,.6),0 0 60px rgba(var(--gold-rgb),.06),inset 0 1px 0 rgba(255,255,255,.05);
+          background:linear-gradient(180deg,rgba(14,18,28,.5),rgba(7,9,15,.68));
+          backdrop-filter:blur(9px) saturate(140%);-webkit-backdrop-filter:blur(9px) saturate(140%);
+          box-shadow:0 34px 90px rgba(0,0,0,.55),0 0 60px rgba(var(--gold-rgb),.07),inset 0 1px 0 rgba(255,255,255,.06);
+          text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.55);
           animation:ijidiRise .7s var(--ease) both}
         .login-card::before{content:"";position:absolute;top:-1px;left:14%;right:14%;height:1px;
           background:linear-gradient(90deg,transparent,var(--gold-hi),transparent)}
         @keyframes ijidiRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+        /* Gold corner arcs, as on the portal cards */
+        .corner{position:absolute;width:20px;height:20px;border:1px solid rgba(var(--gold-rgb),.75);pointer-events:none}
+        .corner.tl{top:-1px;left:-1px;border-right:0;border-bottom:0;border-top-left-radius:20px}
+        .corner.tr{top:-1px;right:-1px;border-left:0;border-bottom:0;border-top-right-radius:20px}
+        .corner.bl{bottom:-1px;left:-1px;border-right:0;border-top:0;border-bottom-left-radius:20px}
+        .corner.br{bottom:-1px;right:-1px;border-left:0;border-top:0;border-bottom-right-radius:20px}
 
         .emblem{display:block;width:140px;height:140px;margin:-6px auto 14px;object-fit:contain;
           filter:drop-shadow(0 8px 28px rgba(var(--gold-rgb),.4))}
         .portal-name{text-align:center;font:600 12px/1 var(--mono);letter-spacing:.44em;color:var(--ivory)}
         .portal-name span{color:var(--gold)}
         .form-title{margin:22px 0 0;text-align:center;font:500 32px/1.1 var(--display);letter-spacing:.01em;color:var(--ivory)}
-        .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Karla","Segoe UI",sans-serif;color:rgba(245,241,232,.55)}
+        .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Karla","Segoe UI",sans-serif;color:rgba(245,241,232,.75)}
 
         .fields{margin-top:28px;display:flex;flex-direction:column;gap:16px;text-align:left}
         .field label{display:block;margin-bottom:8px;font:600 9.5px/1 var(--mono);letter-spacing:.22em;
           text-transform:uppercase;color:var(--gold)}
         .field input{width:100%;padding:14px 15px;border-radius:10px;border:1px solid var(--line);
-          background:rgba(255,255,255,.035);color:var(--ivory);font:500 14.5px/1.2 "Karla","Segoe UI",sans-serif;
-          letter-spacing:.02em;outline:none;transition:border-color .25s,box-shadow .25s,background .25s}
-        .field input::placeholder{color:rgba(245,241,232,.28)}
-        .field input:focus{border-color:rgba(var(--gold-rgb),.75);background:rgba(255,255,255,.05);
+          background:rgba(0,0,0,.32);color:var(--ivory);font:500 14.5px/1.2 "Karla","Segoe UI",sans-serif;
+          letter-spacing:.02em;outline:none;text-shadow:none;
+          transition:border-color .25s,box-shadow .25s,background .25s}
+        .field input::placeholder{color:rgba(245,241,232,.36)}
+        .field input:focus{border-color:rgba(var(--gold-rgb),.8);background:rgba(0,0,0,.42);
           box-shadow:0 0 0 3px rgba(var(--gold-rgb),.16)}
-        .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #1b1a17 inset;
+        .field input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #10141d inset;
           -webkit-text-fill-color:#F5F1E8;caret-color:#F5F1E8}
         .password-wrap{position:relative}
         .password-wrap input{padding-right:68px}
         .toggle-eye{position:absolute;top:50%;right:6px;transform:translateY(-50%);background:transparent;border:none;
           cursor:pointer;padding:10px;border-radius:6px;font:700 9px/1 var(--mono);letter-spacing:.16em;
-          text-transform:uppercase;color:var(--gold);transition:color .2s}
+          text-transform:uppercase;color:var(--gold);text-shadow:none;transition:color .2s}
         .toggle-eye:hover{color:var(--gold-hi)}
 
         .remember-row{display:flex;align-items:center;gap:9px;cursor:pointer;margin-top:-2px;
-          font:500 11px/1 var(--mono);letter-spacing:.06em;color:rgba(245,241,232,.6)}
+          font:500 11px/1 var(--mono);letter-spacing:.06em;color:rgba(245,241,232,.78)}
         .remember-row input{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
 
-        .auth-error{padding:10px 13px;border-radius:8px;border:1px solid rgba(217,123,63,.45);
-          background:rgba(217,123,63,.09);font:600 11px/1.5 var(--mono);letter-spacing:.03em;color:#e9a06f}
+        .auth-error{padding:10px 13px;border-radius:8px;border:1px solid rgba(217,123,63,.5);
+          background:rgba(217,123,63,.12);font:600 11px/1.5 var(--mono);letter-spacing:.03em;color:#f0aa78}
 
         .btn{width:100%;margin-top:6px;min-height:52px;padding:14px 22px;border-radius:10px;cursor:pointer;
           border:1px solid rgba(255,255,255,.14);
           background:linear-gradient(180deg,var(--gold-hi),var(--gold) 55%,var(--gold-lo));
-          color:#15120a;font:700 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;
-          box-shadow:0 10px 28px rgba(var(--gold-rgb),.24),inset 0 1px 0 rgba(255,255,255,.35);
+          color:#15120a;font:700 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;text-shadow:none;
+          box-shadow:0 10px 28px rgba(var(--gold-rgb),.26),inset 0 1px 0 rgba(255,255,255,.35);
           transition:transform .25s var(--ease),box-shadow .25s var(--ease),filter .25s}
         .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06);
-          box-shadow:0 14px 36px rgba(var(--gold-rgb),.34),inset 0 1px 0 rgba(255,255,255,.4)}
+          box-shadow:0 14px 36px rgba(var(--gold-rgb),.36),inset 0 1px 0 rgba(255,255,255,.4)}
         .btn:active:not(:disabled){transform:translateY(0)}
         .btn:disabled{opacity:.6;cursor:default}
 
-        .oauth-divider{display:flex;align-items:center;margin:20px 0 14px;color:rgba(245,241,232,.35);
+        .oauth-divider{display:flex;align-items:center;margin:20px 0 14px;color:rgba(245,241,232,.5);
           font:600 9px/1 var(--mono);letter-spacing:.18em}
         .oauth-divider::before,.oauth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
         .oauth-divider span{padding:0 10px}
         .oauth-buttons{display:flex;gap:10px}
         .btn-oauth{flex:1;min-height:46px;padding:10px;border-radius:10px;border:1px solid var(--line);
-          background:rgba(255,255,255,.03);color:var(--ivory);font:600 11.5px/1 var(--mono);letter-spacing:.08em;
-          cursor:pointer;transition:all .25s var(--ease)}
-        .btn-oauth:hover:not(:disabled){background:rgba(var(--gold-rgb),.1);border-color:rgba(var(--gold-rgb),.5)}
+          background:rgba(0,0,0,.28);color:var(--ivory);font:600 11.5px/1 var(--mono);letter-spacing:.08em;
+          cursor:pointer;text-shadow:none;transition:all .25s var(--ease)}
+        .btn-oauth:hover:not(:disabled){background:rgba(var(--gold-rgb),.12);border-color:rgba(var(--gold-rgb),.55)}
         .btn-oauth:disabled{opacity:.55;cursor:default}
 
         .btn:focus-visible,.btn-oauth:focus-visible,.toggle-eye:focus-visible,.remember-row input:focus-visible{
@@ -242,7 +265,7 @@ function LoginPage() {
 
         .card-foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;
           gap:8px;align-items:center;text-align:center;font:500 10px/1.5 var(--mono);letter-spacing:.1em;
-          color:rgba(245,241,232,.38)}
+          color:rgba(245,241,232,.6)}
         .card-foot b{color:var(--gold);font-weight:600}
 
         @media (max-width:520px){
