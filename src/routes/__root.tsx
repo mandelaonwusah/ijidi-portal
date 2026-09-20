@@ -635,11 +635,23 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       aria-label={label}
       onMouseEnter={() => sounds.playHover()}
       onClick={() => sounds.playClick()}
-      className="group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#C6A15B] to-[#D4AF37] text-black shadow-lg shadow-black/40 ring-1 ring-black/10 transition-all hover:scale-105 hover:shadow-[0_0_24px_rgba(212,175,55,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 sm:bottom-8 sm:right-8"
+      style={{
+        position: "fixed",
+        right: "1.5rem",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+        zIndex: 60,
+        background: "linear-gradient(135deg, #C6A15B 0%, #D4AF37 100%)",
+        color: "#111111",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.2)",
+      }}
+      className="group flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
     >
       <Brain className="h-6 w-6" strokeWidth={2.25} aria-hidden="true" />
       {pending !== undefined && pending > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D97B3F] px-1 font-mono text-[10px] font-bold text-white ring-2 ring-background">
+        <span
+          style={{ backgroundColor: "#D97B3F", color: "#FFFFFF" }}
+          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-[10px] font-bold ring-2 ring-background"
+        >
           {pending > 99 ? "99+" : pending}
         </span>
       )}
@@ -1003,10 +1015,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             </div>
             <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden"
+                <button type="button"
+                  className="flex shrink-0 items-center gap-2 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition-all hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
@@ -1015,8 +1025,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-label={railOpen ? "Close navigation" : "Open navigation"}
                   aria-expanded={railOpen}
                 >
-                  ☰
-                </Button>
+                  <span aria-hidden="true" className="text-sm leading-none">☰</span>
+                  Menu
+                </button>
                 <Button
                   variant="ghost"
                   size="icon"
