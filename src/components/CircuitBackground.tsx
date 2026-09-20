@@ -22,9 +22,9 @@ const CW = 336; // board cell width
 const G = 6; // routing grid step
 const TAU = Math.PI * 2;
 
-const LINE = 0.75; // line thickness, as a share of the original
-const HALO_WIDTH = 0.35; // thick glow bands, as a share of their original width
-const GLOW = 0.4; // thick glow brightness, as a share of the original
+const LINE = 0.62; // line thickness, as a share of the original
+const HALO_WIDTH = 0.28; // thick glow bands, as a share of their original width
+const GLOW = 0.32; // thick glow brightness, as a share of the original
 const CORE = 0.7; // crisp line brightness
 const PULSE_ALPHA = 0.5;
 const SPEED = 0.45; // pulse and glow speed, as a share of the original
@@ -694,13 +694,13 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
       c.arc(o.x, o.y, o.ring || o.r * 0.55, 0, TAU);
       c.stroke();
       if (o.ring) {
-        c.strokeStyle = rgba(rgb, 0.18);
-        c.lineWidth = 2.2;
+        c.strokeStyle = rgba(rgb, 0.1);
+        c.lineWidth = 1.5;
         c.beginPath();
         c.arc(o.x, o.y, o.ring, 0, TAU);
         c.stroke();
-        c.strokeStyle = rgba(rgb, 0.7);
-        c.lineWidth = 1.1;
+        c.strokeStyle = rgba(rgb, 0.5);
+        c.lineWidth = 0.9;
         c.beginPath();
         c.arc(o.x, o.y, o.ring, 0, TAU);
         c.stroke();
@@ -723,8 +723,8 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     /* warm bloom above the chip */
     const bloomC = hexRgb(col("hot", 0.1));
     for (const [bx, by, br, ba] of [
-      [CW - 60, 300, 150, 0.09],
-      [CW - 118, 262, 90, 0.06],
+      [CW - 60, 300, 150, 0.05],
+      [CW - 118, 262, 90, 0.035],
     ]) {
       const bgd = c.createRadialGradient(bx, by, 0, bx, by, br);
       bgd.addColorStop(0, rgba(bloomC, ba));
@@ -746,24 +746,24 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
       c.lineTo(CW, 402);
     };
     const cg = c.createLinearGradient(0, 352, 0, 402);
-    cg.addColorStop(0, rgba(ho, 0.1));
-    cg.addColorStop(1, rgba(am, 0.03));
+    cg.addColorStop(0, rgba(ho, 0.05));
+    cg.addColorStop(1, rgba(am, 0.015));
     c.fillStyle = cg;
     c.fillRect(222, 352, CW - 222, 50);
     chipPath();
-    c.strokeStyle = rgba(am, 0.04);
-    c.lineWidth = 2.6;
+    c.strokeStyle = rgba(am, 0.025);
+    c.lineWidth = 2;
     c.stroke();
     chipPath();
-    c.strokeStyle = rgba(am, 0.12);
-    c.lineWidth = 1.4;
+    c.strokeStyle = rgba(am, 0.07);
+    c.lineWidth = 1.1;
     c.stroke();
     chipPath();
-    c.strokeStyle = rgba(mixW(am, 0.15), 0.7);
-    c.lineWidth = 1;
-    c.stroke();
-    c.strokeStyle = rgba(am, 0.35);
+    c.strokeStyle = rgba(mixW(am, 0.1), 0.5);
     c.lineWidth = 0.8;
+    c.stroke();
+    c.strokeStyle = rgba(am, 0.25);
+    c.lineWidth = 0.7;
     c.beginPath();
     c.moveTo(CW, 358);
     c.lineTo(230, 358);
@@ -784,10 +784,10 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
       c.lineWidth = lw;
       c.stroke();
     };
-    fr(285, 497, CW - 285 + 40, 93, 9, 0.05, 2.6);
-    fr(285, 497, CW - 285 + 40, 93, 9, 0.55, 0.9);
-    fr(294, 506, CW - 294 + 40, 75, 6, 0.3, 0.9);
-    c.strokeStyle = rgba(hexRgb(col("cool", 0.1)), 0.65);
+    fr(285, 497, CW - 285 + 40, 93, 9, 0.03, 2);
+    fr(285, 497, CW - 285 + 40, 93, 9, 0.38, 0.8);
+    fr(294, 506, CW - 294 + 40, 75, 6, 0.2, 0.8);
+    c.strokeStyle = rgba(hexRgb(col("cool", 0.1)), 0.45);
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(300, 570);
@@ -809,21 +809,21 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     /* red core */
     const rd = hexRgb(col("red", 0.1));
     const rg = c.createLinearGradient(0, 630, 0, 700);
-    rg.addColorStop(0, rgba(rd, 0.26));
-    rg.addColorStop(1, rgba(rd, 0.04));
+    rg.addColorStop(0, rgba(rd, 0.12));
+    rg.addColorStop(1, rgba(rd, 0.02));
     c.fillStyle = rg;
     rr(c, 292, 632, CW - 292 + 60, 62, 26);
     c.fill();
     rr(c, 292, 632, CW - 292 + 60, 62, 26);
-    c.strokeStyle = rgba(rd, 0.3);
-    c.lineWidth = 0.8;
+    c.strokeStyle = rgba(rd, 0.16);
+    c.lineWidth = 0.7;
     c.stroke();
     for (const px of [CW - 8, CW + 8]) {
       const pg = c.createLinearGradient(0, 634, 0, 692);
-      pg.addColorStop(0, rgba([255, 255, 255], 0.8));
-      pg.addColorStop(1, rgba(rd, 0.15));
+      pg.addColorStop(0, rgba([255, 255, 255], 0.5));
+      pg.addColorStop(1, rgba(rd, 0.1));
       c.strokeStyle = pg;
-      c.lineWidth = 2;
+      c.lineWidth = 1.4;
       c.beginPath();
       c.moveTo(px, 636);
       c.lineTo(px, 692);
@@ -833,17 +833,17 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     /* blue connector */
     const bl = hexRgb(col("cool", 0.3));
     const bg = c.createLinearGradient(0, 640, 0, 692);
-    bg.addColorStop(0, rgba(mixW(bl, 0.3), 0.8));
-    bg.addColorStop(1, rgba(bl, 0.28));
+    bg.addColorStop(0, rgba(mixW(bl, 0.2), 0.45));
+    bg.addColorStop(1, rgba(bl, 0.15));
     c.fillStyle = bg;
     rr(c, 228, 640, 14, 52, 4);
     c.fill();
-    c.strokeStyle = rgba(mixW(bl, 0.6), 0.75);
+    c.strokeStyle = rgba(mixW(bl, 0.4), 0.45);
     c.lineWidth = 0.9;
     rr(c, 228, 640, 14, 52, 4);
     c.stroke();
-    c.strokeStyle = rgba([255, 255, 255], 0.55);
-    c.lineWidth = 0.7;
+    c.strokeStyle = rgba([255, 255, 255], 0.3);
+    c.lineWidth = 0.6;
     for (let y = 650; y < 690; y += 6) {
       c.beginPath();
       c.moveTo(231, y);
@@ -974,7 +974,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         c.beginPath();
         subPath(c, p, d0, d1);
         c.strokeStyle = p.s1 as string;
-        c.lineWidth = p.w * 1.3;
+        c.lineWidth = p.w * 1;
         c.stroke();
         const L = (d1 - d0) * 0.45;
         c.beginPath();
@@ -985,7 +985,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         c.stroke();
         if (pl.d >= 0 && pl.d <= p.total) {
           const q = pointAt(p, pl.d);
-          const r = p.w * 2.2 + 1.5;
+          const r = p.w * 1.6 + 1;
           c.drawImage(sprite(p.hex as string), q.x - r, q.y - r, r * 2, r * 2);
         }
       }
@@ -996,11 +996,11 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     for (const o of orbs) {
       if (!o.hex) continue;
       const k = animate ? 0.62 + 0.38 * Math.sin(T * o.f * 2.2 * SPEED + o.ph) : 0.75;
-      const r = o.r * 2.8;
-      c.globalAlpha = clamp(k, 0, 1) * 0.55;
+      const r = o.r * 2;
+      c.globalAlpha = clamp(k, 0, 1) * 0.42;
       c.drawImage(sprite(o.hex), o.x - r, o.y - r, r * 2, r * 2);
       if (o.flare) {
-        c.globalAlpha = 0.35 * clamp(k, 0, 1);
+        c.globalAlpha = 0.14 * clamp(k, 0, 1);
         const gh = c.createLinearGradient(o.x - 60, 0, o.x + 60, 0);
         gh.addColorStop(0, "rgba(255,255,255,0)");
         gh.addColorStop(0.5, "rgba(255,255,255,.9)");
@@ -1035,7 +1035,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     }
 
     /* red core breathing */
-    const rb = animate ? 0.22 + 0.1 * Math.sin(T * 2.2 * SPEED) : 0.35;
+    const rb = animate ? 0.1 + 0.05 * Math.sin(T * 2.2 * SPEED) : 0.15;
     c.globalAlpha = rb;
     c.drawImage(sprite(col("red", 0.1)), CW - 110, 570, 220, 180);
     c.globalAlpha = 1;
