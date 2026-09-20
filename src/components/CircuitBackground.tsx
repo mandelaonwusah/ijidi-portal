@@ -4,9 +4,9 @@
 // - The artwork keeps its own line spacing (about native size). To fill the
 //   screen it is repeated side by side, every second copy mirrored so the seams
 //   are invisible. It is never stretched or zoomed to fit.
-// - Glowing dots travel along the existing traces, each in the colour of the
-//   line it runs on. Existing nodes glow and breathe. The lines themselves
-//   breathe brighter and softer.
+// - Small glowing dots travel along the existing traces: gold on warm lines,
+//   blue on cool lines (the portal theme). Existing nodes glow softly and the
+//   lines breathe very slightly. All of it stays quiet next to the interface.
 // - Driven by useVisualState(): section presets set brightness and how many
 //   dots run. Reduced motion: static artwork, no movement.
 // - Decoration only: it never claims a system state.
@@ -22,8 +22,31 @@ const MIN_SCALE = 0.55; // smallest the artwork is ever shown
 const MAX_SCALE = 1.15; // largest the artwork is ever shown
 const MAX_PULSES = 120; // total travelling dots across all copies (performance cap)
 const MAX_NODES = 60; // total glowing nodes across all copies
-const DOT_LENGTH = 8; // image units
+const DOT_LENGTH = 6; // image units
 const DOT_SPEED = 100; // image units per second
+
+// Portal theme: warm lines get gold light, cool lines get blue light, so the
+// moving light follows the theme instead of the artwork's full rainbow.
+const THEME_GOLD = "#E6C27A";
+const THEME_BLUE = "#5E9BFF";
+
+function themeColor(hex: string): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const d = max - Math.min(r, g, b);
+  let hue = 0;
+  if (d > 0) {
+    if (max === r) hue = ((g - b) / d) % 6;
+    else if (max === g) hue = (b - r) / d + 2;
+    else hue = (r - g) / d + 4;
+    hue *= 60;
+    if (hue < 0) hue += 360;
+  }
+  return hue < 70 || hue >= 300 ? THEME_GOLD : THEME_BLUE;
+}
 
 function useViewport() {
   const [size, setSize] = useState({ w: 1280, h: 800 });
@@ -137,9 +160,9 @@ export function CircuitBackground() {
         if (!node) return;
         nodeTweens.current[k] = gsap.fromTo(
           node,
-          { opacity: 0.1 },
+          { opacity: 0.05 },
           {
-            opacity: 0.7,
+            opacity: 0.4,
             duration: 1.6 + Math.random() * 2.4,
             ease: "sine.inOut",
             yoyo: true,
@@ -182,14 +205,14 @@ export function CircuitBackground() {
     const fade = soft ? 1.2 : 0;
 
     const apply = () => {
-      // Artwork stays vivid; the section only nudges it (0.72 to 0.86).
-      const artOpacity = 0.6 + 0.4 * ambientOpacity;
+      // Artwork shown as supplied; the section only nudges it (0.86 to 0.93).
+      const artOpacity = 0.8 + 0.2 * ambientOpacity;
       imageRefs.current.forEach((img) => {
         if (img) gsap.to(img, { opacity: artOpacity, duration: fade, overwrite: true });
       });
 
-      // Breathing glow layer (the lines glow brighter and softer, slowly).
-      const breatheAmp = reducedMotion ? 0 : 0.15 + 0.35 * circuitIntensity;
+      // Breathing glow layer: a very slight, slow lift so the lines feel alive.
+      const breatheAmp = reducedMotion ? 0 : 0.04 + 0.1 * circuitIntensity;
       breatheWrapRefs.current.forEach((wrap, k) => {
         if (!wrap) return;
         gsap.to(wrap, { opacity: breatheAmp, duration: fade, overwrite: true });
@@ -199,7 +222,7 @@ export function CircuitBackground() {
       // Dots: interleave across copies so every copy gets some.
       const totalPulses = perTilePulses * tiles;
       const activePulses = reducedMotion ? 0 : Math.round(circuitIntensity * totalPulses);
-      const dotOpacity = 0.55 + 0.45 * circuitIntensity;
+      const dotOpacity = 0.5 + 0.3 * circuitIntensity;
       pulseGroupRefs.current.forEach((group, k) => {
         if (!group) return;
         const tile = Math.floor(k / perTilePulses);
@@ -280,8 +303,8 @@ export function CircuitBackground() {
         <defs>
           {nodes.map((n, j) => (
             <radialGradient key={`g${j}`} id={`cb-node-${j}`}>
-              <stop offset="0%" stopColor={n.color} stopOpacity={0.95} />
-              <stop offset="100%" stopColor={n.color} stopOpacity={0} />
+              <stop offset="0%" stopColor={themeColor(n.color)} stopOpacity={0.95} />
+              <stop offset="100%" stopColor={themeColor(n.color)} stopOpacity={0} />
             </radialGradient>
           ))}
         </defs>
@@ -331,14 +354,14 @@ export function CircuitBackground() {
                   }}
                   style={{ opacity: 0 }}
                 >
-                  {/* soft halo in the line's own colour */}
+                  {/* soft halo, gold or blue */}
                   <path
                     d={p.d}
                     pathLength={100}
                     fill="none"
-                    stroke={p.color}
-                    strokeWidth={11}
-                    strokeOpacity={0.42}
+                    stroke={themeColor(p.color)}
+                    strokeWidth={5}
+                    strokeOpacity={0.2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -348,8 +371,8 @@ export function CircuitBackground() {
                     pathLength={100}
                     fill="none"
                     stroke="#FFFFFF"
-                    strokeWidth={2.8}
-                    strokeOpacity={0.95}
+                    strokeWidth={1.4}
+                    strokeOpacity={0.85}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -364,7 +387,7 @@ export function CircuitBackground() {
                   }}
                   cx={n.x}
                   cy={n.y}
-                  r={22}
+                  r={16}
                   fill={`url(#cb-node-${j})`}
                   style={{ opacity: 0 }}
                 />
