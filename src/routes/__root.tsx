@@ -34,7 +34,6 @@ import { CircuitBackground } from "@/components/CircuitBackground";
 import { VisualStateProvider } from "@/lib/visual-state";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 // Sidebar sections, built once from the flat navItems list in portal-data.ts.
 const navSections = navGroupOrder.map((label) => ({
@@ -47,6 +46,11 @@ function isNavActive(pathname: string, to: string) {
   if (to === "/") return pathname === "/";
   return pathname === to || pathname.startsWith(`${to}/`);
 }
+
+// Shell glass text: a dark halo behind the text and brighter grey labels, so the
+// interface text stays strong while the circuit board shows through the glass.
+const SHELL_TEXT =
+  "[text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_8px_rgba(0,0,0,0.55)] [&_[class*=text-muted-foreground]]:text-[#D8DCE8]";
 
 function NotFoundComponent() {
   return (
@@ -443,7 +447,7 @@ function MemberShell({ session }: { session: Session }) {
       <CircuitBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/5 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
+        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/10 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <HexBadge small />
             <div className="min-w-0">
@@ -455,7 +459,7 @@ function MemberShell({ session }: { session: Session }) {
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <span
-              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel/40 px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
               title={email}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse" />
@@ -465,7 +469,7 @@ function MemberShell({ session }: { session: Session }) {
               onClick={handleSignOut}
               onMouseEnter={() => sounds.playHover()}
               disabled={signingOut}
-              className="rounded-md border border-border bg-panel/40 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
               title="Sign out of the portal"
             >
               {signingOut ? "Signing out…" : "Sign out"}
@@ -475,7 +479,7 @@ function MemberShell({ session }: { session: Session }) {
 
         <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
           {/* Member Home — identity card */}
-          <section className="relative overflow-hidden rounded-lg border border-gold/30 bg-panel/40 p-6 backdrop-blur-md sm:p-8">
+          <section className="relative overflow-hidden rounded-lg border border-gold/30 bg-panel/90 p-6 backdrop-blur-md sm:p-8">
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
             <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
             <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
@@ -524,7 +528,7 @@ function MemberShell({ session }: { session: Session }) {
                   return (
                     <div
                       key={String(row.id ?? i)}
-                      className="rounded-lg border border-border bg-panel/40 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
+                      className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
                     >
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
@@ -550,13 +554,17 @@ function MemberShell({ session }: { session: Session }) {
           </section>
         </main>
 
-        <footer className="border-t border-border bg-panel/35 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
+        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
           <LiveClock />
         </footer>
       </div>
     </div>
   );
 }
+
+// Ticker scroll speed in pixels per second. Slow and calm on purpose; this is
+// the value the Settings page will control later.
+const TICKER_PX_PER_SEC = 22;
 
 function TickerBar() {
   const { data: activity, isLoading, isError } = useQuery({
@@ -575,15 +583,23 @@ function TickerBar() {
 
   const loop = [...items, ...items];
 
+  // One pass = the items once. The duration follows their length, so the speed
+  // stays the same however many entries there are.
+  const passWidth = items.reduce((sum, text) => sum + text.length * 7 + 64, 0);
+  const durationSeconds = Math.max(30, Math.round(passWidth / TICKER_PX_PER_SEC));
+
   return (
-    <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-gold/30 bg-panel/10 backdrop-blur-xl">
-      <div className="ticker-track flex h-8 items-center hover:[animation-play-state:paused]">
+    <div className="sticky top-0 z-50 h-6 overflow-hidden border-b border-gold/20 bg-black/25 backdrop-blur-[3px]">
+      <div
+        className="ticker-track flex h-6 items-center hover:[animation-play-state:paused]"
+        style={{ animationDuration: `${durationSeconds}s` }}
+      >
         {loop.map((item, i) => (
           <span
             key={i}
-            className="mx-5 flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-foreground"
+            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] text-[#D9C08A]/70"
           >
-            <span className="text-gold live-pulse">◆</span> {item}
+            <span className="text-[#5E9BFF]/60">◆</span> {item}
           </span>
         ))}
       </div>
@@ -602,13 +618,10 @@ function EntityDock({ hidden }: { hidden: boolean }) {
     <nav
       aria-label="Entity switcher"
       style={{
-        position: "fixed",
-        left: "50%",
-        transform: "translateX(-50%)",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)",
         zIndex: 50,
       }}
-      className="flex items-center gap-1 rounded-full border border-border bg-panel/40 p-1.5 shadow-lg backdrop-blur-xl"
+      className="fixed left-4 flex items-center gap-1 rounded-full border border-border bg-black/30 p-1.5 shadow-lg backdrop-blur-[6px] sm:left-1/2 sm:-translate-x-1/2"
     >
       {floatingSwitcherItems.map((item) => {
         const active = item.kind === "route" && isNavActive(currentPath, item.to);
@@ -658,13 +671,9 @@ function EntityDock({ hidden }: { hidden: boolean }) {
   );
 }
 
-// Floating IGX AI shortcut. It is pinned to the bottom-right corner of every
-// governor page except the IGX AI console itself, and it never moves or
-// scales: on phones it sits just above the entity dock, on larger screens it
-// sits in the corner. The badge is the real number of proposals waiting in
-// review; it is hidden if the count can't be loaded.
+// Floating IGX AI shortcut (bottom right). The badge is the real number of
+// proposals waiting in review; it is hidden if the count can't be loaded.
 function IgxFloatingButton({ hidden }: { hidden: boolean }) {
-  const isMobile = useIsMobile();
   const { data: pending } = useQuery({
     queryKey: ["igx-pending-count"],
     refetchInterval: 15_000,
@@ -690,17 +699,14 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       onClick={() => sounds.playClick()}
       style={{
         position: "fixed",
-        right: "calc(env(safe-area-inset-right, 0px) + 1.5rem)",
-        bottom: isMobile
-          ? "calc(env(safe-area-inset-bottom, 0px) + 5rem)"
-          : "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+        right: "1rem",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)",
         zIndex: 60,
-        transform: "none",
         background: "linear-gradient(135deg, #C6A15B 0%, #D4AF37 100%)",
         color: "#111111",
         boxShadow: "0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.2)",
       }}
-      className="group flex h-14 w-14 items-center justify-center rounded-full transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+      className="group flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
     >
       <Brain className="h-6 w-6" strokeWidth={2.25} aria-hidden="true" />
       {pending !== undefined && pending > 0 && (
@@ -782,6 +788,12 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       }
     });
   }, [session.user.id]);
+
+  // Every page opens at the top of the window, so an in-page scroll (such as the
+  // IGX AI chat stream) can never carry the whole page with it.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPath]);
 
   // Remember whether the desktop sidebar was collapsed.
   useEffect(() => {
@@ -889,39 +901,47 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         <div className="lg:flex">
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-panel/10 backdrop-blur-xl backdrop-saturate-150 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] transition-[transform,width] duration-200 ease-out",
-              "lg:sticky lg:top-8 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0",
+              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
+              SHELL_TEXT,
+              "lg:sticky lg:top-6 lg:h-[calc(100vh-1.5rem)] lg:shrink-0 lg:translate-x-0 lg:bg-black/[0.06] lg:backdrop-blur-[3px]",
               collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
               railOpen ? "translate-x-0" : "-translate-x-full"
             )}
           >
+            {/* Collapse / expand: a small tab on the sidebar edge, level with the brand block */}
+            <button
+              type="button"
+              onMouseEnter={() => sounds.playHover()}
+              onClick={toggleCollapsed}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-pressed={collapsed}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="absolute -right-3 top-[26px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold shadow-md backdrop-blur-[3px] transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:flex"
+            >
+              {collapsed ? "»" : "«"}
+            </button>
             <div className="flex h-full flex-col">
-              {/* Top-left: the brand and the collapse button live together */}
               <div
                 className={cn(
                   "flex h-[76px] items-center gap-3 border-b border-border px-5",
-                  collapsed && "lg:flex-col lg:justify-center lg:gap-1 lg:px-0"
+                  collapsed && "lg:justify-center lg:px-0"
                 )}
               >
                 <HexBadge small />
-                <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
+                <div className={cn(collapsed && "lg:hidden")}>
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
                   </div>
                   <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn("hidden h-8 w-8 shrink-0 lg:inline-flex", collapsed && "lg:h-6 lg:w-6")}
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={toggleCollapsed}
-                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  aria-pressed={collapsed}
-                  title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                <button
+                  type="button"
+                  onClick={() => setRailOpen(false)}
+                  aria-label="Close navigation"
+                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-gold/30 text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                 >
-                  {collapsed ? "»" : "«"}
-                </Button>
+                  ✕
+                </button>
               </div>
 
               <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
@@ -1050,7 +1070,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             </div>
           </aside>
           <div className="min-w-0 flex-1">
-            <div className="flex h-8 items-center justify-between border-b border-border/60 bg-panel/10 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
+            <div className={cn(
+                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
+                SHELL_TEXT
+              )}>
               <div className="flex items-center gap-4">
                 <span className={cn("flex items-center gap-1.5", linkText)}>
                   <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkOk && "live-pulse")} />
@@ -1064,7 +1087,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
               <LiveClock />
             </div>
-            <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/5 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] px-4 sm:px-6">
+            <header className={cn(
+                "flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-black/[0.06] backdrop-blur-[3px] px-4 sm:px-6",
+                SHELL_TEXT
+              )}>
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
                   className="flex shrink-0 items-center gap-2 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition-all hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
@@ -1080,13 +1106,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   Menu
                 </button>
                 <div className="min-w-0">
-                  <div className="truncate font-display text-sm font-semibold tracking-wide text-foreground">
-                    {/* The brand shows here only on small screens; on desktop it lives in the sidebar */}
-                    <span className="lg:hidden">
-                      IJIDI <span className="text-gold">PORTAL</span>
-                      <span className="mx-2 text-muted-foreground/50">·</span>
-                    </span>
-                    <span className="font-medium text-muted-foreground lg:text-foreground">{pageLabel}</span>
+                  <div className="truncate font-display text-base font-semibold tracking-wide text-foreground">
+                    {pageLabel}
                   </div>
                   {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
                 </div>
@@ -1095,7 +1116,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               {/* Governor identity and sign-out */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <div
-                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-panel/40 px-3 py-1.5 md:flex"
+                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-black/25 backdrop-blur-[3px] px-3 py-1.5 md:flex"
                   title={signedInEmail}
                 >
                   <span className="rounded border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
@@ -1114,7 +1135,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   onClick={handleSignOut}
                   onMouseEnter={() => sounds.playHover()}
                   disabled={signingOut}
-                  className="rounded-md border border-border bg-panel/40 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+                  className="rounded-md border border-border bg-black/25 backdrop-blur-[3px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
                   title="Sign out of the portal"
                 >
                   {signingOut ? "Signing out…" : "Sign out"}
@@ -1125,7 +1146,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             <div className="px-4 pt-4 sm:px-6 lg:px-8">
               <nav
                 aria-label="Sections"
-                className="flex gap-1 overflow-x-auto rounded-2xl border border-gold/20 bg-black/10 p-1 backdrop-blur-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className={cn(
+                  "flex gap-1 overflow-x-auto rounded-2xl border border-gold/20 bg-black/10 p-1 backdrop-blur-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                  SHELL_TEXT
+                )}
               >
                 {navItems.map((item) => {
                   const active = isNavActive(currentPath, item.to);
