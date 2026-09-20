@@ -1,5 +1,6 @@
 /* ============================================================
-   IJIDI OPERATING SYSTEM — Cyber HUD / Cyan Terminal Theme
+   IJIDI OPERATING SYSTEM — Gold & Blue Theme
+   Obsidian base, Champagne Gold (primary) and Electric Blue (accent).
    ============================================================ */
 
 @import "tailwindcss" source(none);
@@ -45,6 +46,10 @@
   --color-gold              : var(--gold);
   --color-teal              : var(--teal);
 
+  /* Portal theme: the "verified / connected" colour used across the pages as
+     teal-400 is our blue, not green. */
+  --color-teal-400          : #5E9BFF;
+
   /* --- Chart / Sidebar --- */
   --color-chart-1           : var(--chart-1);
   --color-chart-2           : var(--chart-2);
@@ -62,70 +67,73 @@
 }
 
 /* ============================================================
-   DEFAULT BASELINE & .DARK — MIDNIGHT DARK MODE (Edge Target)
+   THEME TOKENS
+   The LIGHT toggle currently shares the dark values (as it did before),
+   so all three selectors use one block.
    ============================================================ */
 :root,
-.dark {
+.dark,
+.light {
   color-scheme: dark;
 
   /* --- Backgrounds & Surfaces --- */
-  --background: #02040a;
-  --foreground: #eaf6ff;
+  --background: #06080d;
+  --foreground: #f5f1e8;
 
-  --card: #050b16;
-  --card-foreground: #eaf6ff;
+  --card: #0b0f17;
+  --card-foreground: #f5f1e8;
 
-  --popover: #050b16;
-  --popover-foreground: #eaf6ff;
+  --popover: #0b0f17;
+  --popover-foreground: #f5f1e8;
 
   /* --- Brand Accents --- */
-  --primary: #00f0ff;             /* HUD Cyan */
-  --primary-foreground: #02040a;
+  --primary: #c6a15b;             /* Champagne Gold */
+  --primary-foreground: #0b0b0c;
 
-  --secondary: #0a1422;
-  --secondary-foreground: #eaf6ff;
+  --secondary: #121826;
+  --secondary-foreground: #f5f1e8;
 
-  --muted: #0a1422;
-  --muted-foreground: #5a7a90;     /* Muted Cyan-Grey */
+  --muted: #121826;
+  --muted-foreground: #9aa3b5;     /* Cool grey, readable on dark and on glass */
 
-  --accent: #8a6bff;            /* HUD Violet */
-  --accent-foreground: #eaf6ff;
+  --accent: #4f86f7;              /* Electric Blue */
+  --accent-foreground: #f5f1e8;
 
-  --destructive: #ff6b8a;
-  --destructive-foreground: #eaf6ff;
+  --destructive: #e5677a;
+  --destructive-foreground: #f5f1e8;
 
-  --success: #00f0ff;
-  --success-foreground: #02040a;
+  --success: #5e9bff;
+  --success-foreground: #06080d;
 
   /* --- Borders & Inputs --- */
-  --border: rgba(0, 240, 255, 0.18);
-  --border-strong: rgba(0, 240, 255, 0.35);
-  --border-accent: rgba(0, 240, 255, 0.25);
+  --border: rgba(198, 161, 91, 0.22);
+  --border-strong: rgba(198, 161, 91, 0.4);
+  --border-accent: rgba(79, 134, 247, 0.35);
 
-  --input: #0a1422;
-  --ring: #00f0ff;
+  --input: #121826;
+  --ring: #c6a15b;
 
-  --panel: #050b16;
-  --panel-elevated: #0a1422;
+  --panel: #0a0e16;
+  --panel-elevated: #121826;
 
   /* --- Hardware Tokens --- */
-  --navy: #02040a;
-  --navy-deep: #010206;
-  --line: rgba(0, 240, 255, 0.35);
-  --line-dim: rgba(0, 240, 255, 0.18);
-  --paper: #050b16;
-  --paper-dim: #03060d;
-  --steel: #5a7a90;
-  --charcoal: #0a1422;
-  --amber: #00f0ff;
-  --amber-bright: #00f0ff;
-  --gold: #00f0ff;
-  --teal: #00f0ff;
-  --blue: #8a6bff;
-  --slate: #5a7a90;
-  --danger: #ff6b8a;
-  --blueprint-ok: #00f0ff;
-  --blue-glow: rgba(0, 240, 255, 0.12);
+  --navy: #06080d;
+  --navy-deep: #040509;
+  --line: rgba(198, 161, 91, 0.4);
+  --line-dim: rgba(198, 161, 91, 0.2);
+  --paper: #0b0f17;
+  --paper-dim: #080b12;
+  --steel: #9aa3b5;
+  --charcoal: #121826;
+  --amber: #c6a15b;
+  --amber-bright: #e3c27a;
+  --gold: #c6a15b;
+  --teal: #5e9bff;
+  --blue: #4f86f7;
+  --slate: #9aa3b5;
+  --danger: #e5677a;
+  --blueprint-ok: #5e9bff;
+  --blue-glow: rgba(79, 134, 247, 0.14);
 
   /* --- Shadows --- */
   --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
@@ -133,114 +141,27 @@
   --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.6);
 
   /* --- Charts & Navigation --- */
-  --chart-1: #00f0ff;
-  --chart-2: #8a6bff;
-  --chart-3: #00d4a0;
-  --chart-4: #4a8fff;
-  --chart-5: #ff6b8a;
+  --chart-1: #c6a15b;
+  --chart-2: #4f86f7;
+  --chart-3: #5e9bff;
+  --chart-4: #e3c27a;
+  --chart-5: #e5677a;
 
-  --sidebar: #050b16;
-  --sidebar-foreground: #eaf6ff;
-  --sidebar-primary: #00f0ff;
-  --sidebar-primary-foreground: #02040a;
-  --sidebar-accent: #8a6bff;
-  --sidebar-accent-foreground: #eaf6ff;
-  --sidebar-border: rgba(0, 240, 255, 0.18);
-  --sidebar-ring: #00f0ff;
+  --sidebar: #0a0e16;
+  --sidebar-foreground: #f5f1e8;
+  --sidebar-primary: #c6a15b;
+  --sidebar-primary-foreground: #0b0b0c;
+  --sidebar-accent: #4f86f7;
+  --sidebar-accent-foreground: #f5f1e8;
+  --sidebar-border: rgba(198, 161, 91, 0.22);
+  --sidebar-ring: #c6a15b;
 
   /* --- Opacity RGB Triples --- */
-  --primary-rgb: 0, 240, 255;
-  --accent-rgb: 138, 107, 255;
-  --gold-rgb: 0, 240, 255;
-  --teal-rgb: 0, 240, 255;
-  --destructive-rgb: 255, 107, 138;
-}
-
-/* ============================================================
-   .LIGHT MODE TOGGLE OVERRIDE
-   ============================================================ */
-.light {
-  color-scheme: light;
-
-  --background: #02040a;
-  --foreground: #eaf6ff;
-
-  --card: #050b16;
-  --card-foreground: #eaf6ff;
-
-  --popover: #050b16;
-  --popover-foreground: #eaf6ff;
-
-  --primary: #00f0ff;
-  --primary-foreground: #02040a;
-
-  --secondary: #0a1422;
-  --secondary-foreground: #eaf6ff;
-
-  --muted: #0a1422;
-  --muted-foreground: #5a7a90;
-
-  --accent: #8a6bff;
-  --accent-foreground: #eaf6ff;
-
-  --destructive: #ff6b8a;
-  --destructive-foreground: #eaf6ff;
-
-  --success: #00f0ff;
-  --success-foreground: #02040a;
-
-  --border: rgba(0, 240, 255, 0.18);
-  --border-strong: rgba(0, 240, 255, 0.35);
-  --border-accent: rgba(0, 240, 255, 0.25);
-
-  --input: #0a1422;
-  --ring: #00f0ff;
-
-  --panel: #050b16;
-  --panel-elevated: #0a1422;
-
-  --navy: #02040a;
-  --navy-deep: #010206;
-  --line: rgba(0, 240, 255, 0.35);
-  --line-dim: rgba(0, 240, 255, 0.18);
-  --paper: #050b16;
-  --paper-dim: #03060d;
-  --steel: #5a7a90;
-  --charcoal: #0a1422;
-  --amber: #00f0ff;
-  --amber-bright: #00f0ff;
-  --gold: #00f0ff;
-  --teal: #00f0ff;
-  --blue: #8a6bff;
-  --slate: #5a7a90;
-  --danger: #ff6b8a;
-  --blueprint-ok: #00f0ff;
-  --blue-glow: rgba(0, 240, 255, 0.12);
-
-  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
-  --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.75);
-  --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.6);
-
-  --chart-1: #00f0ff;
-  --chart-2: #8a6bff;
-  --chart-3: #00d4a0;
-  --chart-4: #4a8fff;
-  --chart-5: #ff6b8a;
-
-  --sidebar: #050b16;
-  --sidebar-foreground: #eaf6ff;
-  --sidebar-primary: #00f0ff;
-  --sidebar-primary-foreground: #02040a;
-  --sidebar-accent: #8a6bff;
-  --sidebar-accent-foreground: #eaf6ff;
-  --sidebar-border: rgba(0, 240, 255, 0.18);
-  --sidebar-ring: #00f0ff;
-
-  --primary-rgb: 0, 240, 255;
-  --accent-rgb: 138, 107, 255;
-  --gold-rgb: 0, 240, 255;
-  --teal-rgb: 0, 240, 255;
-  --destructive-rgb: 255, 107, 138;
+  --primary-rgb: 198, 161, 91;
+  --accent-rgb: 79, 134, 247;
+  --gold-rgb: 198, 161, 91;
+  --teal-rgb: 94, 155, 255;
+  --destructive-rgb: 229, 103, 122;
 }
 
 /* ============================================================
@@ -308,7 +229,7 @@ a {
   left: 30%;
   right: 30%;
   height: 8px;
-  background: radial-gradient(ellipse, rgba(0, 240, 255, 0.08), transparent);
+  background: radial-gradient(ellipse, rgba(198, 161, 91, 0.08), transparent);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -533,7 +454,7 @@ a {
 
 .metric-tile .status-indicator.online {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 8px rgba(94, 155, 255, 0.4);
 }
 
 .metric-tile .status-indicator.offline {
@@ -564,7 +485,7 @@ a {
   height: 5px;
   border-radius: 50%;
   background: var(--success);
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 10px rgba(94, 155, 255, 0.5);
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -602,7 +523,7 @@ a {
 }
 
 .table-demarcated tr:hover td {
-  background: rgba(0, 240, 255, 0.05);
+  background: rgba(198, 161, 91, 0.05);
 }
 
 /* ============================================================
@@ -616,7 +537,7 @@ a {
 }
 
 .tactical-grid {
-  background-image: radial-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 0);
+  background-image: radial-gradient(rgba(198, 161, 91, 0.06) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -693,12 +614,12 @@ a {
   background: var(--primary);
   color: var(--primary-foreground);
   border: 1px solid var(--border-strong);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 20px rgba(198, 161, 91, 0.15);
   transition: all 0.2s ease;
 }
 
 .hex-badge:hover {
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 30px rgba(198, 161, 91, 0.25);
   transform: scale(1.02);
 }
 
@@ -759,7 +680,7 @@ a {
 
 .entity-status-dot.standby {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 8px rgba(94, 155, 255, 0.5);
 }
 
 .entity-status-dot.forming {
@@ -854,42 +775,15 @@ a {
 .border-destructive\/30 { border-color: rgba(var(--destructive-rgb), 0.30); }
 
 /* ============================================================
-   PORTAL HUD OVERLAYS — login skin carried across the whole app
+   PORTAL HUD OVERLAYS
+   The circuit background is now the portal's atmosphere, so the old full-screen
+   grid, scanlines and vignette are switched off (the circuit adds its own soft
+   edge shading). Only the quiet gold corner frame remains.
    ============================================================ */
-.portal-hud-grid {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
-  background-size: 64px 64px, 64px 64px;
-  mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
-  opacity: 0.6;
-  animation: portalGridDrift 28s linear infinite;
-}
-@keyframes portalGridDrift { to { background-position: 64px 64px, 64px 64px; } }
-
-.portal-hud-scanlines {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
-  mix-blend-mode: overlay;
-  opacity: 0.4;
-  animation: portalScanMove 10s linear infinite;
-}
-@keyframes portalScanMove { to { background-position: 0 300px; } }
-
+.portal-hud-grid,
+.portal-hud-scanlines,
 .portal-hud-vignette {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+  display: none;
 }
 
 .portal-hud-frame {
@@ -902,8 +796,8 @@ a {
   position: absolute;
   width: 44px;
   height: 44px;
-  border: 1px solid rgba(0, 240, 255, 0.4);
-  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.4));
+  border: 1px solid rgba(198, 161, 91, 0.4);
+  filter: drop-shadow(0 0 6px rgba(198, 161, 91, 0.3));
   animation: portalCornerPulse 4s ease-in-out infinite;
   opacity: 0.5;
 }
@@ -914,7 +808,7 @@ a {
 .portal-hud-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; animation-delay: 1.8s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .portal-hud-grid, .portal-hud-scanlines, .portal-hud-frame .c {
+  .portal-hud-frame .c {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
