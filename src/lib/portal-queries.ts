@@ -121,34 +121,26 @@ export async function getNodeTelemetry(): Promise<NodeStatus[]> {
   return [];
 }
 
-// 5. Ecosystem Top-Level Metrics — real proposal count, honest NOT TRACKED elsewhere
+// 5. Ecosystem Top-Level Metrics — real pending-proposal count, honest
+//    NOT TRACKED for everything that has no real source yet.
+//    A failed query THROWS (it is not converted to NOT TRACKED), so the
+//    Command Center can show the data link as unreachable instead of
+//    reporting a connection that did not work.
 export async function getEcosystemMetrics(): Promise<EcosystemMetrics> {
-  const notTracked: EcosystemMetrics = {
-    totalVaultAssets: "NOT TRACKED",
-    activeProposals: "NOT TRACKED",
-    governanceStatus: "NOT TRACKED",
-    uptime: "NOT TRACKED",
-  };
+  const { count: pendingCount, error } = await supabase
+    .from("proposals")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending_review");
 
-  try {
-    const { count: pendingCount, error } = await supabase
-      .from("proposals")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "pending_review");
-
-    if (error) {
-      console.error("Failed to load proposals for metrics:", error);
-      return notTracked;
-    }
-
-    return {
-      totalVaultAssets: "NOT TRACKED", // no vault/finance table exists yet
-      activeProposals: String(pendingCount ?? 0).padStart(2, "0"), // proposals awaiting review
-      governanceStatus: "NOT TRACKED", // no real governance-state source yet
-      uptime: "NOT TRACKED", // no real uptime monitoring wired up yet
-    };
-  } catch (err) {
-    console.error("getEcosystemMetrics failed:", err);
-    return notTracked;
+  if (error) {
+    console.error("Failed to load proposals for metrics:", error);
+    throw error;
   }
+
+  return {
+    totalVaultAssets: "NOT TRACKED", // no vault/finance table exists yet
+    activeProposals: String(pendingCount ?? 0).padStart(2, "0"), // proposals awaiting review
+    governanceStatus: "NOT TRACKED", // no real governance-state source yet
+    uptime: "NOT TRACKED", // no real uptime monitoring wired up yet
+  };
 }
