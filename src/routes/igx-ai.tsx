@@ -174,6 +174,36 @@ function IgxAi() {
   const messages = key ? threads[key] ?? [] : [];
   const busy = resolving !== null || resolvingId !== null;
 
+  // Rail sections (Human-in-the-loop / Entities) fold like the Command Center sidebar.
+  const [openSections, setOpenSections] = useState<string[]>(["people"]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("ijidi_igx_rail_open");
+      if (!raw) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setOpenSections(parsed.filter((v): v is string => typeof v === "string"));
+      }
+    } catch {
+      /* ignore — start with the default */
+    }
+  }, []);
+  const activeSection = activeEntity in igxPeople ? "people" : "entities";
+  useEffect(() => {
+    setOpenSections((prev) => (prev.includes(activeSection) ? prev : [...prev, activeSection]));
+  }, [activeSection]);
+  const toggleSection = (id: string) => {
+    const next = openSections.includes(id)
+      ? openSections.filter((v) => v !== id)
+      : [...openSections, id];
+    setOpenSections(next);
+    try {
+      localStorage.setItem("ijidi_igx_rail_open", JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
+
   // Loads the real pending queue from the database (count + the rows), so
   // proposals survive a page refresh and can always be reviewed.
   const fetchPendingCount = async () => {
@@ -445,30 +475,28 @@ function IgxAi() {
             </div>
           </div>
 
-          {/* People */}
-          <div className="mt-5">
-            <Eyebrow className="text-[10px] text-muted-foreground">HUMAN-IN-THE-LOOP</Eyebrow>
-            <RailGroup
+          {/* Foldable sections — same behaviour as the Command Center sidebar */}
+          <div className="mt-4 min-h-0 flex-1 space-y-1 overflow-y-auto">
+            <RailSection id="people"
+              title="HUMAN-IN-THE-LOOP"
               group={igxPeople}
+              open={openSections.includes("people")}
+              onToggle={toggleSection}
               activeEntity={activeEntity}
               onSelect={selectEntity}
             />
-          </div>
-
-          <div className="my-3 h-px bg-border" />
-
-          {/* Entities */}
-          <div>
-            <Eyebrow className="text-[10px] text-muted-foreground">ENTITIES</Eyebrow>
-            <RailGroup
+            <RailSection id="entities"
+              title="ENTITIES"
               group={igxOrgEntities}
+              open={openSections.includes("entities")}
+              onToggle={toggleSection}
               activeEntity={activeEntity}
               onSelect={selectEntity}
             />
           </div>
 
           {/* Pending Review — opens the full pending list */}
-          <div className="mt-auto border-t pt-4">
+          <div className="shrink-0 border-t pt-4">
             <button type="button"
               onClick={() => setPendingOpen((v) => !v)}
               aria-expanded={pendingOpen}
@@ -856,6 +884,52 @@ function IgxAi() {
           </form>
         </div>
       </div>
+    </div>
+  );
+}
+
+function RailSection({
+  id,
+  title,
+  group,
+  open,
+  onToggle,
+  activeEntity,
+  onSelect,
+}: {
+  id: string;
+  title: string;
+  group: Record<string, { label: string; state?: string; subs: SubItem[] }>;
+  open: boolean;
+  onToggle: (id: string) => void;
+  activeEntity: EntityKey;
+  onSelect: (key: EntityKey) => void;
+}) {
+  const hasActive = activeEntity in group;
+  return (
+    <div>
+      <button type="button"
+        onClick={() => onToggle(id)}
+        aria-expanded={open}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left font-mono text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-muted",
+          hasActive ? "text-primary" : "text-muted-foreground"
+        )}
+      >
+        <ChevronRight
+          className={cn("h-3 w-3 shrink-0 transition-transform duration-150", open && "rotate-90")}
+        />
+        <span className="flex-1">{title}</span>
+        {hasActive && !open && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+        <span className="text-[9px] font-normal tracking-normal text-muted-foreground/60">
+          {Object.keys(group).length}
+        </span>
+      </button>
+      {open && (
+        <div className="ml-2 border-l border-border pl-1">
+          <RailGroup group={group} activeEntity={activeEntity} onSelect={onSelect} />
+        </div>
+      )}
     </div>
   );
 }
