@@ -6,6 +6,7 @@ import { getEcosystemMetrics } from "@/lib/portal-queries";
 import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { GlassCard } from "@/components/GlassCard";
 import {
   Shield,
   Globe,
@@ -220,7 +221,10 @@ function CommandCenterOverview() {
   return (
     <div className="space-y-8">
       {/* Header banner */}
-      <section className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/5 via-card to-accent/5 p-8">
+      <GlassCard
+        index={0}
+        className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-card/30 to-accent/5 p-8"
+      >
         <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-accent/5 blur-3xl" />
 
@@ -267,11 +271,11 @@ function CommandCenterOverview() {
             </div>
           </div>
         </div>
-      </section>
+      </GlassCard>
 
       {/* Metrics grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {metricCards.map((item) => {
+        {metricCards.map((item, idx) => {
           const Icon = item.icon;
           const notTracked = item.raw === "NOT TRACKED";
           const missing = item.raw === null || item.raw === undefined || item.raw === "";
@@ -293,9 +297,10 @@ function CommandCenterOverview() {
             : "text-teal-400";
 
           return (
-            <div
+            <GlassCard
               key={item.label}
-              className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-colors hover:border-primary/30"
+              index={idx + 1}
+              className="group relative overflow-hidden p-6"
             >
               <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/5 blur-2xl" />
               <div className="relative">
@@ -328,7 +333,7 @@ function CommandCenterOverview() {
                   </span>
                 </div>
               </div>
-            </div>
+            </GlassCard>
           );
         })}
       </div>
@@ -337,7 +342,7 @@ function CommandCenterOverview() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Audit stream */}
         <section className="lg:col-span-2">
-          <div className="h-full rounded-xl border bg-card p-6">
+          <GlassCard index={5} className="h-full p-6">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <Eyebrow className="text-primary">AUDIT TRAIL</Eyebrow>
@@ -412,12 +417,12 @@ function CommandCenterOverview() {
                 </span>
               </div>
             )}
-          </div>
+          </GlassCard>
         </section>
 
         {/* Navigation + entities */}
         <section>
-          <div className="h-full rounded-xl border bg-card p-6">
+          <GlassCard index={6} className="h-full p-6">
             <div className="flex items-center gap-3 border-b pb-4">
               <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Layers className="h-4 w-4 text-primary" />
@@ -597,7 +602,7 @@ function CommandCenterOverview() {
                   )}`
                 : "No entity update on record"}
             </div>
-          </div>
+          </GlassCard>
         </section>
       </div>
 
@@ -612,12 +617,13 @@ function CommandCenterOverview() {
             icon: Building2,
           },
           { label: "Metrics last synced", value: lastSync, icon: Clock },
-        ].map((stat) => {
+        ].map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div
+            <GlassCard
               key={stat.label}
-              className="flex items-center gap-3 rounded-lg border bg-card p-3"
+              index={idx + 7}
+              className="flex items-center gap-3 rounded-lg p-3"
             >
               <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Icon className="h-3.5 w-3.5 text-primary" />
@@ -630,7 +636,7 @@ function CommandCenterOverview() {
                   {stat.value}
                 </div>
               </div>
-            </div>
+            </GlassCard>
           );
         })}
       </div>
