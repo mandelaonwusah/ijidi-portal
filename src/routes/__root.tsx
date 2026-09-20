@@ -30,7 +30,8 @@ import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { HexBadge, Eyebrow } from "@/components/portal-ui";
-import { RadarBackground } from "@/components/RadarBackground";
+import { CircuitBackground } from "@/components/CircuitBackground";
+import { VisualStateProvider } from "@/lib/visual-state";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
 
@@ -161,9 +162,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <ChromeGate>
-        <Outlet />
-      </ChromeGate>
+      <VisualStateProvider>
+        <ChromeGate>
+          <Outlet />
+        </ChromeGate>
+      </VisualStateProvider>
     </QueryClientProvider>
   );
 }
@@ -436,7 +439,7 @@ function MemberShell({ session }: { session: Session }) {
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
       <HudOverlays />
-      <RadarBackground />
+      <CircuitBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md sm:px-6">
@@ -879,7 +882,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       {/* HUD overlays — carry the login skin across the whole portal */}
       <HudOverlays />
 
-      <RadarBackground />
+      <CircuitBackground />
 
       {/* Mobile: dim the page behind the open sidebar; tap to close */}
       {railOpen && (
