@@ -212,7 +212,7 @@ function CommandCenterOverview() {
 
   const metricCards = [
     { label: "TOTAL VAULT ASSETS", raw: metrics?.totalVaultAssets, icon: Database },
-    { label: "ACTIVE PROPOSALS", raw: metrics?.activeProposals, icon: Target },
+    { label: "PENDING REVIEW", raw: metrics?.activeProposals, icon: Target },
     { label: "GOVERNANCE STATUS", raw: metrics?.governanceStatus, icon: Shield },
     { label: "SYSTEM UPTIME", raw: metrics?.uptime, icon: Server },
   ];
@@ -273,11 +273,14 @@ function CommandCenterOverview() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metricCards.map((item) => {
           const Icon = item.icon;
+          const notTracked = item.raw === "NOT TRACKED";
           const missing = item.raw === null || item.raw === undefined || item.raw === "";
           const cardState = metricsLoading
             ? "SYNCING"
             : metricsError
             ? "QUERY FAILED"
+            : notTracked
+            ? "NO SOURCE YET"
             : missing
             ? "NO DATA"
             : "RECEIVED";
@@ -285,7 +288,7 @@ function CommandCenterOverview() {
             ? "text-amber-400"
             : metricsError
             ? "text-destructive"
-            : missing
+            : notTracked || missing
             ? "text-muted-foreground/60"
             : "text-teal-400";
 
@@ -302,12 +305,27 @@ function CommandCenterOverview() {
                     <Icon className="h-3.5 w-3.5 text-primary" />
                   </div>
                 </div>
-                <div className="mt-4 truncate font-sans text-3xl font-bold tabular-nums text-foreground">
-                  {metricsLoading ? "---" : metricsError ? "ERR" : displayValue(item.raw)}
+                <div
+                  className={cn(
+                    "mt-4 truncate font-sans font-bold tabular-nums",
+                    notTracked && !metricsLoading && !metricsError
+                      ? "text-xl text-muted-foreground/60"
+                      : "text-3xl text-foreground"
+                  )}
+                >
+                  {metricsLoading
+                    ? "---"
+                    : metricsError
+                    ? "ERR"
+                    : notTracked
+                    ? "Not tracked"
+                    : displayValue(item.raw)}
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px]">
                   <span className={cardTone}>{cardState}</span>
-                  <span className="tabular-nums text-muted-foreground/50">{lastSync}</span>
+                  <span className="tabular-nums text-muted-foreground/50">
+                    {notTracked ? "" : lastSync}
+                  </span>
                 </div>
               </div>
             </div>
