@@ -1,5 +1,6 @@
 // src/components/GlassCard.tsx
-// Transparent glass card: lets the circuit background show through.
+// Transparent glass card: the circuit background shows through, the text on it
+// stays clean (blur + light dark tint + soft text shadow).
 // Entrance: fade, scale from 0.96, rise, and unblur, staggered by `index`.
 // Skipped entirely when the visitor prefers reduced motion.
 import { useEffect, useRef, type HTMLAttributes } from "react";
@@ -40,8 +41,10 @@ export function GlassCard({ index = 0, className, children, ...rest }: GlassCard
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border border-border/60 bg-card/40 shadow-lg shadow-black/20 backdrop-blur-xl",
-        "transition-colors hover:border-primary/30",
+        "rounded-xl border border-gold/20 bg-black/35 shadow-lg shadow-black/30",
+        "backdrop-blur-xl backdrop-saturate-150",
+        "[text-shadow:0_1px_2px_rgba(0,0,0,0.55)]",
+        "transition-colors hover:border-gold/40",
         className
       )}
       {...rest}
