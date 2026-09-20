@@ -29,6 +29,7 @@ const HALO_WIDTH = 0.2; // thick glow bands, as a share of their original width
 const GLOW = 0.26; // thick glow brightness, as a share of the original
 const CORE = 0.75; // crisp line brightness
 const PULSE_ALPHA = 0.5;
+const LIGHT = 1.4; // brightness of the lights: moving pulses and glowing nodes (1 = as before)
 const PULSE_WIDTH = 0.42; // pulse thickness
 const SPEED = 0.34; // pulse and glow speed, as a share of the original
 const BASE_PULSES = 60; // ambient pulses per cell at medium intensity
@@ -673,7 +674,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
 
     for (const n of nodes) {
       const rgb = hexRgb(col(n.role, n.tone));
-      c.fillStyle = rgba(rgb, 0.12 * GLOW);
+      c.fillStyle = rgba(rgb, 0.4 * GLOW * LIGHT);
       c.beginPath();
       c.arc(n.x, n.y, n.r * 2.1, 0, TAU);
       c.fill();
@@ -682,7 +683,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
       c.beginPath();
       c.arc(n.x, n.y, n.r, 0, TAU);
       c.stroke();
-      c.fillStyle = rgba(mixW(rgb, 0.6), 0.8);
+      c.fillStyle = rgba(mixW(rgb, 0.6), 0.95);
       c.beginPath();
       c.arc(n.x, n.y, n.r * 0.36, 0, TAU);
       c.fill();
@@ -950,7 +951,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         c.lineWidth = p.w * 1.6;
         tracePath(c, p);
         c.stroke();
-        c.globalAlpha = a * 0.35;
+        c.globalAlpha = clamp(a * 0.35 * LIGHT, 0, 1);
         c.strokeStyle = p.s2;
         c.lineWidth = p.w * 0.7;
         tracePath(c, p);
@@ -973,7 +974,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         d0 = Math.max(0, d0);
         d1 = Math.min(p.total, d1);
         if (d1 - d0 < 0.5) continue;
-        c.globalAlpha = pl.k * PULSE_ALPHA;
+        c.globalAlpha = clamp(pl.k * PULSE_ALPHA * LIGHT, 0, 1);
         c.beginPath();
         subPath(c, p, d0, d1);
         c.strokeStyle = p.s1 as string;
@@ -999,11 +1000,15 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     for (const o of orbs) {
       if (!o.hex) continue;
       const k = animate ? 0.62 + 0.38 * Math.sin(T * o.f * 2.2 * SPEED + o.ph) : 0.75;
-      const r = o.r * 1.7;
-      c.globalAlpha = clamp(k, 0, 1) * 0.42;
+      const r = o.r * 2;
+      c.globalAlpha = clamp(k, 0, 1) * clamp(0.42 * LIGHT, 0, 1);
       c.drawImage(sprite(o.hex), o.x - r, o.y - r, r * 2, r * 2);
+      // a small bright core so each light reads as a point of light
+      c.globalAlpha = clamp(k, 0, 1) * clamp(0.3 * LIGHT, 0, 1);
+      const rc = o.r * 0.9;
+      c.drawImage(sprite(o.hex), o.x - rc, o.y - rc, rc * 2, rc * 2);
       if (o.flare) {
-        c.globalAlpha = 0.14 * clamp(k, 0, 1);
+        c.globalAlpha = 0.22 * clamp(k, 0, 1);
         const gh = c.createLinearGradient(o.x - 60, 0, o.x + 60, 0);
         gh.addColorStop(0, "rgba(255,255,255,0)");
         gh.addColorStop(0.5, "rgba(255,255,255,.9)");
