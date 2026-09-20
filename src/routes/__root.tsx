@@ -442,7 +442,7 @@ function MemberShell({ session }: { session: Session }) {
       <CircuitBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-md sm:px-6">
+        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/35 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <HexBadge small />
             <div className="min-w-0">
@@ -575,7 +575,7 @@ function TickerBar() {
   const loop = [...items, ...items];
 
   return (
-    <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel/90 backdrop-blur-sm">
+    <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-gold/40 bg-panel/45 backdrop-blur-xl">
       <div className="ticker-track flex h-8 items-center hover:[animation-play-state:paused]">
         {loop.map((item, i) => (
           <span
@@ -898,7 +898,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         <div className="lg:flex">
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel/95 backdrop-blur-md transition-[transform,width] duration-200 ease-out",
+              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border bg-panel/40 backdrop-blur-xl backdrop-saturate-150 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] transition-[transform,width] duration-200 ease-out",
               "lg:sticky lg:top-8 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0",
               collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
               railOpen ? "translate-x-0" : "-translate-x-full"
@@ -1046,7 +1046,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             </div>
           </aside>
           <div className="min-w-0 flex-1">
-            <div className="flex h-8 items-center justify-between border-b border-border bg-panel/90 backdrop-blur-sm px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
+            <div className="flex h-8 items-center justify-between border-b border-border bg-panel/45 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
               <div className="flex items-center gap-4">
                 <span className={cn("flex items-center gap-1.5", linkText)}>
                   <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkOk && "live-pulse")} />
@@ -1060,7 +1060,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
               <LiveClock />
             </div>
-            <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/90 backdrop-blur-md px-4 sm:px-6">
+            <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-background/35 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] px-4 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
                   className="flex shrink-0 items-center gap-2 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition-all hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
