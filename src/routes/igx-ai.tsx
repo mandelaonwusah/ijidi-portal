@@ -49,6 +49,11 @@ export const Route = createFileRoute("/igx-ai")({
       { property: "og:description", content: "Grounded IGX AI intelligence console." },
     ],
   }),
+  // ?entity=mandela | ifeoma | group | foundation | atelier | media — opens the
+  // console on that person/entity (used by the floating entity dock).
+  validateSearch: (search: Record<string, unknown>): { entity?: string } => ({
+    entity: typeof search.entity === "string" ? search.entity : undefined,
+  }),
   component: IgxAi,
 });
 
@@ -147,7 +152,10 @@ function ReasoningOrb({ stage }: { stage: (typeof STAGES)[number] }) {
 }
 
 function IgxAi() {
-  const [activeEntity, setActiveEntity] = useState<EntityKey>("mandela");
+  const { entity: entityParam } = Route.useSearch();
+  const initialEntity: EntityKey =
+    entityParam && entityParam in igxAllEntities ? (entityParam as EntityKey) : "mandela";
+  const [activeEntity, setActiveEntity] = useState<EntityKey>(initialEntity);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [subState, setSubState] = useState<Partial<Record<EntityKey, string>>>({});
   const [threads, setThreads] = useState<Record<string, ThreadMessage[]>>({});
@@ -236,6 +244,14 @@ function IgxAi() {
       inputRef.current.focus();
     }
   }, [activeSub]);
+
+  // Follow the ?entity= link if it changes while the console is open.
+  useEffect(() => {
+    if (entityParam && entityParam in igxAllEntities) {
+      setActiveEntity(entityParam as EntityKey);
+      setActiveSub(null);
+    }
+  }, [entityParam]);
 
   const selectEntity = (nextEntity: EntityKey) => {
     setActiveEntity(nextEntity);
