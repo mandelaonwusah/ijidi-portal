@@ -32,6 +32,16 @@ export const entitySwitcherItems = [
   { key: "media", label: "IJIDI Media", to: "/media", status: "forming" },
 ] as const;
 
+// Floating entity dock (bottom centre of every governor page except the IGX AI
+// console). "person" chips open the IGX AI console on that person; "route"
+// chips go straight to the entity's page.
+export const floatingSwitcherItems = [
+  { key: "mandela", label: "Mandela", kind: "person", entity: "mandela" },
+  { key: "ifeoma", label: "Ifeoma", kind: "person", entity: "ifeoma" },
+  { key: "group", label: "Group", kind: "route", to: "/ecosystem" },
+  { key: "foundation", label: "Foundation", kind: "route", to: "/foundation" },
+] as const;
+
 export const metricTiles = [
   {
     label: "Tracked capital",
