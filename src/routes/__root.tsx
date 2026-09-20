@@ -31,6 +31,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { HexBadge, Eyebrow } from "@/components/portal-ui";
 import { CircuitBackground } from "@/components/CircuitBackground";
+import { TickerBar } from "@/components/TickerBar";
 import { VisualStateProvider } from "@/lib/visual-state";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
@@ -557,51 +558,6 @@ function MemberShell({ session }: { session: Session }) {
         <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
           <LiveClock />
         </footer>
-      </div>
-    </div>
-  );
-}
-
-// Ticker scroll speed in pixels per second. Slow and calm on purpose; this is
-// the value the Settings page will control later.
-const TICKER_PX_PER_SEC = 22;
-
-function TickerBar() {
-  const { data: activity, isLoading, isError } = useQuery({
-    queryKey: ["activity-ticker"],
-    queryFn: getActivity,
-    refetchInterval: 5000,
-  });
-
-  const items = isLoading
-    ? ["LOADING ACTIVITY LOG…"]
-    : isError || !activity
-    ? ["ACTIVITY LOG UNAVAILABLE"]
-    : activity.length > 0
-    ? activity.map((a) => `${a.actor?.toUpperCase() ?? "SYSTEM"} · ${a.action}`)
-    : ["NO VERIFIED ENTRIES"];
-
-  const loop = [...items, ...items];
-
-  // One pass = the items once. The duration follows their length, so the speed
-  // stays the same however many entries there are.
-  const passWidth = items.reduce((sum, text) => sum + text.length * 7 + 64, 0);
-  const durationSeconds = Math.max(30, Math.round(passWidth / TICKER_PX_PER_SEC));
-
-  return (
-    <div className="sticky top-0 z-50 h-6 overflow-hidden border-b border-gold/20 bg-black/25 backdrop-blur-[3px]">
-      <div
-        className="ticker-track flex h-6 items-center hover:[animation-play-state:paused]"
-        style={{ animationDuration: `${durationSeconds}s` }}
-      >
-        {loop.map((item, i) => (
-          <span
-            key={i}
-            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] text-[#D9C08A]/70"
-          >
-            <span className="text-[#5E9BFF]/60">◆</span> {item}
-          </span>
-        ))}
       </div>
     </div>
   );
