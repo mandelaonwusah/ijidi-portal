@@ -22,26 +22,27 @@ const CW = 336; // board cell width
 const G = 6; // routing grid step
 const TAU = Math.PI * 2;
 
-const LINE = 0.62; // line thickness, as a share of the original
-const HALO_WIDTH = 0.28; // thick glow bands, as a share of their original width
-const GLOW = 0.32; // thick glow brightness, as a share of the original
-const CORE = 0.7; // crisp line brightness
+const LINE = 0.46; // line thickness, as a share of the original
+const HALO_WIDTH = 0.2; // thick glow bands, as a share of their original width
+const GLOW = 0.26; // thick glow brightness, as a share of the original
+const CORE = 0.75; // crisp line brightness
 const PULSE_ALPHA = 0.5;
-const SPEED = 0.45; // pulse and glow speed, as a share of the original
+const PULSE_WIDTH = 0.6; // pulse thickness
+const SPEED = 0.34; // pulse and glow speed, as a share of the original
 const BASE_PULSES = 60; // ambient pulses per cell at medium intensity
 const FRAME_MS = 1000 / 30;
 
-// Board colours: the artwork's blues, violets and warm oranges, deepened and
-// calmed; the old electric green is replaced by blue.
+// Board colours: the portal's own champagne gold and electric blue, kept calm.
+// Cool blue carries most of the board; gold marks the chip and its buses.
 const PALETTE: Record<string, string[]> = {
-  hot: ["#C8702A", "#D6823A", "#BC6424"],
-  amber: ["#C99A3B", "#DDB050"],
-  cool: ["#2A5BD7", "#3B74F0", "#2F66E0", "#4A5AD8"],
-  teal: ["#3E7BD8", "#5A92E8"],
-  violet: ["#6B47C9", "#7C5AE0", "#5F4FD0"],
-  pink: ["#A84A8F", "#B85AA0"],
-  red: ["#B83A4A", "#C44A58"],
-  white: ["#C9D6F5", "#EEF2FF"],
+  hot: ["#C69B4A", "#D2A85A", "#B98A3E"],
+  amber: ["#E0C078", "#D2B064"],
+  cool: ["#3F7BEB", "#5A92F5", "#4A86F0", "#6A9CF8"],
+  teal: ["#5CB3E8", "#7CC6F2"],
+  violet: ["#5B6FE0", "#7382EA", "#6674E6"],
+  pink: ["#7E8BE6", "#98A3EE"],
+  red: ["#C98A3A", "#D69A4A"],
+  white: ["#CFE0FA", "#EEF5FF"],
 };
 
 /* ------------------------------------------------------------------ */
@@ -664,7 +665,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
       c.lineWidth = p.w * 0.9 * LINE;
       c.stroke();
       c.strokeStyle = rgba(mixW(rgb, 0.5), 0.25 * CORE * p.a);
-      c.lineWidth = p.w * 0.35;
+      c.lineWidth = p.w * 0.35 * LINE;
       c.stroke();
     }
 
@@ -944,12 +945,12 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         const a = Math.pow(1 - f.t / f.dur, 1.5);
         c.globalAlpha = a * 0.07;
         c.strokeStyle = p.s1 as string;
-        c.lineWidth = p.w * 2.6;
+        c.lineWidth = p.w * 1.6;
         tracePath(c, p);
         c.stroke();
         c.globalAlpha = a * 0.35;
         c.strokeStyle = p.s2;
-        c.lineWidth = p.w * 1;
+        c.lineWidth = p.w * 0.7;
         tracePath(c, p);
         c.stroke();
       }
@@ -974,18 +975,18 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
         c.beginPath();
         subPath(c, p, d0, d1);
         c.strokeStyle = p.s1 as string;
-        c.lineWidth = p.w * 1;
+        c.lineWidth = p.w * PULSE_WIDTH;
         c.stroke();
         const L = (d1 - d0) * 0.45;
         c.beginPath();
         if (pl.dir > 0) subPath(c, p, Math.max(d0, d1 - L), d1);
         else subPath(c, p, d0, Math.min(d1, d0 + L));
         c.strokeStyle = p.s2;
-        c.lineWidth = p.w * 0.85;
+        c.lineWidth = p.w * PULSE_WIDTH * 0.85;
         c.stroke();
         if (pl.d >= 0 && pl.d <= p.total) {
           const q = pointAt(p, pl.d);
-          const r = p.w * 1.6 + 1;
+          const r = p.w * 1.1 + 0.8;
           c.drawImage(sprite(p.hex as string), q.x - r, q.y - r, r * 2, r * 2);
         }
       }
@@ -996,7 +997,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     for (const o of orbs) {
       if (!o.hex) continue;
       const k = animate ? 0.62 + 0.38 * Math.sin(T * o.f * 2.2 * SPEED + o.ph) : 0.75;
-      const r = o.r * 2;
+      const r = o.r * 1.7;
       c.globalAlpha = clamp(k, 0, 1) * 0.42;
       c.drawImage(sprite(o.hex), o.x - r, o.y - r, r * 2, r * 2);
       if (o.flare) {
