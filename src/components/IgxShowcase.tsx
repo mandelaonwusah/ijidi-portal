@@ -1,7 +1,8 @@
 // src/components/IgxShowcase.tsx
-// The IGX AI page "showcase": brand header, glass tab bar, the living orb, and the
-// Architecture / Decisions / Agents / Models panels. Look and structure follow the IGX
-// Executive Command Center prototype, in the portal's gold and blue.
+// The IGX AI settings panels: glass tab bar, the living orb (Ecosystem), Architecture,
+// Decisions, Agents, Models and the Brand library. Look and structure follow the IGX
+// Executive Command Center prototype, in the portal's gold and blue. The main IGX AI page
+// is the chat; everything here lives behind its settings button.
 //
 // Honest-state rules for this file:
 //  - The orb's status text is the REAL console state (idle / submitting / awaiting
@@ -17,6 +18,7 @@ import { AlertCircle, ChevronRight, Loader2 } from "lucide-react";
 import { Eyebrow } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
+import { BRAND_ASSETS } from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -24,11 +26,11 @@ import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------ */
 export const IGX_TABS = [
   { key: "ecosystem", label: "Ecosystem" },
-  { key: "console", label: "Console" },
   { key: "architecture", label: "Architecture" },
   { key: "decisions", label: "Decisions" },
   { key: "agents", label: "Agents" },
   { key: "models", label: "Models" },
+  { key: "brand", label: "Brand library" },
 ] as const;
 
 export type IgxTabKey = (typeof IGX_TABS)[number]["key"];
@@ -68,57 +70,6 @@ export function IgxTabBar({
         );
       })}
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Hero: brand bridge, wordmark, tagline                               */
-/* ------------------------------------------------------------------ */
-export function IgxHero() {
-  return (
-    <GlassCard className="relative overflow-hidden px-5 pb-8 pt-7 text-center sm:px-8">
-      <style>{`
-        .igx-stars{
-          background-image:
-            radial-gradient(1px 1px at 10% 20%, #ffffff55 1px, transparent 1px),
-            radial-gradient(1px 1px at 80% 10%, #ffffff33 1px, transparent 1px),
-            radial-gradient(1.5px 1.5px at 60% 70%, #ffffff44 1px, transparent 1px),
-            radial-gradient(1px 1px at 30% 85%, #ffffff33 1px, transparent 1px),
-            radial-gradient(1px 1px at 92% 60%, #ffffff2e 1px, transparent 1px),
-            radial-gradient(1.5px 1.5px at 45% 40%, #ffffff2a 1px, transparent 1px);
-          background-size: 340px 340px;
-          opacity: .35;
-        }
-        .igx-wordmark{ font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif; font-weight:600;
-          font-size:clamp(38px,6vw,52px); letter-spacing:.5px; line-height:1; margin:0 }
-        .igx-wordmark span{ color:#5E9BFF }
-      `}</style>
-      <div aria-hidden="true" className="igx-stars pointer-events-none absolute inset-0" />
-      <div className="relative z-10 flex flex-col items-center">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className="text-gold opacity-90">
-          <path d="M12 2 L21 12 L12 22 L3 12 Z" fill="none" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M12 7 L16.5 12 L12 17 L7.5 12 Z" fill="currentColor" opacity=".7" />
-        </svg>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.4em] text-[#E3C27A]">IJIDI Group</p>
-        <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
-          Commercial · Foundation · Atelier · Media
-        </p>
-        <div
-          aria-hidden="true"
-          className="my-2 h-4 w-px bg-gradient-to-b from-[#E3C27A] to-transparent opacity-70"
-        />
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-          Executive AI Ecosystem
-        </p>
-        <h1 className="igx-wordmark mt-2">
-          IG<span>X</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          The intelligence layer of IJIDI Group. It orchestrates models, agents and tools under a
-          nine-layer architecture, and it proposes: nothing runs without your decision.
-        </p>
-      </div>
-    </GlassCard>
   );
 }
 
@@ -540,13 +491,13 @@ export function EcosystemPanel({
   pendingCount,
   pendingLoading,
   pendingError,
-  onOpenConsole,
+  onOpenQueue,
 }: {
   live: LiveStage;
   pendingCount: number | null;
   pendingLoading: boolean;
   pendingError: boolean;
-  onOpenConsole: () => void;
+  onOpenQueue: () => void;
 }) {
   const { data: decided, isLoading: decidedLoading, isError: decidedError } = useDecidedCounts();
 
@@ -676,7 +627,7 @@ export function EcosystemPanel({
 
       {/* Real counts only */}
       <div className="mt-6 grid grid-cols-2 gap-3 border-t border-gold/20 pt-5 lg:grid-cols-4">
-        <StatCard label="Pending review" value={pendingValue} note="Open the console" onClick={onOpenConsole} />
+        <StatCard label="Pending review" value={pendingValue} note="Open the queue" onClick={onOpenQueue} />
         <StatCard label="Approved" value={decidedValue(decided?.approved)} note="Proposals" />
         <StatCard label="Rejected" value={decidedValue(decided?.rejected)} note="Proposals" />
         <StatCard label="Model calls" value="Not tracked" note="No model is wired yet" />
@@ -957,6 +908,99 @@ export function ModelsPanel() {
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
         The pipeline is expandable: more models can be added as they are needed.
       </p>
+    </GlassCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Brand library: every picture, where it is used, and the leads        */
+/* ------------------------------------------------------------------ */
+function BrandThumb({ src, label }: { src: string | null; label: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src) {
+    return (
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gold/40 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-muted-foreground">
+        No art
+      </span>
+    );
+  }
+  if (failed) {
+    return (
+      <span
+        title="The file is not in public/brand yet"
+        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-destructive/50 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-destructive"
+      >
+        Upload me
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={label}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="h-16 w-16 shrink-0 rounded-full object-cover"
+    />
+  );
+}
+
+export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }) {
+  const rows = BRAND_ASSETS.map((asset) => ({
+    asset,
+    used: Array.from(new Set([...asset.placedIn, ...(usage[asset.id] ?? [])])),
+  }));
+  const placed = rows.filter((row) => row.used.length > 0).length;
+  return (
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="Brand library"
+        title="Logos, portraits and leads"
+        desc={`${placed} of ${rows.length} pictures are on a page today. Each of the rest has leads: where it is meant to go next. Files live in public/brand.`}
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {rows.map(({ asset, used }) => {
+          const status = !asset.src ? "Artwork needed" : used.length > 0 ? "On a page" : "Not placed yet";
+          return (
+            <div key={asset.id} className="rounded-xl border border-gold/20 bg-black/20 p-4">
+              <div className="flex items-center gap-3">
+                <BrandThumb src={asset.src} label={asset.label} />
+                <div className="min-w-0">
+                  <div className="truncate text-[13.5px] font-semibold text-foreground">{asset.label}</div>
+                  {asset.tagline && (
+                    <div className="mt-0.5 text-[11px] italic text-muted-foreground">{asset.tagline}</div>
+                  )}
+                  <span
+                    className={cn(
+                      "mt-2 inline-block rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]",
+                      status === "On a page"
+                        ? "border-[#5E9BFF]/50 bg-[#5E9BFF]/10 text-[#8FB4FF]"
+                        : "border-gold/40 bg-gold/10 text-gold"
+                    )}
+                  >
+                    {status}
+                  </span>
+                </div>
+              </div>
+              {used.length > 0 && (
+                <p className="mt-3 font-mono text-[10px] leading-relaxed text-muted-foreground">
+                  Shown in: {used.join(" · ")}
+                </p>
+              )}
+              {asset.leads.length > 0 && (
+                <ul className="mt-2 space-y-1 text-[11.5px] text-muted-foreground">
+                  {asset.leads.map((lead) => (
+                    <li key={lead} className="flex gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+                      <span>{lead}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </GlassCard>
   );
 }
