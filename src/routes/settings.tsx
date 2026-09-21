@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Gauge, Palette, ShieldCheck } from "lucide-react";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
+import { brandFor, brandSrc } from "@/lib/brand-assets";
 import { TICKER_PX_PER_SEC, setUiPref, useUiPrefs, type TickerSpeed } from "@/lib/ui-prefs";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +35,26 @@ type Identity = {
   lastSignIn: string | null;
   profile: { display_name?: string | null; handle?: string | null; access_tier?: string | null } | null;
 };
+
+// The identity picture: a portrait when one matches the name, otherwise the first letter.
+function IdentityPicture({ name }: { name: string }) {
+  const src = brandSrc(brandFor(name)?.id ?? "");
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-gold/10 font-display text-2xl font-semibold text-gold">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={name}
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        name.charAt(0).toUpperCase()
+      )}
+    </span>
+  );
+}
 
 function formatWhen(iso?: string | null): string {
   if (!iso) return "—";
@@ -112,9 +134,7 @@ function Settings() {
         {/* Identity */}
         <GlassCard index={1} className="p-6">
           <div className="flex items-start gap-5">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-gold/40 bg-gold/10 font-display text-2xl font-semibold text-gold">
-              {name.charAt(0).toUpperCase()}
-            </span>
+            <IdentityPicture name={name} />
             <div className="min-w-0">
               <Eyebrow className="text-teal">{isGovernor ? "Governor" : "Signed-in identity"}</Eyebrow>
               <h2 className="mt-2 break-words font-display text-2xl font-semibold">
