@@ -1,8 +1,8 @@
 // src/components/TickerBar.tsx
 // The activity ticker at the top of every governor page.
 // Reads the real activity_log (same query as the data-link status in the shell).
-// Calm on purpose: small text, dim champagne colour, slow scroll. The speed is the
-// governor's choice in Settings (Slow / Normal / Fast).
+// Small text in bright ice-white with blue markers, so it reads clearly on the dark glass.
+// The speed is the governor's choice in Settings (Slow / Normal / Fast).
 import { useQuery } from "@tanstack/react-query";
 import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
@@ -42,9 +42,9 @@ export function TickerBar() {
         {loop.map((item, i) => (
           <span
             key={i}
-            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] text-[#D9C08A]/70"
+            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] text-[#EAF1FF]/90"
           >
-            <span className="text-[#5E9BFF]/60">◆</span> {item}
+            <span className="text-[#5E9BFF]/85">◆</span> {item}
           </span>
         ))}
       </div>
