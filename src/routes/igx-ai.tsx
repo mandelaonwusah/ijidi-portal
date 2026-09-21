@@ -4,7 +4,6 @@ import {
   Activity,
   AlertCircle,
   ArrowLeft,
-  Brain,
   Check,
   ChevronRight,
   Copy as CopyIcon,
@@ -17,11 +16,21 @@ import {
   Shield,
   Volume2,
   X,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, StatusBadge } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
+import {
+  AgentsPanel,
+  ArchitecturePanel,
+  DecisionsPanel,
+  EcosystemPanel,
+  IgxHero,
+  IgxTabBar,
+  ModelsPanel,
+  type IgxTabKey,
+  type LiveStage,
+} from "@/components/IgxShowcase";
 import { supabase } from "@/lib/supabase";
 import { igxPeople, igxOrgEntities, igxAllEntities } from "@/lib/portal-data";
 import { cn } from "@/lib/utils";
@@ -37,6 +46,12 @@ export const Route = createFileRoute("/igx-ai")({
       },
       { property: "og:title", content: "IGX AI · Intelligence Console" },
       { property: "og:description", content: "Grounded IGX AI intelligence console." },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&display=swap",
+      },
     ],
   }),
   // ?entity=mandela | ifeoma | group | foundation | atelier | media — opens the
@@ -62,16 +77,6 @@ type ThreadMessage = {
 };
 
 type PendingProposal = { id: string; intent: string; created_at: string };
-
-// Honest-state readout: every stage below maps to something that really
-// happens in this console. No model is called yet (IGX AI Step B is not wired),
-// so there are no "thinking / routing / orchestrating" stages to show.
-const STAGES = [
-  { name: "Idle", detail: "No request in flight", icon: Brain },
-  { name: "Submitting", detail: "Writing the proposal to the database", icon: Zap },
-  { name: "Awaiting review", detail: "Saved — waiting for your decision", icon: Shield },
-  { name: "Error", detail: "The last request failed", icon: AlertCircle },
-] as const;
 
 function threadKey(entity: EntityKey, sub: string) {
   return `${entity}:${sub}`;
@@ -103,28 +108,6 @@ function formatDateTime(isoString?: string): string {
     minute: "2-digit",
     hour12: false,
   });
-}
-
-// Glowing status orb — shows the console's real state (see STAGES above).
-function ReasoningOrb({ stage }: { stage: (typeof STAGES)[number] }) {
-  const StageIcon = stage.icon;
-  return (
-    <div className="flex items-center gap-4">
-      <div className="reasoning-orb-wrap">
-        <span className="reasoning-orb-ring" />
-        <span className="reasoning-orb-ring delay" />
-        <span className="reasoning-orb-core">
-          <StageIcon className="h-5 w-5 text-primary-foreground" />
-        </span>
-      </div>
-      <div>
-        <div className="font-mono text-sm font-semibold uppercase tracking-wide text-primary">
-          {stage.name}
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">{stage.detail}</div>
-      </div>
-    </div>
-  );
 }
 
 // One clickable glass tile: a person, an entity, or a module.
@@ -219,7 +202,11 @@ function IgxAi() {
   const initialEntity: EntityKey | null =
     entityParam && entityParam in igxAllEntities ? (entityParam as EntityKey) : null;
 
-  // Navigation: dashboard (no entity) → an entity's module tiles → a module thread.
+  // Which section of the page is open. A ?entity= link goes straight to the console.
+  const [tab, setTab] = useState<IgxTabKey>(initialEntity ? "console" : "ecosystem");
+  const [submitError, setSubmitError] = useState(false);
+
+  // Console navigation: dashboard (no entity) → an entity's module tiles → a module thread.
   const [activeEntity, setActiveEntity] = useState<EntityKey | null>(initialEntity);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [threads, setThreads] = useState<Record<string, ThreadMessage[]>>({});
@@ -291,6 +278,7 @@ function IgxAi() {
     if (entityParam && entityParam in igxAllEntities) {
       setActiveEntity(entityParam as EntityKey);
       setActiveSub(null);
+      setTab("console");
     }
   }, [entityParam]);
 
@@ -343,6 +331,8 @@ function IgxAi() {
       ])
       .select()
       .single();
+
+    setSubmitError(!!error || !data);
 
     setThreads((prev) => {
       const current = prev[k] ?? [];
@@ -460,16 +450,21 @@ function IgxAi() {
     navigator.clipboard?.writeText(text);
   };
 
-  // Console state, derived from what is really happening in this thread.
-  const lastMessage = messages[messages.length - 1];
-  const hasPendingSaved = messages.some((m) => m.status === "pending_review" && !!m.proposalId);
-  const stage = isSubmitting
-    ? STAGES[1]
-    : lastMessage?.status === "error"
-    ? STAGES[3]
-    : hasPendingSaved
-    ? STAGES[2]
-    : STAGES[0];
+  // Console state for the orb, from what is really happening: a request in flight, a
+  // failed request, proposals waiting for review, or nothing.
+  const liveStage: LiveStage = isSubmitting
+    ? { key: "submitting", name: "Submitting", detail: "Writing the proposal to the database" }
+    : submitError
+    ? { key: "error", name: "Error", detail: "The last request failed" }
+    : pendingCountError
+    ? { key: "error", name: "Unavailable", detail: "Could not read the pending queue" }
+    : (pendingCount ?? 0) > 0
+    ? {
+        key: "awaiting",
+        name: "Awaiting review",
+        detail: `${pendingCount} ${pendingCount === 1 ? "proposal is" : "proposals are"} waiting for your decision`,
+      }
+    : { key: "idle", name: "Idle", detail: "No request in flight" };
 
   const recentActivities = activityLogs?.slice(0, 5) ?? [];
   const peopleGroup: EntityGroup = igxPeople;
@@ -478,28 +473,25 @@ function IgxAi() {
 
   return (
     <div className="space-y-6">
-      {/* Header: the console and its real state */}
-      <GlassCard className="p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gold/40 bg-gold/10">
-              <Brain className="h-6 w-6 text-gold" />
-            </div>
-            <div className="min-w-0">
-              <Eyebrow className="text-gold">IGX AI · Intelligence Console</Eyebrow>
-              <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">
-                Every request becomes a proposal you review
-              </h1>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Pick a person or entity, choose a module, and send an instruction. Nothing runs
-                without your decision.
-              </p>
-            </div>
-          </div>
-          <ReasoningOrb stage={stage} />
-        </div>
-      </GlassCard>
+      <IgxHero />
+      <IgxTabBar active={tab} onChange={setTab} />
 
+      {tab === "ecosystem" && (
+        <EcosystemPanel
+          live={liveStage}
+          pendingCount={pendingCount}
+          pendingLoading={isLoading}
+          pendingError={!!pendingCountError}
+          onOpenConsole={() => setTab("console")}
+        />
+      )}
+      {tab === "architecture" && <ArchitecturePanel />}
+      {tab === "decisions" && <DecisionsPanel />}
+      {tab === "agents" && <AgentsPanel />}
+      {tab === "models" && <ModelsPanel />}
+
+      {tab === "console" && (
+        <>
       {/* Pending Review tile — real proposals from the database */}
       <GlassCard index={1} className="p-4 sm:p-5">
         <button
@@ -895,6 +887,8 @@ function IgxAi() {
             </form>
           </div>
         </GlassCard>
+      )}
+        </>
       )}
     </div>
   );
