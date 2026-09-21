@@ -7,11 +7,16 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Copy as CopyIcon,
   Eye,
   EyeOff,
+  History,
   Loader2,
+  MessageSquare,
+  Mic,
   Paperclip,
   Plus,
   Settings2,
@@ -28,6 +33,7 @@ import {
   BrandLibraryPanel,
   DecisionsPanel,
   EcosystemPanel,
+  IGX_TABS,
   IgxTabBar,
   ModelsPanel,
   type IgxTabKey,
@@ -80,7 +86,17 @@ type ChatMessage = {
   detailsOpen: boolean;
 };
 
+type Conversation = { id: string; title: string; updatedAt: number; messages: ChatMessage[] };
 type RecentProposal = { id: string; intent: string; status: string; created_at: string };
+
+// Where the user is: back / forward move through these.
+type ViewState = { mode: "chat" | "settings"; tab: IgxTabKey; chatId: string | null };
+type DrawerKind = "chats" | "requests" | null;
+
+// Chat history is kept in this browser (localStorage) until a database table exists for it.
+const HISTORY_KEY = "ijidi_igx_chats";
+const MAX_CHATS = 30;
+const MAX_MESSAGES = 100;
 
 // Starter instructions. They only fill the box; nothing is sent until you press send.
 const STARTERS = [
@@ -97,9 +113,9 @@ function greetingWord(): string {
   return "Good evening";
 }
 
-function formatDateTime(isoString?: string): string {
-  if (!isoString) return "";
-  const date = new Date(isoString);
+function formatDateTime(value?: string | number): string {
+  if (value === undefined || value === "") return "";
+  const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleString("en-GB", {
     day: "2-digit",
@@ -108,6 +124,34 @@ function formatDateTime(isoString?: string): string {
     minute: "2-digit",
     hour12: false,
   });
+}
+
+function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function asProposalStatus(status: string): ProposalStatus {
+  return status === "approved" || status === "rejected" ? status : "pending_review";
+}
+
+// A saved chat can hold a request that never finished saving (tab closed mid-send).
+// Say so instead of leaving it on "Saving…" forever.
+function normalizeConversation(raw: unknown): Conversation | null {
+  const c = raw as Partial<Conversation> | null;
+  if (!c || typeof c.id !== "string" || !Array.isArray(c.messages)) return null;
+  const messages = (c.messages as ChatMessage[]).map((m) =>
+    !m.proposalId && m.status !== "error"
+      ? { ...m, status: "error" as const, errorMessage: "This request did not finish saving." }
+      : m
+  );
+  return {
+    id: c.id,
+    title: typeof c.title === "string" && c.title ? c.title : "Chat",
+    updatedAt: typeof c.updatedAt === "number" ? c.updatedAt : Date.now(),
+    messages,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -152,6 +196,21 @@ function Avatar({
   );
 }
 
+// The close button every pop-up carries.
+function CloseX({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+    >
+      <X className="h-3.5 w-3.5" />
+    </button>
+  );
+}
+
 function PickerChip({
   selected,
   label,
@@ -182,6 +241,9 @@ function PickerChip({
   );
 }
 
+const pillButton =
+  "flex items-center gap-2 rounded-full border border-gold/25 bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
+
 /* ------------------------------------------------------------------ */
 /* The page                                                            */
 /* ------------------------------------------------------------------ */
@@ -190,10 +252,21 @@ function IgxAi() {
   const initialEntity: EntityKey | null =
     entityParam && entityParam in igxAllEntities ? (entityParam as EntityKey) : null;
 
-  const [mode, setMode] = useState<"chat" | "settings">("chat");
-  const [settingsTab, setSettingsTab] = useState<IgxTabKey>("ecosystem");
+  // Navigation: a stack of views, so back / forward work like a browser's.
+  const [stack, setStack] = useState<ViewState[]>([{ mode: "chat", tab: "ecosystem", chatId: null }]);
+  const [idx, setIdx] = useState(0);
+  const view = stack[idx];
+  const mode = view.mode;
+  const settingsTab = view.tab;
+  const activeId = view.chatId;
 
-  // Chat
+  // Saved chats (this browser)
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const activeConv = conversations.find((c) => c.id === activeId) ?? null;
+  const messages = activeConv?.messages ?? [];
+
+  // Composer
   const [scope, setScope] = useState<{ entity: EntityKey | null; sub: string | null }>({
     entity: initialEntity,
     sub: null,
@@ -201,13 +274,12 @@ function IgxAi() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerEntity, setPickerEntity] = useState<EntityKey | null>(initialEntity);
   const [attachOpen, setAttachOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
 
-  // Requests queue (real proposals)
-  const [queueOpen, setQueueOpen] = useState(false);
+  // Drawer: chats and requests
+  const [drawer, setDrawer] = useState<DrawerKind>(null);
   const [recent, setRecent] = useState<RecentProposal[]>([]);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
@@ -252,8 +324,138 @@ function IgxAi() {
     : null;
   const pickerEntityData = pickerEntity ? igxAllEntities[pickerEntity] : null;
 
-  // Loads the real queue: the pending count and the latest proposals, so requests
-  // survive a refresh and can always be reviewed.
+  /* ---------------- navigation ---------------- */
+  const go = (next: ViewState) => {
+    setStack((prev) => [...prev.slice(0, idx + 1), next]);
+    setIdx(idx + 1);
+  };
+  const replaceView = (next: ViewState) =>
+    setStack((prev) => prev.map((v, i) => (i === idx ? next : v)));
+
+  const viewLabel = (v: ViewState): string =>
+    v.mode === "settings"
+      ? `Settings › ${IGX_TABS.find((t) => t.key === v.tab)?.label ?? ""}`
+      : v.chatId
+      ? conversations.find((c) => c.id === v.chatId)?.title ?? "Chat"
+      : "New chat";
+
+  const canBack = idx > 0;
+  const canForward = idx < stack.length - 1;
+
+  const navArrows = (
+    <div className="flex items-center gap-1" role="group" aria-label="History navigation">
+      <button
+        type="button"
+        disabled={!canBack}
+        onClick={() => setIdx(idx - 1)}
+        aria-label="Back"
+        title={canBack ? `Back to: ${viewLabel(stack[idx - 1])}` : "Nothing to go back to"}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <span
+        title={`You are here: ${viewLabel(view)}`}
+        className="hidden max-w-[190px] truncate px-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground md:inline"
+      >
+        {viewLabel(view)}
+      </span>
+      <button
+        type="button"
+        disabled={!canForward}
+        onClick={() => setIdx(idx + 1)}
+        aria-label="Forward"
+        title={canForward ? `Forward to: ${viewLabel(stack[idx + 1])}` : "Nothing to go forward to"}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+
+  /* ---------------- saved chats ---------------- */
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(HISTORY_KEY);
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setConversations(
+            parsed.map(normalizeConversation).filter((c): c is Conversation => c !== null)
+          );
+        }
+      }
+    } catch {
+      /* unreadable: start empty */
+    }
+    setHistoryLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!historyLoaded) return;
+    try {
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(conversations.slice(0, MAX_CHATS)));
+    } catch {
+      /* storage full or unavailable: chats stay for this visit only */
+    }
+  }, [conversations, historyLoaded]);
+
+  const updateConversation = (id: string, fn: (c: Conversation) => Conversation) =>
+    setConversations((prev) => prev.map((c) => (c.id === id ? fn(c) : c)));
+
+  const deleteConversation = (id: string) => {
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    setStack((prev) => prev.map((v) => (v.chatId === id ? { ...v, chatId: null } : v)));
+  };
+
+  const openConversation = (id: string) => {
+    go({ mode: "chat", tab: view.tab, chatId: id });
+    setDrawer(null);
+  };
+
+  const newChat = () => {
+    if (mode === "chat" && !activeId) {
+      textareaRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    go({ mode: "chat", tab: view.tab, chatId: null });
+    setInput("");
+    setSubmitError(false);
+    requestAnimationFrame(growTextarea);
+  };
+
+  // When a saved chat is opened, refresh its request statuses from the database.
+  useEffect(() => {
+    if (!historyLoaded || !activeConv) return;
+    const ids = activeConv.messages
+      .filter((m) => m.proposalId && m.status === "pending_review")
+      .map((m) => m.proposalId as string);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    supabase
+      .from("proposals")
+      .select("id, status")
+      .in("id", ids)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const latest = new Map(data.map((row) => [row.id as string, row.status as string]));
+        updateConversation(activeConv.id, (c) => ({
+          ...c,
+          messages: c.messages.map((m) => {
+            const status = m.proposalId ? latest.get(m.proposalId) : undefined;
+            return status && status !== "pending_review" ? { ...m, status: asProposalStatus(status) } : m;
+          }),
+        }));
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId, historyLoaded]);
+
+  /* ---------------- the real queue ---------------- */
+  // Loads the pending count and the latest proposals, so requests survive a
+  // refresh and can always be reviewed.
   const refreshQueue = async () => {
     const [pending, latest] = await Promise.all([
       supabase
@@ -292,7 +494,6 @@ function IgxAi() {
     if (entityParam && entityParam in igxAllEntities) {
       setScope({ entity: entityParam as EntityKey, sub: null });
       setPickerEntity(entityParam as EntityKey);
-      setMode("chat");
     }
   }, [entityParam]);
 
@@ -302,7 +503,7 @@ function IgxAi() {
       if (event.key !== "Escape") return;
       setPickerOpen(false);
       setAttachOpen(false);
-      setQueueOpen(false);
+      setDrawer(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -321,6 +522,7 @@ function IgxAi() {
     textareaRef.current?.focus({ preventScroll: true });
   };
 
+  /* ---------------- sending and reviewing ---------------- */
   const send = async () => {
     const text = input.trim();
     if (!text || isSubmitting) return;
@@ -331,19 +533,42 @@ function IgxAi() {
         : `[${scopeEntity.label}]`
       : "[General]";
     const intent = `${prefix} ${text}`;
-    const id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `m-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const msgId = newId();
+    const message: ChatMessage = {
+      id: msgId,
+      scopeLabel,
+      text,
+      intent,
+      proposalId: null,
+      status: "pending_review",
+      detailsOpen: false,
+    };
+
+    // Add to the open chat, or start a new saved chat.
+    let convId = activeId && conversations.some((c) => c.id === activeId) ? activeId : null;
+    if (convId) {
+      updateConversation(convId, (c) => ({
+        ...c,
+        updatedAt: Date.now(),
+        messages: [...c.messages, message].slice(-MAX_MESSAGES),
+      }));
+    } else {
+      convId = newId();
+      const conversation: Conversation = {
+        id: convId,
+        title: text.length > 50 ? `${text.slice(0, 50)}…` : text,
+        updatedAt: Date.now(),
+        messages: [message],
+      };
+      setConversations((prev) => [conversation, ...prev].slice(0, MAX_CHATS));
+      replaceView({ ...view, mode: "chat", chatId: convId });
+    }
+    const cid = convId;
 
     setInput("");
     requestAnimationFrame(growTextarea);
     setIsSubmitting(true);
     setSubmitError(false);
-    setMessages((prev) => [
-      ...prev,
-      { id, scopeLabel, text, intent, proposalId: null, status: "pending_review", detailsOpen: false },
-    ]);
 
     const { data, error } = await supabase
       .from("proposals")
@@ -360,15 +585,16 @@ function IgxAi() {
       .select()
       .single();
 
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id !== id
+    updateConversation(cid, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.id !== msgId
           ? m
           : error || !data
           ? { ...m, status: "error", errorMessage: error?.message ?? "The proposal was not saved." }
           : { ...m, proposalId: data.id }
-      )
-    );
+      ),
+    }));
     if (error || !data) setSubmitError(true);
     setIsSubmitting(false);
     requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
@@ -409,21 +635,30 @@ function IgxAi() {
     setReviewError(null);
     const failure = await reviewProposal(id, nextStatus);
     if (failure) setReviewError(failure);
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.proposalId !== id
-          ? m
-          : failure
-          ? { ...m, errorMessage: failure }
-          : { ...m, status: nextStatus, errorMessage: undefined }
-      )
+    // Keep every saved chat in step with the database.
+    setConversations((prev) =>
+      prev.map((c) => ({
+        ...c,
+        messages: c.messages.map((m) =>
+          m.proposalId !== id
+            ? m
+            : failure
+            ? { ...m, errorMessage: failure }
+            : { ...m, status: nextStatus, errorMessage: undefined }
+        ),
+      }))
     );
     setBusyId(null);
     refreshQueue();
   };
 
-  const toggleDetails = (id: string) =>
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, detailsOpen: !m.detailsOpen } : m)));
+  const toggleDetails = (id: string) => {
+    if (!activeConv) return;
+    updateConversation(activeConv.id, (c) => ({
+      ...c,
+      messages: c.messages.map((m) => (m.id === id ? { ...m, detailsOpen: !m.detailsOpen } : m)),
+    }));
+  };
 
   const readAloud = (text: string) => {
     if (!("speechSynthesis" in window)) return;
@@ -436,13 +671,6 @@ function IgxAi() {
 
   const copyText = (text: string) => {
     navigator.clipboard?.writeText(text);
-  };
-
-  const newChat = () => {
-    setMessages([]);
-    setInput("");
-    setSubmitError(false);
-    requestAnimationFrame(growTextarea);
   };
 
   // Console state for the orb in settings, from what is really happening.
@@ -476,11 +704,16 @@ function IgxAi() {
   const mandelaAvatar = brandSrc("mandela");
   const igxAvatar = brandSrc("igx");
   const empty = messages.length === 0;
+  const popoverOpen = pickerOpen || attachOpen;
+  const closePopovers = () => {
+    setPickerOpen(false);
+    setAttachOpen(false);
+  };
 
   /* ---------------- composer (used centred when empty, docked otherwise) ---------------- */
   const composer = (below: boolean) => (
     <div className="w-full">
-      <div className="igx-composer p-3 sm:p-4">
+      <div className={cn("igx-composer p-3 sm:p-4", popoverOpen && "z-50")}>
         <textarea
           ref={textareaRef}
           value={input}
@@ -518,16 +751,22 @@ function IgxAi() {
             {attachOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-50 w-56 space-y-1 rounded-xl border border-gold/25 bg-black/80 p-2 font-mono text-xs shadow-lg backdrop-blur-md",
+                  "absolute left-0 z-50 w-60 rounded-xl border border-gold/25 bg-black/85 p-3 shadow-lg backdrop-blur-md",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
-                <button type="button" disabled className="flex w-full rounded px-3 py-2 text-left disabled:opacity-40">
-                  Attach a document · soon
-                </button>
-                <button type="button" disabled className="flex w-full rounded px-3 py-2 text-left disabled:opacity-40">
-                  Attach the activity log · soon
-                </button>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Attach</span>
+                  <CloseX onClick={() => setAttachOpen(false)} label="Close attach menu" />
+                </div>
+                <div className="space-y-1 font-mono text-xs">
+                  <button type="button" disabled className="flex w-full rounded px-2 py-2 text-left disabled:opacity-40">
+                    Attach a document · soon
+                  </button>
+                  <button type="button" disabled className="flex w-full rounded px-2 py-2 text-left disabled:opacity-40">
+                    Attach the activity log · soon
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -551,13 +790,16 @@ function IgxAi() {
             {pickerOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-50 w-[min(560px,88vw)] rounded-2xl border border-gold/25 bg-black/85 p-4 shadow-2xl backdrop-blur-xl",
+                  "absolute left-0 z-50 w-[min(560px,88vw)] rounded-2xl border border-gold/25 bg-black/90 p-4 shadow-2xl backdrop-blur-xl",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Who or what is this about?
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Who or what is this about?
+                  </p>
+                  <CloseX onClick={() => setPickerOpen(false)} label="Close scope picker" />
+                </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <PickerChip
                     selected={!scope.entity}
@@ -606,15 +848,31 @@ function IgxAi() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={send}
-            disabled={!input.trim() || isSubmitting}
-            aria-label="Send"
-            className="igx-send ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#15120a] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
-          >
-            {isSubmitting ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <ArrowUp className="h-5 w-5" strokeWidth={2.5} />}
-          </button>
+          <div className="ml-auto flex items-center gap-1.5">
+            {/* Voice: placeholder until speech input exists */}
+            <button
+              type="button"
+              disabled
+              aria-label="Voice input (coming soon)"
+              title="Voice input — coming soon"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground opacity-50"
+            >
+              <Mic className="h-[18px] w-[18px]" />
+            </button>
+            <button
+              type="button"
+              onClick={send}
+              disabled={!input.trim() || isSubmitting}
+              aria-label="Send"
+              className="igx-send flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#15120a] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 disabled:cursor-default disabled:opacity-40 disabled:hover:scale-100"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-[18px] w-[18px] animate-spin" />
+              ) : (
+                <ArrowUp className="h-5 w-5" strokeWidth={2.5} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
       <p className="mt-2 text-center font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
@@ -635,16 +893,19 @@ function IgxAi() {
               <h1 className="font-display text-xl font-semibold text-foreground">Settings</h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setMode("chat")}
-            className="flex items-center gap-2 rounded-full border border-gold/30 bg-black/25 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to chat
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {navArrows}
+            <button
+              type="button"
+              onClick={() => go({ mode: "chat", tab: view.tab, chatId: view.chatId })}
+              className={pillButton}
+            >
+              <ArrowLeft className="h-3.5 w-3.5 text-gold" /> Back to chat
+            </button>
+          </div>
         </GlassCard>
 
-        <IgxTabBar active={settingsTab} onChange={setSettingsTab} />
+        <IgxTabBar active={settingsTab} onChange={(tab) => go({ ...view, tab })} />
 
         {settingsTab === "ecosystem" && (
           <EcosystemPanel
@@ -653,8 +914,8 @@ function IgxAi() {
             pendingLoading={queueLoading}
             pendingError={!!queueError}
             onOpenQueue={() => {
-              setMode("chat");
-              setQueueOpen(true);
+              go({ mode: "chat", tab: view.tab, chatId: view.chatId });
+              setDrawer("requests");
             }}
           />
         )}
@@ -668,6 +929,8 @@ function IgxAi() {
   }
 
   /* ---------------- chat ---------------- */
+  const sortedChats = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+
   return (
     <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-3xl flex-col">
       <style>{`
@@ -677,16 +940,16 @@ function IgxAi() {
         @keyframes igxBreathe { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: .95; transform: scale(1.06); } }
 
         .igx-chat .igx-wordmark { font-family: "Cormorant Garamond", "Fraunces", Georgia, serif; font-weight: 600;
-          font-size: clamp(34px, 5vw, 46px); line-height: 1; letter-spacing: .5px; }
+          font-size: clamp(38px, 6vw, 52px); line-height: 1; letter-spacing: .5px; white-space: nowrap; margin: 0; }
         .igx-chat .igx-wordmark span { color: #5E9BFF; }
 
-        .igx-chat .igx-emblem { position: relative; width: 96px; height: 96px; }
-        .igx-chat .igx-emblem::before { content: ""; position: absolute; inset: -7px; border-radius: 50%;
+        .igx-chat .igx-emblem { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+        .igx-chat .igx-emblem::before { content: ""; position: absolute; inset: -5px; border-radius: 50%;
           background: conic-gradient(from var(--igx-a), transparent 0 55%, #C6A15B, #5E9BFF, transparent);
           -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
                   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
           animation: igxSpin 7s linear infinite; }
-        .igx-chat .igx-emblem::after { content: ""; position: absolute; inset: -34px; z-index: -1; border-radius: 50%;
+        .igx-chat .igx-emblem::after { content: ""; position: absolute; inset: -26px; z-index: -1; border-radius: 50%;
           background: radial-gradient(circle, rgba(94,155,255,.24), rgba(198,161,91,.10) 45%, transparent 68%);
           animation: igxBreathe 4.5s ease-in-out infinite; }
 
@@ -712,22 +975,25 @@ function IgxAi() {
         }
       `}</style>
 
+      {/* A click anywhere outside an open pop-up closes it */}
+      {popoverOpen && (
+        <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePopovers} />
+      )}
+
       {/* Top bar */}
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={newChat}
-          className="flex items-center gap-2 rounded-full border border-gold/25 bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
-        >
-          <Plus className="h-3.5 w-3.5 text-gold" /> New chat
-        </button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setQueueOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-gold/25 bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
-          >
-            <Clock className="h-3.5 w-3.5 text-gold" /> Requests
+          {navArrows}
+          <button type="button" onClick={newChat} className={pillButton} aria-label="New chat">
+            <Plus className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">New chat</span>
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setDrawer("chats")} className={pillButton} aria-label="Chat history">
+            <History className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">History</span>
+          </button>
+          <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
+            <Clock className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">Requests</span>
             {!queueLoading && !queueError && (pendingCount ?? 0) > 0 && (
               <span className="rounded-full bg-gold px-1.5 py-px text-[10px] font-bold text-primary-foreground">
                 {pendingCount}
@@ -736,7 +1002,7 @@ function IgxAi() {
           </button>
           <button
             type="button"
-            onClick={() => setMode("settings")}
+            onClick={() => go({ mode: "settings", tab: view.tab, chatId: view.chatId })}
             aria-label="IGX AI settings"
             title="IGX AI settings"
             className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
@@ -747,34 +1013,36 @@ function IgxAi() {
       </div>
 
       {empty ? (
-        /* Empty state: greeting and composer, centred */
+        /* Empty state: logo and name on one line, greeting, composer, centred */
         <div className="flex flex-1 flex-col items-center justify-center px-1 pb-6">
-          <div className="igx-emblem igx-rise">
-            <Avatar src={igxAvatar} label="IGX" bare className="h-full w-full border-0 text-3xl" />
+          <div className="igx-rise flex items-center justify-center gap-5">
+            <div className="igx-emblem">
+              <Avatar src={igxAvatar} label="IGX" bare className="h-full w-full border-0 text-xl" />
+            </div>
+            <h1 className="igx-wordmark">
+              IG<span>X</span> <em className="not-italic text-foreground">AI</em>
+            </h1>
           </div>
-          <h1 className="igx-wordmark igx-rise mt-6" style={{ animationDelay: ".08s" }}>
-            IG<span>X</span>
-          </h1>
           <p
-            className="igx-rise mt-3 text-center font-display text-2xl text-foreground sm:text-[28px]"
-            style={{ animationDelay: ".14s" }}
+            className="igx-rise mt-6 text-center font-display text-2xl text-foreground sm:text-[28px]"
+            style={{ animationDelay: ".08s" }}
           >
             {greetingWord()}
             {firstName ? `, ${firstName}` : ""}
           </p>
           <p
             className="igx-rise mt-2 max-w-md text-center text-sm text-muted-foreground"
-            style={{ animationDelay: ".2s" }}
+            style={{ animationDelay: ".14s" }}
           >
             Tell IGX AI what needs doing. It becomes a proposal, and nothing runs without your
             decision.
           </p>
-          <div className="igx-rise mt-7 w-full max-w-2xl" style={{ animationDelay: ".26s" }}>
+          <div className="igx-rise mt-7 w-full max-w-2xl" style={{ animationDelay: ".2s" }}>
             {composer(true)}
           </div>
           <div
             className="igx-rise mt-5 flex max-w-2xl flex-wrap justify-center gap-2"
-            style={{ animationDelay: ".32s" }}
+            style={{ animationDelay: ".26s" }}
           >
             {STARTERS.map((starter) => (
               <button
@@ -909,100 +1177,153 @@ function IgxAi() {
         </>
       )}
 
-      {/* Requests queue: real proposals, newest first */}
-      {queueOpen && (
-        <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Requests">
+      {/* Drawer: saved chats and the real requests queue */}
+      {drawer && (
+        <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label={drawer === "chats" ? "Chat history" : "Requests"}>
           <button
             type="button"
-            aria-label="Close requests"
-            onClick={() => setQueueOpen(false)}
+            aria-label="Close panel"
+            onClick={() => setDrawer(null)}
             className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
           />
           <aside className="absolute right-0 top-0 flex h-full w-[400px] max-w-[92vw] flex-col border-l border-gold/25 bg-[#080b12]/92 shadow-2xl backdrop-blur-xl">
-            <div className="flex items-center justify-between border-b border-gold/20 px-5 py-4">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">Requests</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
+            <div className="flex items-center justify-between gap-3 border-b border-gold/20 px-5 py-4">
+              <div className="flex items-center gap-1 rounded-full border border-gold/20 bg-black/25 p-1">
+                {(["chats", "requests"] as const).map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => setDrawer(kind)}
+                    aria-pressed={drawer === kind}
+                    className={cn(
+                      "rounded-full px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                      drawer === kind
+                        ? "bg-gold font-semibold text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {kind === "chats" ? "Chats" : "Requests"}
+                    {kind === "requests" && !queueLoading && !queueError && (pendingCount ?? 0) > 0
+                      ? ` · ${pendingCount}`
+                      : ""}
+                  </button>
+                ))}
+              </div>
+              <CloseX onClick={() => setDrawer(null)} label="Close panel" />
+            </div>
+
+            {drawer === "chats" ? (
+              <div className="flex-1 space-y-2 overflow-y-auto p-4">
+                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                  Saved in this browser only
+                </p>
+                {!historyLoaded ? (
+                  <p className="font-mono text-xs text-muted-foreground">Loading…</p>
+                ) : sortedChats.length === 0 ? (
+                  <p className="pt-2 font-mono text-xs text-muted-foreground">
+                    No chats yet. Your conversations will appear here.
+                  </p>
+                ) : (
+                  sortedChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl border bg-black/25 pr-2 transition-colors hover:border-gold/45",
+                        chat.id === activeId ? "border-gold/50" : "border-white/10"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => openConversation(chat.id)}
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                      >
+                        <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13px] text-foreground">{chat.title}</span>
+                          <span className="block font-mono text-[10px] text-muted-foreground">
+                            {formatDateTime(chat.updatedAt)} · {chat.messages.length}{" "}
+                            {chat.messages.length === 1 ? "message" : "messages"}
+                          </span>
+                        </span>
+                      </button>
+                      <CloseX onClick={() => deleteConversation(chat.id)} label="Delete this chat" />
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 space-y-2 overflow-y-auto p-4">
+                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
                   {queueLoading
                     ? "Loading…"
                     : queueError
                     ? "Unavailable"
                     : `${pendingCount ?? 0} waiting for your decision`}
                 </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setQueueOpen(false)}
-                aria-label="Close"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 text-gold hover:bg-gold/10"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 space-y-2 overflow-y-auto p-4">
-              {reviewError && (
-                <div className="flex items-center gap-2 font-mono text-xs text-destructive">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{reviewError}</span>
-                </div>
-              )}
-              {queueError ? (
-                <p className="font-mono text-xs text-destructive">Could not load the queue: {queueError}</p>
-              ) : !queueLoading && recent.length === 0 ? (
-                <p className="font-mono text-xs text-muted-foreground">No requests yet.</p>
-              ) : (
-                recent.map((item) => {
-                  const pending = item.status === "pending_review";
-                  return (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "rounded-xl border border-l-2 bg-black/25 p-3",
-                        pending ? "border-gold/25 border-l-primary" : "border-white/10 border-l-white/25"
-                      )}
-                    >
-                      <p className="text-[13px] leading-snug text-foreground">{item.intent}</p>
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {formatDateTime(item.created_at)}
-                        </span>
-                        {pending ? (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              disabled={!!busyId}
-                              onClick={() => resolveProposal(item.id, "approved")}
-                              className="h-8 gap-1.5"
-                            >
-                              {busyId === item.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Check className="h-4 w-4" />
-                              )}{" "}
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={!!busyId}
-                              onClick={() => resolveProposal(item.id, "rejected")}
-                              className="h-8 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
-                            >
-                              <X className="h-4 w-4" /> Reject
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="rounded-full border border-white/15 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">
-                            {item.status.replace("_", " ")}
-                          </span>
+                {reviewError && (
+                  <div className="flex items-center gap-2 font-mono text-xs text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>{reviewError}</span>
+                  </div>
+                )}
+                {queueError ? (
+                  <p className="font-mono text-xs text-destructive">Could not load the queue: {queueError}</p>
+                ) : !queueLoading && recent.length === 0 ? (
+                  <p className="font-mono text-xs text-muted-foreground">No requests yet.</p>
+                ) : (
+                  recent.map((item) => {
+                    const pending = item.status === "pending_review";
+                    return (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          "rounded-xl border border-l-2 bg-black/25 p-3",
+                          pending ? "border-gold/25 border-l-primary" : "border-white/10 border-l-white/25"
                         )}
+                      >
+                        <p className="text-[13px] leading-snug text-foreground">{item.intent}</p>
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {formatDateTime(item.created_at)}
+                          </span>
+                          {pending ? (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                disabled={!!busyId}
+                                onClick={() => resolveProposal(item.id, "approved")}
+                                className="h-8 gap-1.5"
+                              >
+                                {busyId === item.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Check className="h-4 w-4" />
+                                )}{" "}
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={!!busyId}
+                                onClick={() => resolveProposal(item.id, "rejected")}
+                                className="h-8 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
+                              >
+                                <X className="h-4 w-4" /> Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="rounded-full border border-white/15 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">
+                              {item.status.replace("_", " ")}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </aside>
         </div>
       )}
