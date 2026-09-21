@@ -11,10 +11,11 @@ export interface UiPrefs {
 }
 
 // Ticker scroll speed in pixels per second for each setting.
+// Slow is the old Fast speed (50); Normal and Fast are faster still.
 export const TICKER_PX_PER_SEC: Record<TickerSpeed, number> = {
-  slow: 22,
-  normal: 34,
-  fast: 50,
+  slow: 50,
+  normal: 70,
+  fast: 100,
 };
 
 const STORAGE_KEY = "ijidi_ui_prefs";
