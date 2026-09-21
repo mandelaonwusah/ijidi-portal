@@ -93,8 +93,10 @@ type RecentProposal = { id: string; intent: string; status: string; created_at: 
 type ViewState = { mode: "chat" | "settings"; tab: IgxTabKey; chatId: string | null };
 type DrawerKind = "chats" | "requests" | null;
 
-// Chat history is kept in this browser (localStorage) until a database table exists for it.
+// Chats live in Supabase (igx_conversations / igx_messages). Chats saved in this browser
+// before that existed are copied across once (HISTORY_KEY is only read for that).
 const HISTORY_KEY = "ijidi_igx_chats";
+const IMPORT_FLAG = "ijidi_igx_chats_imported";
 const MAX_CHATS = 30;
 const MAX_MESSAGES = 100;
 
@@ -152,6 +154,133 @@ function normalizeConversation(raw: unknown): Conversation | null {
     updatedAt: typeof c.updatedAt === "number" ? c.updatedAt : Date.now(),
     messages,
   };
+}
+
+const isUuid = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+type DbConversation = { id: string; title: string; updated_at: string };
+type DbMessage = {
+  id: string;
+  conversation_id: string;
+  scope_label: string;
+  text: string;
+  proposal_id: string | null;
+  created_at: string;
+};
+
+// Reads the governor's chats, newest first. Row-level security limits this to their own.
+// Returns null if the database could not be read.
+async function loadHistory(): Promise<Conversation[] | null> {
+  const convRes = await supabase
+    .from("igx_conversations")
+    .select("id, title, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(MAX_CHATS);
+  if (convRes.error) return null;
+  const convs = (convRes.data ?? []) as DbConversation[];
+  if (convs.length === 0) return [];
+
+  const msgRes = await supabase
+    .from("igx_messages")
+    .select("id, conversation_id, scope_label, text, proposal_id, created_at")
+    .in("conversation_id", convs.map((c) => c.id))
+    .order("created_at", { ascending: true });
+  if (msgRes.error) return null;
+  const msgs = (msgRes.data ?? []) as DbMessage[];
+
+  // The status of each request always comes from its proposal, never from a copy.
+  const proposalIds = Array.from(
+    new Set(msgs.map((m) => m.proposal_id).filter((id): id is string => !!id))
+  );
+  const proposals = new Map<string, { intent: string; status: string }>();
+  if (proposalIds.length > 0) {
+    const propRes = await supabase.from("proposals").select("id, intent, status").in("id", proposalIds);
+    if (!propRes.error) {
+      (propRes.data ?? []).forEach((row) =>
+        proposals.set(row.id as string, { intent: row.intent as string, status: row.status as string })
+      );
+    }
+  }
+
+  return convs.map((c) => ({
+    id: c.id,
+    title: c.title,
+    updatedAt: Date.parse(c.updated_at) || Date.now(),
+    messages: msgs
+      .filter((m) => m.conversation_id === c.id)
+      .map((m): ChatMessage => {
+        const proposal = m.proposal_id ? proposals.get(m.proposal_id) : undefined;
+        return {
+          id: m.id,
+          scopeLabel: m.scope_label,
+          text: m.text,
+          intent: proposal?.intent ?? `[${m.scope_label}] ${m.text}`,
+          proposalId: m.proposal_id,
+          status: m.proposal_id ? asProposalStatus(proposal?.status ?? "pending_review") : "error",
+          errorMessage: m.proposal_id ? undefined : "This request has no saved proposal.",
+          detailsOpen: false,
+        };
+      }),
+  }));
+}
+
+// One-time copy of chats saved in this browser into the database. Returns true if it
+// copied something. The flag is set only after every insert succeeded.
+async function importLocalChats(): Promise<boolean> {
+  try {
+    if (window.localStorage.getItem(IMPORT_FLAG)) return false;
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    const local = (Array.isArray(parsed) ? parsed : [])
+      .map(normalizeConversation)
+      .filter((c): c is Conversation => c !== null);
+    if (local.length === 0) {
+      window.localStorage.setItem(IMPORT_FLAG, "1");
+      return false;
+    }
+
+    const convRows = local.map((c) => ({
+      id: isUuid(c.id) ? c.id : newId(),
+      title: c.title,
+      created_at: new Date(c.updatedAt).toISOString(),
+      updated_at: new Date(c.updatedAt).toISOString(),
+    }));
+
+    // Only link proposals that still exist.
+    const wanted = Array.from(
+      new Set(local.flatMap((c) => c.messages.map((m) => m.proposalId).filter((id): id is string => !!id)))
+    );
+    const existing = new Set<string>();
+    if (wanted.length > 0) {
+      const { data } = await supabase.from("proposals").select("id").in("id", wanted);
+      (data ?? []).forEach((row) => existing.add(row.id as string));
+    }
+
+    const msgRows = local.flatMap((c, i) =>
+      c.messages
+        .filter((m) => m.proposalId) // requests that never saved are not worth keeping
+        .map((m) => ({
+          id: isUuid(m.id) ? m.id : newId(),
+          conversation_id: convRows[i].id,
+          scope_label: m.scopeLabel,
+          text: m.text,
+          proposal_id: m.proposalId && existing.has(m.proposalId) ? m.proposalId : null,
+          created_at: new Date(c.updatedAt).toISOString(),
+        }))
+    );
+
+    const convInsert = await supabase.from("igx_conversations").insert(convRows);
+    if (convInsert.error) return false;
+    if (msgRows.length > 0) {
+      const msgInsert = await supabase.from("igx_messages").insert(msgRows);
+      if (msgInsert.error) return false;
+    }
+    window.localStorage.setItem(IMPORT_FLAG, "1");
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -263,6 +392,7 @@ function IgxAi() {
   // Saved chats (this browser)
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyNotice, setHistoryNotice] = useState<string | null>(null);
   const activeConv = conversations.find((c) => c.id === activeId) ?? null;
   const messages = activeConv?.messages ?? [];
 
@@ -375,37 +505,32 @@ function IgxAi() {
 
   /* ---------------- saved chats ---------------- */
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(HISTORY_KEY);
-      if (raw) {
-        const parsed: unknown = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setConversations(
-            parsed.map(normalizeConversation).filter((c): c is Conversation => c !== null)
-          );
-        }
-      }
-    } catch {
-      /* unreadable: start empty */
-    }
-    setHistoryLoaded(true);
+    let cancelled = false;
+    (async () => {
+      await importLocalChats();
+      const loaded = await loadHistory();
+      if (cancelled) return;
+      if (loaded) setConversations(loaded);
+      else setHistoryNotice("Could not load your saved chats from the database.");
+      setHistoryLoaded(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  useEffect(() => {
-    if (!historyLoaded) return;
-    try {
-      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(conversations.slice(0, MAX_CHATS)));
-    } catch {
-      /* storage full or unavailable: chats stay for this visit only */
-    }
-  }, [conversations, historyLoaded]);
 
   const updateConversation = (id: string, fn: (c: Conversation) => Conversation) =>
     setConversations((prev) => prev.map((c) => (c.id === id ? fn(c) : c)));
 
-  const deleteConversation = (id: string) => {
+  const deleteConversation = async (id: string) => {
+    const removed = conversations.find((c) => c.id === id);
     setConversations((prev) => prev.filter((c) => c.id !== id));
     setStack((prev) => prev.map((v) => (v.chatId === id ? { ...v, chatId: null } : v)));
+    const { error } = await supabase.from("igx_conversations").delete().eq("id", id);
+    if (error) {
+      if (removed) setConversations((prev) => [removed, ...prev]);
+      setHistoryNotice(`Could not delete that chat: ${error.message}`);
+    }
   };
 
   const openConversation = (id: string) => {
@@ -544,31 +669,37 @@ function IgxAi() {
       detailsOpen: false,
     };
 
-    // Add to the open chat, or start a new saved chat.
-    let convId = activeId && conversations.some((c) => c.id === activeId) ? activeId : null;
-    if (convId) {
-      updateConversation(convId, (c) => ({
+    // Add to the open chat, or start a new one.
+    const existingId = activeId && conversations.some((c) => c.id === activeId) ? activeId : null;
+    const cid = existingId ?? newId();
+    const isNew = !existingId;
+    const title = text.length > 50 ? `${text.slice(0, 50)}…` : text;
+    if (existingId) {
+      updateConversation(cid, (c) => ({
         ...c,
         updatedAt: Date.now(),
         messages: [...c.messages, message].slice(-MAX_MESSAGES),
       }));
     } else {
-      convId = newId();
-      const conversation: Conversation = {
-        id: convId,
-        title: text.length > 50 ? `${text.slice(0, 50)}…` : text,
-        updatedAt: Date.now(),
-        messages: [message],
-      };
+      const conversation: Conversation = { id: cid, title, updatedAt: Date.now(), messages: [message] };
       setConversations((prev) => [conversation, ...prev].slice(0, MAX_CHATS));
-      replaceView({ ...view, mode: "chat", chatId: convId });
+      replaceView({ ...view, mode: "chat", chatId: cid });
     }
-    const cid = convId;
 
     setInput("");
     requestAnimationFrame(growTextarea);
     setIsSubmitting(true);
     setSubmitError(false);
+
+    // A new chat needs its row before its first message can be saved.
+    let historyOk = true;
+    if (isNew) {
+      const convInsert = await supabase.from("igx_conversations").insert({ id: cid, title });
+      if (convInsert.error) {
+        historyOk = false;
+        setHistoryNotice(`This chat could not be saved to your history: ${convInsert.error.message}`);
+      }
+    }
 
     const { data, error } = await supabase
       .from("proposals")
@@ -596,6 +727,26 @@ function IgxAi() {
       ),
     }));
     if (error || !data) setSubmitError(true);
+
+    // Save the message to the chat, linked to its proposal.
+    if (historyOk) {
+      const msgInsert = await supabase.from("igx_messages").insert({
+        id: msgId,
+        conversation_id: cid,
+        scope_label: scopeLabel,
+        text,
+        proposal_id: data?.id ?? null,
+      });
+      if (msgInsert.error) {
+        setHistoryNotice(`This message could not be saved to your history: ${msgInsert.error.message}`);
+      } else if (!isNew) {
+        await supabase
+          .from("igx_conversations")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", cid);
+      }
+    }
+
     setIsSubmitting(false);
     requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
     if (!error) refreshQueue();
@@ -1012,6 +1163,16 @@ function IgxAi() {
         </div>
       </div>
 
+      {historyNotice && (
+        <div className="mb-3 flex items-start justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-[12.5px] text-foreground">
+          <span className="flex items-start gap-2">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+            {historyNotice}
+          </span>
+          <CloseX onClick={() => setHistoryNotice(null)} label="Dismiss" />
+        </div>
+      )}
+
       {empty ? (
         /* Empty state: logo and name on one line, greeting, composer, centred */
         <div className="flex flex-1 flex-col items-center justify-center px-1 pb-6">
@@ -1216,7 +1377,7 @@ function IgxAi() {
             {drawer === "chats" ? (
               <div className="flex-1 space-y-2 overflow-y-auto p-4">
                 <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
-                  Saved in this browser only
+                  Saved to your account · on every device you sign in on
                 </p>
                 {!historyLoaded ? (
                   <p className="font-mono text-xs text-muted-foreground">Loading…</p>
