@@ -9,9 +9,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { Brain } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -35,6 +35,7 @@ import { TickerBar } from "@/components/TickerBar";
 import { VisualStateProvider } from "@/lib/visual-state";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
+import { brandFor, brandSrc } from "@/lib/brand-assets";
 
 // Sidebar sections, built once from the flat navItems list in portal-data.ts.
 const navSections = navGroupOrder.map((label) => ({
@@ -372,6 +373,110 @@ function HudOverlays() {
 }
 
 // ---------------------------------------------------------------------------
+// PICTURES — the portal emblem, and small logo / portrait badges.
+// A missing file never leaves a hole: the emblem falls back to the older PNG and
+// then to the hex badge; a badge falls back to a letter (or to nothing).
+// ---------------------------------------------------------------------------
+function PortalEmblem({ className }: { className?: string }) {
+  const sources = ["/brand/ijidi-fan-emblem.webp", "/ijidi-fan-emblem.png"];
+  const [failedCount, setFailedCount] = useState(0);
+  if (failedCount >= sources.length) return <HexBadge small />;
+  return (
+    <img
+      src={sources[failedCount]}
+      alt="IJIDI Portal"
+      onError={() => setFailedCount((n) => n + 1)}
+      className={cn(
+        "h-10 w-10 shrink-0 object-contain drop-shadow-[0_0_10px_rgba(198,161,91,0.35)]",
+        className
+      )}
+    />
+  );
+}
+
+function BrandBadge({
+  label,
+  size = "h-5 w-5",
+  letterFallback = true,
+}: {
+  label: string;
+  size?: string;
+  letterFallback?: boolean;
+}) {
+  const src = brandSrc(brandFor(label)?.id ?? "");
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={label}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={cn("shrink-0 rounded-full object-cover", size)}
+      />
+    );
+  }
+  if (!letterFallback) return null;
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full border border-gold/40 text-[9px] font-semibold text-gold",
+        size
+      )}
+    >
+      {label.charAt(0)}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PAGE HISTORY — back / forward, with the name of the page each one goes to.
+// TanStack Router keeps its position in history.state (__TSR_index); the pages
+// visited at each position are remembered here so the buttons can name them.
+// ---------------------------------------------------------------------------
+function pathLabel(path: string | undefined): string {
+  if (!path) return "";
+  return navItems.find((item) => isNavActive(path, item.to))?.label ?? path;
+}
+
+function useRouteTrail() {
+  const location = useRouterState({ select: (state) => state.location });
+  const stateIndex = (location.state as { __TSR_index?: number } | undefined)?.__TSR_index;
+  const indexKnown = typeof stateIndex === "number";
+  const index = indexKnown ? (stateIndex as number) : 0;
+  const trail = useRef<Record<number, string>>({});
+  const [, refresh] = useState(0);
+
+  useEffect(() => {
+    const known = trail.current[index];
+    if (known === location.pathname) return;
+    if (known !== undefined) {
+      // A new page was opened part-way back: the old "forward" pages are gone.
+      Object.keys(trail.current).forEach((key) => {
+        if (Number(key) > index) delete trail.current[Number(key)];
+      });
+    }
+    trail.current[index] = location.pathname;
+    refresh((n) => n + 1);
+  }, [index, location.pathname]);
+
+  const hasBack = indexKnown ? index > 0 : typeof window !== "undefined" && window.history.length > 1;
+  const hasForward = indexKnown
+    ? Object.keys(trail.current).some((key) => Number(key) > index)
+    : true;
+
+  return {
+    hasBack,
+    hasForward,
+    previous: trail.current[index - 1],
+    next: trail.current[index + 1],
+    back: () => window.history.back(),
+    forward: () => window.history.forward(),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // MEMBER SHELL — slim view for every non-governor tier.
 // No module sidebar, no activity ticker, no entity switcher. Shows the
 // member's own name, tier and the (publicly readable) entity_status rows.
@@ -450,7 +555,7 @@ function MemberShell({ session }: { session: Session }) {
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/10 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <HexBadge small />
+            <PortalEmblem />
             <div className="min-w-0">
               <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                 IJIDI <span className="text-gold">PORTAL</span>
@@ -590,12 +695,7 @@ function EntityDock({ hidden }: { hidden: boolean }) {
         );
         const inner = (
           <>
-            <span
-              aria-hidden="true"
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-gold/40 text-[9px] font-semibold text-gold"
-            >
-              {item.label.charAt(0)}
-            </span>
+            <BrandBadge label={item.label} size="h-6 w-6" />
             <span className={cn(active ? "inline" : "hidden sm:inline")}>{item.label}</span>
           </>
         );
@@ -685,6 +785,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const [signingOut, setSigningOut] = useState(false);
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
+  const trail = useRouteTrail();
   const signedInEmail = session.user.email ?? "Signed in";
 
   usePortalRealtime();
@@ -883,7 +984,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   collapsed && "lg:justify-center lg:px-0"
                 )}
               >
-                <HexBadge small />
+                <PortalEmblem />
                 <div className={cn(collapsed && "lg:hidden")}>
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
@@ -1061,8 +1162,41 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   <span aria-hidden="true" className="text-sm leading-none">☰</span>
                   Menu
                 </button>
+                <div className="flex shrink-0 items-center gap-1" role="group" aria-label="Page history">
+                  <button
+                    type="button"
+                    disabled={!trail.hasBack}
+                    onMouseEnter={() => sounds.playHover()}
+                    onClick={() => {
+                      sounds.playClick();
+                      trail.back();
+                    }}
+                    aria-label="Back"
+                    title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!trail.hasForward}
+                    onMouseEnter={() => sounds.playHover()}
+                    onClick={() => {
+                      sounds.playClick();
+                      trail.forward();
+                    }}
+                    aria-label="Forward"
+                    title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
                 <div className="min-w-0">
-                  <div className="truncate font-display text-base font-semibold tracking-wide text-foreground">
+                  <div
+                    className="truncate font-display text-base font-semibold tracking-wide text-foreground"
+                    title="You are here"
+                  >
                     {pageLabel}
                   </div>
                   {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
@@ -1075,6 +1209,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   className="hidden items-center gap-3 rounded-md border border-gold/30 bg-black/25 backdrop-blur-[3px] px-3 py-1.5 md:flex"
                   title={signedInEmail}
                 >
+                  <BrandBadge label={governorName} size="h-8 w-8" letterFallback={false} />
                   <span className="rounded border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
                     Governor
                   </span>
