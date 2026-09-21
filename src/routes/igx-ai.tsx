@@ -902,7 +902,7 @@ function IgxAi() {
             {attachOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-50 w-60 rounded-xl border border-gold/25 bg-black/85 p-3 shadow-lg backdrop-blur-md",
+                  "absolute left-0 z-[60] w-60 rounded-xl border border-gold/25 bg-black/85 p-3 shadow-lg backdrop-blur-md",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
@@ -941,7 +941,7 @@ function IgxAi() {
             {pickerOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-50 w-[min(560px,88vw)] rounded-2xl border border-gold/25 bg-black/90 p-4 shadow-2xl backdrop-blur-xl",
+                  "absolute left-0 z-[60] w-[min(560px,88vw)] rounded-2xl border border-gold/25 bg-black/90 p-4 shadow-2xl backdrop-blur-xl",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
@@ -1198,7 +1198,12 @@ function IgxAi() {
             Tell IGX AI what needs doing. It becomes a proposal, and nothing runs without your
             decision.
           </p>
-          <div className="igx-rise mt-7 w-full max-w-2xl" style={{ animationDelay: ".2s" }}>
+          {/* The entrance animation makes each block its own layer, so the block that holds
+              the pop-up must sit above the blocks after it (the starter chips). */}
+          <div
+            className={cn("igx-rise mt-7 w-full max-w-2xl", popoverOpen && "relative z-50")}
+            style={{ animationDelay: ".2s" }}
+          >
             {composer(true)}
           </div>
           <div
@@ -1334,7 +1339,7 @@ function IgxAi() {
               </div>
             ))}
           </div>
-          <div className="pt-2">{composer(false)}</div>
+          <div className={cn("pt-2", popoverOpen && "relative z-50")}>{composer(false)}</div>
         </>
       )}
 
