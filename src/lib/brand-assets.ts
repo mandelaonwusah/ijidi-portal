@@ -145,10 +145,10 @@ export const BRAND_ASSETS: BrandAsset[] = [
     id: "orbit",
     label: "IJIDI Orbit",
     kind: "media",
-    src: null,
+    src: `${B}/ijidi-orbit.webp`,
     tagline: "Empowering Global Connection",
-    placedIn: [],
-    leads: ["Logo artwork still needed", "IGX AI scope: Media › Orbit (once the logo exists)"],
+    placedIn: ["Ecosystem map (matched by name)", "IGX AI scope picker"],
+    leads: ["media.ijidigroup.com (not deployed yet)"],
     match: ["orbit"],
   },
 
