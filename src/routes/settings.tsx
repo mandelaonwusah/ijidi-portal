@@ -36,7 +36,6 @@ type Identity = {
   profile: { display_name?: string | null; handle?: string | null; access_tier?: string | null } | null;
 };
 
-// The identity picture: a portrait when one matches the name, otherwise the first letter.
 function IdentityPicture({ name }: { name: string }) {
   const src = brandSrc(brandFor(name)?.id ?? "");
   const [failed, setFailed] = useState(false);
@@ -73,7 +72,6 @@ function formatWhen(iso?: string | null): string {
 function Settings() {
   const { tickerSpeed } = useUiPrefs();
 
-  // Real identity: the signed-in user and their profiles row. Nothing here is hardcoded.
   const {
     data: identity,
     isLoading,
@@ -133,7 +131,7 @@ function Settings() {
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         {/* Identity */}
         <GlassCard index={1} className="p-6">
-          <div className="flex flex-col gap-5">
+          <div className="flex items-start gap-5">
             <IdentityPicture name={name} />
             <div className="min-w-0">
               <Eyebrow className="text-teal">{isGovernor ? "Governor" : "Signed-in identity"}</Eyebrow>
@@ -176,7 +174,6 @@ function Settings() {
         </GlassCard>
 
         <section className="space-y-6">
-          {/* Access */}
           <GlassCard index={2} className="p-5">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-4 w-4 text-gold" />
@@ -196,7 +193,6 @@ function Settings() {
             </p>
           </GlassCard>
 
-          {/* Interface controls */}
           <GlassCard index={3} className="p-5">
             <div className="flex items-center gap-3">
               <Gauge className="h-4 w-4 text-teal" />
@@ -239,7 +235,6 @@ function Settings() {
             </div>
           </GlassCard>
 
-          {/* Background studio: not built yet, said plainly */}
           <GlassCard index={4} className="border-dashed p-5">
             <div className="flex items-center gap-3">
               <Palette className="h-4 w-4 text-gold" />

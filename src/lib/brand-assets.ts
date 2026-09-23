@@ -32,7 +32,7 @@ export const BRAND_ASSETS: BrandAsset[] = [
     id: "portal",
     label: "IJIDI Portal emblem",
     kind: "portal",
-    src: `${B}/ijidi-fan-emblem.webp`,
+    src: `${B}/ijidi-fan-emblem.png`,
     placedIn: ["Sidebar badge", "Login page"],
     leads: ["Browser tab icon", "Loading screen"],
     match: ["portal"],
