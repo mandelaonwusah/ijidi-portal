@@ -377,7 +377,7 @@ function HudOverlays() {
 // A missing file never leaves a hole: the emblem falls back to the older PNG and
 // then to the hex badge; a badge falls back to a letter (or to nothing).
 // ---------------------------------------------------------------------------
-function PortalEmblem({ className }: { className?: string }) {
+function PortalEmblem({ className, onClick }: { className?: string; onClick?: () => void }) {
   const sources = ["/brand/ijidi-fan-emblem.png", "/ijidi-fan-emblem.png"];
   const [failedCount, setFailedCount] = useState(0);
   if (failedCount >= sources.length) return <HexBadge small />;
@@ -386,8 +386,9 @@ function PortalEmblem({ className }: { className?: string }) {
       src={sources[failedCount]}
       alt="IJIDI Portal"
       onError={() => setFailedCount((n) => n + 1)}
+      onClick={onClick}
       className={cn(
-        "h-10 w-10 shrink-0 object-contain drop-shadow-[0_0_10px_rgba(198,161,91,0.35)]",
+        "h-10 w-10 shrink-0 cursor-pointer object-contain drop-shadow-[0_0_10px_rgba(198,161,91,0.35)] transition-transform hover:scale-105",
         className
       )}
     />
@@ -956,8 +957,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       )}
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <TickerBar />
+        {isIgxAi ? null : <TickerBar />}
         <div className="lg:flex">
+          {!isIgxAi && (
           <aside
             className={cn(
               "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
@@ -1040,6 +1042,13 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 >
                   {collapsed ? "»" : "«"}
                 </button>
+              </div>
+
+              {/* NAVIGATION label card */}
+              <div className={cn("border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-gold">
+                  Navigation
+                </span>
               </div>
 
               <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
