@@ -1,33 +1,51 @@
 // src/components/TickerBar.tsx
 // The activity ticker at the top of every governor page.
 // Reads the real activity_log (same query as the data-link status in the shell).
-// Entry colours rotate by type: gold for system/governance, blue for data/IGX,
-// soft white for everything else.
+// Entry colours rotate through the portal's palette: gold, teal, soft blue,
+// warm amber, and soft white — each keyed to a different entry type.
 import { useQuery } from "@tanstack/react-query";
 import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
 
-type Tone = "gold" | "blue" | "white";
+type Tone = "gold" | "teal" | "blue" | "amber" | "white";
 
 const TONE_TEXT: Record<Tone, string> = {
   gold: "text-[#C6A15B]",
-  blue: "text-[#5E9BFF]",
-  white: "text-[#EAF1FF]/85",
+  teal: "text-[#5BB89C]",
+  blue: "text-[#6BA4F7]",
+  amber: "text-[#E3B567]",
+  white: "text-[#EAF1FF]/80",
 };
 
 const TONE_MARKER: Record<Tone, string> = {
-  gold: "text-[#C6A15B]/80",
-  blue: "text-[#5E9BFF]/85",
-  white: "text-[#EAF1FF]/60",
+  gold: "text-[#C6A15B]",
+  teal: "text-[#5BB89C]",
+  blue: "text-[#6BA4F7]",
+  amber: "text-[#E3B567]",
+  white: "text-[#EAF1FF]/50",
+};
+
+const TONE_SYMBOL: Record<Tone, string> = {
+  gold: "◆",
+  teal: "▲",
+  blue: "●",
+  amber: "◇",
+  white: "○",
 };
 
 function toneForEntry(actor: string | undefined, action: string | undefined): Tone {
   const text = `${actor ?? ""} ${action ?? ""}`.toUpperCase();
-  if (text.includes("GOVERN") || text.includes("SESSION") || text.includes("SYSTEM") || text.includes("PROPOSAL")) {
+  if (text.includes("GOVERN") || text.includes("SESSION") || text.includes("PROPOSAL")) {
     return "gold";
   }
-  if (text.includes("IGX") || text.includes("AI") || text.includes("DATA") || text.includes("QUERY") || text.includes("SYNC")) {
+  if (text.includes("SESSION") || text.includes("STARTED")) {
+    return "amber";
+  }
+  if (text.includes("IGX") || text.includes("AI")) {
     return "blue";
+  }
+  if (text.includes("SYSTEM") || text.includes("DATA") || text.includes("SYNC") || text.includes("QUERY")) {
+    return "teal";
   }
   return "white";
 }
@@ -76,7 +94,7 @@ export function TickerBar() {
             key={i}
             className={`mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] ${TONE_TEXT[item.tone]}`}
           >
-            <span className={TONE_MARKER[item.tone]}>◆</span> {item.text}
+            <span className={TONE_MARKER[item.tone]}>{TONE_SYMBOL[item.tone]}</span> {item.text}
           </span>
         ))}
       </div>

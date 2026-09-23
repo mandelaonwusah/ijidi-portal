@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { Brain, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
