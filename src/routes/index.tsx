@@ -2,8 +2,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { getEcosystemMetrics } from "@/lib/portal-queries";
-import { useLiveActivityLog } from "@/hooks/useLiveActivityLog";
+import { getEcosystemMetrics, getActivity } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { GlassCard } from "@/components/GlassCard";
@@ -190,7 +189,11 @@ function CommandCenterOverview() {
     staleTime: 30000,
   });
 
-  const { logs: activity, isLoading: activityLoading } = useLiveActivityLog();
+  const { data: activity, isLoading: activityLoading } = useQuery({
+    queryKey: ["activity-log-command-center"],
+    queryFn: getActivity,
+    refetchInterval: 5000,
+  });
 
   const totalActivities = activity?.length ?? 0;
   const recentActivities = activity?.slice(0, 10) ?? [];

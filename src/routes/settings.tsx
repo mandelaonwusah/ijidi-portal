@@ -41,7 +41,7 @@ function IdentityPicture({ name }: { name: string }) {
   const src = brandSrc(brandFor(name)?.id ?? "");
   const [failed, setFailed] = useState(false);
   return (
-    <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-gold/10 font-display text-2xl font-semibold text-gold">
+    <span className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-gold/10 font-display text-4xl font-semibold text-gold">
       {src && !failed ? (
         <img
           src={src}
@@ -133,7 +133,7 @@ function Settings() {
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         {/* Identity */}
         <GlassCard index={1} className="p-6">
-          <div className="flex items-start gap-5">
+          <div className="flex flex-col gap-5">
             <IdentityPicture name={name} />
             <div className="min-w-0">
               <Eyebrow className="text-teal">{isGovernor ? "Governor" : "Signed-in identity"}</Eyebrow>

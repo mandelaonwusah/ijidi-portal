@@ -323,7 +323,7 @@ function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="tabular-nums" suppressHydrationWarning>
+    <span className="tabular-nums text-gold" suppressHydrationWarning>
       {now ? formatUtc(now) : "UTC --:-- · -- --- ----"}
     </span>
   );
@@ -973,7 +973,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-pressed={collapsed}
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="absolute -right-3 top-[26px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold shadow-md backdrop-blur-[3px] transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:flex"
+              className="absolute -right-3 top-[76px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold shadow-md backdrop-blur-[3px] transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:flex"
             >
               {collapsed ? "»" : "«"}
             </button>
@@ -1000,6 +1000,76 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   ✕
                 </button>
               </div>
+
+              {/* Back / forward — under the brand block, above the nav groups */}
+              <div
+                className={cn(
+                  "hidden items-center gap-1 border-b border-border px-4 py-2 lg:flex",
+                  collapsed && "lg:hidden"
+                )}
+                role="group"
+                aria-label="Page history"
+              >
+                <button
+                  type="button"
+                  disabled={!trail.hasBack}
+                  onMouseEnter={() => sounds.playHover()}
+                  onClick={() => {
+                    sounds.playClick();
+                    trail.back();
+                  }}
+                  aria-label="Back"
+                  title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  disabled={!trail.hasForward}
+                  onMouseEnter={() => sounds.playHover()}
+                  onClick={() => {
+                    sounds.playClick();
+                    trail.forward();
+                  }}
+                  aria-label="Forward"
+                  title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              {/* Quick-jump row — the old header tab bar, now part of the sidebar */}
+              <nav
+                aria-label="Sections"
+                className={cn(
+                  "flex gap-0.5 overflow-x-auto border-b border-border px-2 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                  collapsed && "lg:hidden"
+                )}
+              >
+                {navItems.map((item) => {
+                  const active = isNavActive(currentPath, item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      aria-current={active ? "page" : undefined}
+                      onMouseEnter={() => sounds.playHover()}
+                      onClick={() => sounds.playClick()}
+                      className={cn(
+                        "shrink-0 whitespace-nowrap rounded-md px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] transition-colors",
+                        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                        active
+                          ? "bg-gold/15 font-semibold text-gold"
+                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
 
               <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
                 {navSections.map((section, sectionIndex) => {
@@ -1162,36 +1232,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   <span aria-hidden="true" className="text-sm leading-none">☰</span>
                   Menu
                 </button>
-                <div className="flex shrink-0 items-center gap-1" role="group" aria-label="Page history">
-                  <button
-                    type="button"
-                    disabled={!trail.hasBack}
-                    onMouseEnter={() => sounds.playHover()}
-                    onClick={() => {
-                      sounds.playClick();
-                      trail.back();
-                    }}
-                    aria-label="Back"
-                    title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!trail.hasForward}
-                    onMouseEnter={() => sounds.playHover()}
-                    onClick={() => {
-                      sounds.playClick();
-                      trail.forward();
-                    }}
-                    aria-label="Forward"
-                    title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
                 <div className="min-w-0">
                   <div
                     className="truncate font-display text-base font-semibold tracking-wide text-foreground"
@@ -1233,37 +1273,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </button>
               </div>
             </header>
-            {/* Tab navigation above the command area (same pages as the sidebar) */}
-            <div className="px-4 pt-4 sm:px-6 lg:px-8">
-              <nav
-                aria-label="Sections"
-                className={cn(
-                  "flex gap-1 overflow-x-auto rounded-2xl border border-gold/20 bg-black/10 p-1 backdrop-blur-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-                  SHELL_TEXT
-                )}
-              >
-                {navItems.map((item) => {
-                  const active = isNavActive(currentPath, item.to);
-                  return (
-                    <Link key={item.to}
-                      to={item.to}
-                      aria-current={active ? "page" : undefined}
-                      onMouseEnter={() => sounds.playHover()}
-                      onClick={() => sounds.playClick()}
-                      className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
-                        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                        active
-                          ? "bg-gold font-semibold text-primary-foreground"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
             <main className="p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28">{children}</main>
           </div>
         </div>
