@@ -1183,7 +1183,7 @@ function IgxAi() {
         )}
       </aside>
 
-      {/* Main chat column */
+      {/* Main chat column */}
       <div className="flex min-w-0 flex-1 flex-col">
 
       {/* A click anywhere outside an open pop-up closes it */}
