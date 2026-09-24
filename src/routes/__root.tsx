@@ -790,6 +790,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const navigate = useNavigate();
   const trail = useRouteTrail();
   const signedInEmail = session.user.email ?? "Signed in";
+  const isIgxAi = currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/");
 
   usePortalRealtime();
 
@@ -977,13 +978,15 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   collapsed && "lg:justify-center lg:px-0"
                 )}
               >
-                <PortalEmblem />
-                <div className={cn(collapsed && "lg:hidden")}>
+                <Link to="/" onClick={() => { sounds.playClick(); setRailOpen(false); }} aria-label="Go to portal home">
+                  <PortalEmblem />
+                </Link>
+                <Link to="/" onClick={() => { sounds.playClick(); setRailOpen(false); }} className={cn("min-w-0", collapsed && "lg:hidden")}>
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
                   </div>
                   <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
-                </div>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setRailOpen(false)}
@@ -1176,6 +1179,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
             </div>
           </aside>
+          )}
           <div className="min-w-0 flex-1">
             <div className={cn(
                 "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
@@ -1254,6 +1258,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
             </header>
             {/* Tab navigation above the command area (same pages as the sidebar) */}
+            {!isIgxAi && (
             <div className="px-4 pt-4 sm:px-6 lg:px-8">
               <nav
                 aria-label="Sections"
@@ -1284,7 +1289,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 })}
               </nav>
             </div>
-            <main className="p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28">{children}</main>
+            )}
+            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}>{children}</main>
           </div>
         </div>
       </div>
