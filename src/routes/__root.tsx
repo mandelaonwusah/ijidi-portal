@@ -9,7 +9,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -35,7 +35,7 @@ import { TickerBar } from "@/components/TickerBar";
 import { VisualStateProvider } from "@/lib/visual-state";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
-import { brandFor, brandSrc } from "@/lib/brand-assets";
+import { brandFor, brandSrc, loadBrandOverrides, useBrandVersion } from "@/lib/brand-assets";
 
 // Sidebar sections, built once from the flat navItems list in portal-data.ts.
 const navSections = navGroupOrder.map((label) => ({
@@ -745,7 +745,9 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
     },
   });
 
+  useBrandVersion();
   if (hidden) return null;
+  const iconSrc = brandSrc("igx-button") ?? "/brand/igx-ai-button.webp";
   const label = pending ? `Open IGX AI — ${pending} pending review` : "Open IGX AI";
 
   return (
@@ -764,7 +766,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       className="group flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-gold/40 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
     >
       <img
-        src="/brand/WhatsApp_Image_2026-09-14_at_1.24.26_PM_(2).jpeg"
+        src={iconSrc}
         alt="IGX AI"
         className="h-full w-full object-cover"
       />
@@ -791,6 +793,20 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const trail = useRouteTrail();
   const signedInEmail = session.user.email ?? "Signed in";
   const isIgxAi = currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/");
+
+  // Pictures changed from inside the portal: load them once at start, and redraw the page
+  // one time if any were found so every screen shows them. Later changes redraw in place.
+  useBrandVersion();
+  const [pictureLoadTick, setPictureLoadTick] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    void loadBrandOverrides().then((found) => {
+      if (alive && found) setPictureLoadTick(1);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   usePortalRealtime();
 
@@ -959,9 +975,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       )}
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        {isIgxAi ? null : <TickerBar />}
+        <TickerBar />
         <div className="lg:flex">
-          {!isIgxAi && (
           <aside
             className={cn(
               "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
@@ -1180,7 +1195,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
             </div>
           </aside>
-          )}
           <div className="min-w-0 flex-1">
             <div className={cn(
                 "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
@@ -1228,17 +1242,18 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </div>
               </div>
 
-              {/* Governor identity and sign-out */}
+              {/* Governor identity and sign-out — portrait enlarged, GOVERNOR label
+                  stacked above the name and handle rather than beside the portrait. */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <div
-                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-black/25 backdrop-blur-[3px] px-3 py-1.5 md:flex"
+                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-black/25 backdrop-blur-[3px] px-3 py-2 md:flex"
                   title={signedInEmail}
                 >
-                  <BrandBadge label={governorName} size="h-8 w-8" letterFallback={false} />
-                  <span className="rounded border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
-                    Governor
-                  </span>
+                  <BrandBadge label={governorName} size="h-12 w-12" letterFallback={false} />
                   <div className="min-w-0 leading-tight">
+                    <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+                      Governor
+                    </div>
                     <div className="max-w-[170px] truncate text-xs font-medium text-foreground">
                       {governorName}
                     </div>
@@ -1291,7 +1306,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </nav>
             </div>
             )}
-            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}>{children}</main>
+            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}><Fragment key={pictureLoadTick}>{children}</Fragment></main>
           </div>
         </div>
       </div>
