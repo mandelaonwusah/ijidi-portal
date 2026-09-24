@@ -18,9 +18,13 @@ import {
   MessageSquare,
   Mic,
   Paperclip,
+  Pencil,
+  Pin,
   Plus,
+  Search,
   Settings2,
   Sparkles,
+  Trash2,
   Volume2,
   X,
 } from "lucide-react";
@@ -98,6 +102,19 @@ type DrawerKind = "chats" | "requests" | null;
 const HISTORY_KEY = "ijidi_igx_chats";
 const IMPORT_FLAG = "ijidi_igx_chats_imported";
 const MAX_CHATS = 30;
+// Pinned chats are remembered on this device only (the database has no pin column).
+const PIN_KEY = "ijidi_igx_pins";
+
+// Which heading a chat sits under in the chat panel.
+function chatGroupLabel(ts: number): string {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const day = 86_400_000;
+  if (ts >= startOfToday) return "Today";
+  if (ts >= startOfToday - day) return "Yesterday";
+  if (ts >= startOfToday - 7 * day) return "Previous 7 days";
+  return "Older";
+}
 const MAX_MESSAGES = 100;
 
 // Starter instructions. They only fill the box; nothing is sent until you press send.
@@ -410,6 +427,25 @@ function IgxAi() {
 
   // Drawer: chats and requests
   const [drawer, setDrawer] = useState<DrawerKind>(null);
+
+  // Chat panel: search, rename, pin, delete confirmation
+  const [chatQuery, setChatQuery] = useState("");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PIN_KEY);
+      if (!raw) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setPinnedIds(parsed.filter((x): x is string => typeof x === "string"));
+      }
+    } catch {
+      /* pins are only a convenience */
+    }
+  }, []);
   const [recent, setRecent] = useState<RecentProposal[]>([]);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
@@ -531,6 +567,52 @@ function IgxAi() {
       if (removed) setConversations((prev) => [removed, ...prev]);
       setHistoryNotice(`Could not delete that chat: ${error.message}`);
     }
+  };
+
+  const removeChat = async (id: string) => {
+    setConfirmDeleteId(null);
+    setPinnedIds((prev) => {
+      if (!prev.includes(id)) return prev;
+      const next = prev.filter((x) => x !== id);
+      try {
+        window.localStorage.setItem(PIN_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    await deleteConversation(id);
+  };
+
+  // Rename. The new title shows at once and is put back if the database refuses it.
+  const renameConversation = async (id: string, rawTitle: string) => {
+    const title = rawTitle.trim().slice(0, 80);
+    setRenamingId(null);
+    const current = conversations.find((c) => c.id === id);
+    if (!title || !current || title === current.title) return;
+    const previous = current.title;
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+    const { data, error } = await supabase
+      .from("igx_conversations")
+      .update({ title })
+      .eq("id", id)
+      .select("id");
+    if (error || (data?.length ?? 0) === 0) {
+      setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title: previous } : c)));
+      setHistoryNotice(`Could not rename that chat${error ? `: ${error.message}` : "."}`);
+    }
+  };
+
+  const togglePin = (id: string) => {
+    setPinnedIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [id, ...prev];
+      try {
+        window.localStorage.setItem(PIN_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   };
 
   const openConversation = (id: string) => {
@@ -1082,8 +1164,199 @@ function IgxAi() {
   /* ---------------- chat ---------------- */
   const sortedChats = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
 
+  const chatSearch = chatQuery.trim().toLowerCase();
+  const visibleChats = chatSearch
+    ? sortedChats.filter(
+        (c) =>
+          c.title.toLowerCase().includes(chatSearch) ||
+          c.messages.some((m) => m.text.toLowerCase().includes(chatSearch))
+      )
+    : sortedChats;
+  const chatGroups: { label: string; chats: Conversation[] }[] = [];
+  const pinnedVisible = visibleChats.filter((c) => pinnedIds.includes(c.id));
+  if (pinnedVisible.length > 0) chatGroups.push({ label: "Pinned", chats: pinnedVisible });
+  visibleChats
+    .filter((c) => !pinnedIds.includes(c.id))
+    .forEach((c) => {
+      const label = chatGroupLabel(c.updatedAt);
+      const found = chatGroups.find((g) => g.label === label);
+      if (found) found.chats.push(c);
+      else chatGroups.push({ label, chats: [c] });
+    });
+
+  const rowIcon =
+    "flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
+
+  const renderChatRow = (chat: Conversation) => {
+    const active = chat.id === activeId;
+    const pinned = pinnedIds.includes(chat.id);
+
+    if (renamingId === chat.id) {
+      return (
+        <div key={chat.id} className="rounded-xl border border-gold/50 bg-black/40 p-2">
+          <input
+            autoFocus
+            value={renameValue}
+            maxLength={80}
+            aria-label="Chat name"
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") renameConversation(chat.id, renameValue);
+              if (e.key === "Escape") setRenamingId(null);
+            }}
+            className="h-8 w-full rounded-lg border border-gold/25 bg-black/40 px-2.5 text-[13px] text-foreground focus-visible:border-gold/60 focus-visible:outline-none"
+          />
+          <div className="mt-2 flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => setRenamingId(null)}
+              className="rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => renameConversation(chat.id, renameValue)}
+              className="rounded-full bg-gold px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (confirmDeleteId === chat.id) {
+      return (
+        <div key={chat.id} className="rounded-xl border border-destructive/40 bg-destructive/10 p-2.5">
+          <p className="truncate text-[12.5px] text-foreground">Delete “{chat.title}”?</p>
+          <p className="mt-0.5 font-mono text-[9.5px] text-muted-foreground">
+            The chat is removed. Requests already sent stay in the queue.
+          </p>
+          <div className="mt-2 flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => setConfirmDeleteId(null)}
+              className="rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            >
+              Keep
+            </button>
+            <button
+              type="button"
+              onClick={() => removeChat(chat.id)}
+              className="rounded-full border border-destructive/50 bg-destructive/20 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/60"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={chat.id}
+        className={cn(
+          "group flex items-center rounded-xl border-l-2 pr-1 transition-colors",
+          active ? "border-l-gold bg-gold/10" : "border-l-transparent hover:bg-white/5"
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => openConversation(chat.id)}
+          title={chat.title}
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2.5 py-2 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+        >
+          {pinned ? (
+            <Pin className="h-3.5 w-3.5 shrink-0 text-gold" />
+          ) : (
+            <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          )}
+          <span className="min-w-0">
+            <span className="block truncate text-[13px] text-foreground">{chat.title}</span>
+            <span className="block font-mono text-[9.5px] text-muted-foreground">
+              {formatDateTime(chat.updatedAt)}
+            </span>
+          </span>
+        </button>
+        <div className="flex shrink-0 items-center lg:opacity-0 lg:transition-opacity lg:group-focus-within:opacity-100 lg:group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={() => togglePin(chat.id)}
+            aria-label={pinned ? "Unpin this chat" : "Pin this chat"}
+            title={pinned ? "Unpin" : "Pin"}
+            className={cn(rowIcon, pinned && "text-gold")}
+          >
+            <Pin className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmDeleteId(null);
+              setRenameValue(chat.title);
+              setRenamingId(chat.id);
+            }}
+            aria-label="Rename this chat"
+            title="Rename"
+            className={rowIcon}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRenamingId(null);
+              setConfirmDeleteId(chat.id);
+            }}
+            aria-label="Delete this chat"
+            title="Delete"
+            className={cn(rowIcon, "hover:text-destructive")}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Search box plus the chats grouped by day. Used by the left panel and the mobile drawer.
+  const chatList = (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="px-3 pb-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={chatQuery}
+            onChange={(e) => setChatQuery(e.target.value)}
+            placeholder="Search chats"
+            aria-label="Search chats"
+            className="h-9 w-full rounded-full border border-gold/20 bg-black/30 pl-8 pr-3 text-[12.5px] text-foreground placeholder:text-muted-foreground focus-visible:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+          />
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3">
+        {!historyLoaded ? (
+          <p className="px-2 font-mono text-xs text-muted-foreground">Loading…</p>
+        ) : visibleChats.length === 0 ? (
+          <p className="px-2 pt-1 font-mono text-xs text-muted-foreground">
+            {chatSearch ? "No chats match your search." : "No chats yet. Your conversations will appear here."}
+          </p>
+        ) : (
+          chatGroups.map((group) => (
+            <div key={group.label}>
+              <p className="px-2 pb-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">{group.chats.map(renderChatRow)}</div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-3xl flex-col">
+    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-6xl gap-4">
       <style>{`
         @property --igx-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
         @keyframes igxSpin { to { --igx-a: 360deg; } }
@@ -1126,6 +1399,29 @@ function IgxAi() {
         }
       `}</style>
 
+      {/* Left panel: saved chats (wide screens). Phones use the History drawer. */}
+      <aside
+        aria-label="Chat history"
+        className="hidden h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gold/20 bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,.35)] backdrop-blur-xl lg:flex"
+      >
+        <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">Chats</p>
+          <button
+            type="button"
+            onClick={newChat}
+            className="flex h-8 items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+          >
+            <Plus className="h-3.5 w-3.5" /> New
+          </button>
+        </div>
+        {chatList}
+        <p className="border-t border-gold/15 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
+          Saved to your account · pins stay on this device
+        </p>
+      </aside>
+
+      <div className="mx-auto flex h-full w-full min-w-0 max-w-3xl flex-1 flex-col">
+
       {/* A click anywhere outside an open pop-up closes it */}
       {popoverOpen && (
         <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePopovers} />
@@ -1140,7 +1436,7 @@ function IgxAi() {
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setDrawer("chats")} className={pillButton} aria-label="Chat history">
+          <button type="button" onClick={() => setDrawer("chats")} className={cn(pillButton, "lg:hidden")} aria-label="Chat history">
             <History className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">History</span>
           </button>
           <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
@@ -1343,6 +1639,8 @@ function IgxAi() {
         </>
       )}
 
+      </div>
+
       {/* Drawer: saved chats and the real requests queue */}
       {drawer && (
         <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label={drawer === "chats" ? "Chat history" : "Requests"}>
@@ -1380,43 +1678,11 @@ function IgxAi() {
             </div>
 
             {drawer === "chats" ? (
-              <div className="flex-1 space-y-2 overflow-y-auto p-4">
-                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex min-h-0 flex-1 flex-col pt-3">
+                <p className="px-4 pb-2 font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
                   Saved to your account · on every device you sign in on
                 </p>
-                {!historyLoaded ? (
-                  <p className="font-mono text-xs text-muted-foreground">Loading…</p>
-                ) : sortedChats.length === 0 ? (
-                  <p className="pt-2 font-mono text-xs text-muted-foreground">
-                    No chats yet. Your conversations will appear here.
-                  </p>
-                ) : (
-                  sortedChats.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className={cn(
-                        "flex items-center gap-2 rounded-xl border bg-black/25 pr-2 transition-colors hover:border-gold/45",
-                        chat.id === activeId ? "border-gold/50" : "border-white/10"
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => openConversation(chat.id)}
-                        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
-                      >
-                        <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
-                        <span className="min-w-0">
-                          <span className="block truncate text-[13px] text-foreground">{chat.title}</span>
-                          <span className="block font-mono text-[10px] text-muted-foreground">
-                            {formatDateTime(chat.updatedAt)} · {chat.messages.length}{" "}
-                            {chat.messages.length === 1 ? "message" : "messages"}
-                          </span>
-                        </span>
-                      </button>
-                      <CloseX onClick={() => deleteConversation(chat.id)} label="Delete this chat" />
-                    </div>
-                  ))
-                )}
+                {chatList}
               </div>
             ) : (
               <div className="flex-1 space-y-2 overflow-y-auto p-4">
