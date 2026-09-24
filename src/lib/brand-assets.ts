@@ -8,7 +8,12 @@
 // - `match` are lowercase words that identify the asset in a module or entity name, so
 //   the IGX AI scope picker and the Ecosystem map can find a logo without hardcoding.
 //
-// To add or replace a picture: put the file in public/brand/ and edit its entry here.
+// The files in public/brand/ are the defaults. The governor can replace any picture from
+// inside the portal ("Change picture", from a phone or a computer). Replacements live in
+// the Supabase Storage bucket "brand" and win over the default until "Use default" is used.
+
+import { useSyncExternalStore } from "react";
+import { supabase } from "@/lib/supabase";
 
 export type BrandKind = "portal" | "igx" | "entity" | "media" | "person";
 
@@ -179,9 +184,149 @@ export function brandById(id: string): BrandAsset | undefined {
   return BY_ID.get(id);
 }
 
-/** The picture for an id, or null if there is none (or the artwork is missing). */
+/** The picture for an id, or null if there is none (or the artwork is missing).
+ *  A picture uploaded from the portal wins over the default file. */
 export function brandSrc(id: string): string | null {
-  return BY_ID.get(id)?.src ?? null;
+  const asset = BY_ID.get(id);
+  if (!asset) return null;
+  return overrides[id] ?? asset.src ?? null;
+}
+
+/* ---------------- pictures changed from inside the portal ---------------- */
+
+const BUCKET = "brand";
+const overrides: Record<string, string> = {};
+let overridesVersion = 0;
+let overridesLoaded = false;
+let overridesLoading: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+
+function emit() {
+  overridesVersion += 1;
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/** Call this in a component that shows a brand picture so it redraws when one changes. */
+export function useBrandVersion(): number {
+  return useSyncExternalStore(subscribe, () => overridesVersion, () => 0);
+}
+
+function publicUrl(name: string, stamp?: string | null): string {
+  const base = supabase.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
+  const time = stamp ? Date.parse(stamp) : NaN;
+  return `${base}?v=${Number.isFinite(time) ? time : Date.now()}`;
+}
+
+export function hasBrandOverride(id: string): boolean {
+  return id in overrides;
+}
+
+/** Reads which pictures have been replaced. Safe to call often; it only fetches once.
+ *  If the storage bucket is missing or unreadable, the default pictures stay in place. */
+export function loadBrandOverrides(force = false): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (overridesLoaded && !force) return Promise.resolve();
+  if (overridesLoading) return overridesLoading;
+  overridesLoading = (async () => {
+    try {
+      const { data, error } = await supabase.storage.from(BUCKET).list("", { limit: 200 });
+      if (error || !data) return;
+      const next: Record<string, string> = {};
+      for (const file of data) {
+        if (BY_ID.has(file.name)) next[file.name] = publicUrl(file.name, file.updated_at);
+      }
+      const changed = JSON.stringify(next) !== JSON.stringify(overrides);
+      Object.keys(overrides).forEach((key) => delete overrides[key]);
+      Object.assign(overrides, next);
+      overridesLoaded = true;
+      if (changed) emit();
+    } catch {
+      /* keep the defaults */
+    } finally {
+      overridesLoading = null;
+    }
+  })();
+  return overridesLoading;
+}
+
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const OUTPUT_SIZE = 512;
+
+// Portraits fill the square (centre-cropped). Logos are fitted inside it, never cropped.
+async function prepareImage(file: File, fill: boolean): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = OUTPUT_SIZE;
+  canvas.height = OUTPUT_SIZE;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("This browser cannot resize pictures.");
+  const scale = fill
+    ? Math.max(OUTPUT_SIZE / bitmap.width, OUTPUT_SIZE / bitmap.height)
+    : Math.min(OUTPUT_SIZE / bitmap.width, OUTPUT_SIZE / bitmap.height);
+  const width = bitmap.width * scale;
+  const height = bitmap.height * scale;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, (OUTPUT_SIZE - width) / 2, (OUTPUT_SIZE - height) / 2, width, height);
+  bitmap.close();
+  const toBlob = (type: string, quality?: number) =>
+    new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
+  const webp = await toBlob("image/webp", 0.9);
+  if (webp && webp.type === "image/webp") return webp;
+  const png = await toBlob("image/png");
+  if (!png) throw new Error("Could not prepare that picture.");
+  return png;
+}
+
+function friendlyStorageError(message: string): string {
+  if (/bucket not found/i.test(message)) return "Picture storage is not set up yet.";
+  if (/row-level security|not authorized|unauthorized|policy|permission/i.test(message)) {
+    return "Only the governor can change pictures.";
+  }
+  return message;
+}
+
+export type BrandChangeResult = { ok: true } | { ok: false; error: string };
+
+/** Replace a picture with a photo from the phone or computer. */
+export async function uploadBrandImage(id: string, file: File): Promise<BrandChangeResult> {
+  const asset = BY_ID.get(id);
+  if (!asset) return { ok: false, error: "That picture is not in the brand list." };
+  if (!file.type.startsWith("image/") || file.type === "image/svg+xml") {
+    return { ok: false, error: "Choose a photo or image file (JPG, PNG or WebP)." };
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { ok: false, error: "That file is over 15 MB. Choose a smaller one." };
+  }
+  let blob: Blob;
+  try {
+    blob = await prepareImage(file, asset.kind === "person");
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not read that picture." };
+  }
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(id, blob, { upsert: true, contentType: blob.type, cacheControl: "300" });
+  if (error) return { ok: false, error: friendlyStorageError(error.message) };
+  overrides[id] = publicUrl(id);
+  emit();
+  return { ok: true };
+}
+
+/** Go back to the default file in public/brand. */
+export async function resetBrandImage(id: string): Promise<BrandChangeResult> {
+  if (!hasBrandOverride(id)) return { ok: true };
+  const { error } = await supabase.storage.from(BUCKET).remove([id]);
+  if (error) return { ok: false, error: friendlyStorageError(error.message) };
+  delete overrides[id];
+  emit();
+  return { ok: true };
 }
 
 // Specific names first, so "Media › Wild" finds Wild rather than Group.
