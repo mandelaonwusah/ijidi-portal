@@ -12,13 +12,21 @@
 //  - Agents and Models list what is recorded in the IGX AI knowledge base; every
 //    runtime metric says "Not tracked" until something real reports it.
 //  - Architecture is design documentation, not system status.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ChevronRight, Loader2 } from "lucide-react";
+import { AlertCircle, Camera, ChevronRight, Loader2, RotateCcw } from "lucide-react";
 import { Eyebrow } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
-import { BRAND_ASSETS } from "@/lib/brand-assets";
+import {
+  BRAND_ASSETS,
+  brandSrc,
+  hasBrandOverride,
+  loadBrandOverrides,
+  resetBrandImage,
+  uploadBrandImage,
+  useBrandVersion,
+} from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -945,9 +953,79 @@ function BrandThumb({ src, label }: { src: string | null; label: string }) {
   );
 }
 
+// Change or reset one picture. Works from a phone (gallery or camera) or a computer.
+function BrandPictureControls({ assetId, label }: { assetId: string; label: string }) {
+  useBrandVersion();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const replaced = hasBrandOverride(assetId);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await uploadBrandImage(assetId, file);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Picture updated." } : { tone: "error", text: result.error });
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const useDefault = async () => {
+    setBusy(true);
+    setMessage(null);
+    const result = await resetBrandImage(assetId);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Back to the default picture." } : { tone: "error", text: result.error });
+  };
+
+  const pill =
+    "inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+
+  return (
+    <div className="mt-3">
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label={`Choose a picture for ${label}`}
+        onChange={(e) => pick(e.target.files?.[0])}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className={pill}>
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+          Change picture
+        </button>
+        {replaced && (
+          <button type="button" disabled={busy} onClick={useDefault} className={pill}>
+            <RotateCcw className="h-3 w-3" /> Use default
+          </button>
+        )}
+      </div>
+      {message && (
+        <p
+          role="status"
+          className={cn(
+            "mt-1.5 font-mono text-[10px]",
+            message.tone === "ok" ? "text-gold" : "text-destructive"
+          )}
+        >
+          {message.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }) {
+  useBrandVersion();
+  useEffect(() => {
+    void loadBrandOverrides();
+  }, []);
   const rows = BRAND_ASSETS.map((asset) => ({
     asset,
+    src: brandSrc(asset.id),
     used: Array.from(new Set([...asset.placedIn, ...(usage[asset.id] ?? [])])),
   }));
   const placed = rows.filter((row) => row.used.length > 0).length;
@@ -956,15 +1034,15 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
       <PanelHead
         eyebrow="Brand library"
         title="Logos, portraits and leads"
-        desc={`${placed} of ${rows.length} pictures are on a page today. Each of the rest has leads: where it is meant to go next. Files live in public/brand.`}
+        desc={`${placed} of ${rows.length} pictures are on a page today. Each of the rest has leads: where it is meant to go next. Change any picture from here; the original files stay in public/brand as the defaults.`}
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {rows.map(({ asset, used }) => {
-          const status = !asset.src ? "Artwork needed" : used.length > 0 ? "On a page" : "Not placed yet";
+        {rows.map(({ asset, src, used }) => {
+          const status = !src ? "Artwork needed" : used.length > 0 ? "On a page" : "Not placed yet";
           return (
             <div key={asset.id} className="rounded-xl border border-gold/20 bg-black/20 p-4">
               <div className="flex items-center gap-3">
-                <BrandThumb src={asset.src} label={asset.label} />
+                <BrandThumb key={src ?? "none"} src={src} label={asset.label} />
                 <div className="min-w-0">
                   <div className="truncate text-[13.5px] font-semibold text-foreground">{asset.label}</div>
                   {asset.tagline && (
@@ -982,6 +1060,7 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
                   </span>
                 </div>
               </div>
+              <BrandPictureControls assetId={asset.id} label={asset.label} />
               {used.length > 0 && (
                 <p className="mt-3 font-mono text-[10px] leading-relaxed text-muted-foreground">
                   Shown in: {used.join(" · ")}
