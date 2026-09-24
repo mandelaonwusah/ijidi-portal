@@ -51,6 +51,15 @@ export const BRAND_ASSETS: BrandAsset[] = [
     leads: [],
     match: ["igx"],
   },
+  {
+    id: "igx-button",
+    label: "IGX AI floating button",
+    kind: "igx",
+    src: `${B}/igx-ai-button.webp`,
+    placedIn: ["Floating IGX AI button (bottom right)"],
+    leads: [],
+    match: [],
+  },
 
   // ---- Entities ---------------------------------------------------------------
   {
@@ -198,7 +207,7 @@ const BUCKET = "brand";
 const overrides: Record<string, string> = {};
 let overridesVersion = 0;
 let overridesLoaded = false;
-let overridesLoading: Promise<void> | null = null;
+let overridesLoading: Promise<boolean> | null = null;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -229,15 +238,16 @@ export function hasBrandOverride(id: string): boolean {
 }
 
 /** Reads which pictures have been replaced. Safe to call often; it only fetches once.
+ *  Resolves true when at least one replacement picture was found.
  *  If the storage bucket is missing or unreadable, the default pictures stay in place. */
-export function loadBrandOverrides(force = false): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (overridesLoaded && !force) return Promise.resolve();
+export function loadBrandOverrides(force = false): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (overridesLoaded && !force) return Promise.resolve(Object.keys(overrides).length > 0);
   if (overridesLoading) return overridesLoading;
   overridesLoading = (async () => {
     try {
       const { data, error } = await supabase.storage.from(BUCKET).list("", { limit: 200 });
-      if (error || !data) return;
+      if (error || !data) return false;
       const next: Record<string, string> = {};
       for (const file of data) {
         if (BY_ID.has(file.name)) next[file.name] = publicUrl(file.name, file.updated_at);
@@ -247,8 +257,10 @@ export function loadBrandOverrides(force = false): Promise<void> {
       Object.assign(overrides, next);
       overridesLoaded = true;
       if (changed) emit();
+      return Object.keys(overrides).length > 0;
     } catch {
       /* keep the defaults */
+      return false;
     } finally {
       overridesLoading = null;
     }
