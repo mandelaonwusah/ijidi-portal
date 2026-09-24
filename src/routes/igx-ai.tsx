@@ -410,7 +410,6 @@ function IgxAi() {
 
   // Drawer: chats and requests
   const [drawer, setDrawer] = useState<DrawerKind>(null);
-  const [historyPanelOpen, setHistoryPanelOpen] = useState(false);
   const [recent, setRecent] = useState<RecentProposal[]>([]);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
@@ -1084,7 +1083,7 @@ function IgxAi() {
   const sortedChats = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
 
   return (
-    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-5xl flex-row gap-3">
+    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-3xl flex-col">
       <style>{`
         @property --igx-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
         @keyframes igxSpin { to { --igx-a: 360deg; } }
@@ -1127,65 +1126,6 @@ function IgxAi() {
         }
       `}</style>
 
-      {/* Collapsible left-side chat history panel */}
-      <aside
-        className={cn(
-          "hidden shrink-0 flex-col border-r border-gold/15 transition-all duration-200 lg:flex",
-          historyPanelOpen ? "w-[240px]" : "w-[44px]"
-        )}
-        aria-label="Chat history sidebar"
-      >
-        <button
-          type="button"
-          onClick={() => setHistoryPanelOpen((v) => !v)}
-          aria-label={historyPanelOpen ? "Collapse chat history" : "Expand chat history"}
-          aria-expanded={historyPanelOpen}
-          className="flex h-10 w-full items-center justify-center border-b border-gold/15 text-gold transition-colors hover:bg-gold/10"
-        >
-          {historyPanelOpen ? <ChevronLeft className="h-4 w-4" /> : <History className="h-4 w-4" />}
-        </button>
-        {historyPanelOpen && (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <button
-              type="button"
-              onClick={newChat}
-              className="flex items-center gap-2 border-b border-gold/10 px-3 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10"
-            >
-              <Plus className="h-3.5 w-3.5" /> New chat
-            </button>
-            <div className="flex-1 space-y-1 overflow-y-auto p-2">
-              {!historyLoaded ? (
-                <p className="px-2 py-3 font-mono text-xs text-muted-foreground">Loading…</p>
-              ) : sortedChats.length === 0 ? (
-                <p className="px-2 py-3 font-mono text-xs text-muted-foreground">No chats yet.</p>
-              ) : (
-                sortedChats.map((chat) => (
-                  <button
-                    key={chat.id}
-                    type="button"
-                    onClick={() => openConversation(chat.id)}
-                    className={cn(
-                      "flex w-full flex-col rounded-lg border px-2.5 py-2 text-left transition-colors",
-                      chat.id === activeId
-                        ? "border-gold/40 bg-gold/10"
-                        : "border-transparent hover:bg-white/5"
-                    )}
-                  >
-                    <span className="truncate text-[12px] text-foreground">{chat.title}</span>
-                    <span className="mt-0.5 font-mono text-[9px] text-muted-foreground">
-                      {formatDateTime(chat.updatedAt)} · {chat.messages.length}
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-      </aside>
-
-      {/* Main chat column */}
-      <div className="flex min-w-0 flex-1 flex-col">
-
       {/* A click anywhere outside an open pop-up closes it */}
       {popoverOpen && (
         <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePopovers} />
@@ -1200,6 +1140,9 @@ function IgxAi() {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setDrawer("chats")} className={pillButton} aria-label="Chat history">
+            <History className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">History</span>
+          </button>
           <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
             <Clock className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">Requests</span>
             {!queueLoading && !queueError && (pendingCount ?? 0) > 0 && (
@@ -1400,11 +1343,9 @@ function IgxAi() {
         </>
       )}
 
-      </div>
-
-      {/* Drawer: requests queue (chats are in the left panel) */}
+      {/* Drawer: saved chats and the real requests queue */}
       {drawer && (
-        <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Requests queue">
+        <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label={drawer === "chats" ? "Chat history" : "Requests"}>
           <button
             type="button"
             aria-label="Close panel"
@@ -1413,20 +1354,79 @@ function IgxAi() {
           />
           <aside className="absolute right-0 top-0 flex h-full w-[400px] max-w-[92vw] flex-col border-l border-gold/25 bg-[#080b12]/92 shadow-2xl backdrop-blur-xl">
             <div className="flex items-center justify-between gap-3 border-b border-gold/20 px-5 py-4">
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-gold">
-                Requests {!queueLoading && !queueError && (pendingCount ?? 0) > 0 ? `· ${pendingCount}` : ""}
-              </span>
+              <div className="flex items-center gap-1 rounded-full border border-gold/20 bg-black/25 p-1">
+                {(["chats", "requests"] as const).map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => setDrawer(kind)}
+                    aria-pressed={drawer === kind}
+                    className={cn(
+                      "rounded-full px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                      drawer === kind
+                        ? "bg-gold font-semibold text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {kind === "chats" ? "Chats" : "Requests"}
+                    {kind === "requests" && !queueLoading && !queueError && (pendingCount ?? 0) > 0
+                      ? ` · ${pendingCount}`
+                      : ""}
+                  </button>
+                ))}
+              </div>
               <CloseX onClick={() => setDrawer(null)} label="Close panel" />
             </div>
 
-            <div className="flex-1 space-y-2 overflow-y-auto p-4">
-              <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
-                {queueLoading
-                  ? "Loading…"
-                  : queueError
-                  ? "Unavailable"
-                  : `${pendingCount ?? 0} waiting for your decision`}
-              </p>
+            {drawer === "chats" ? (
+              <div className="flex-1 space-y-2 overflow-y-auto p-4">
+                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                  Saved to your account · on every device you sign in on
+                </p>
+                {!historyLoaded ? (
+                  <p className="font-mono text-xs text-muted-foreground">Loading…</p>
+                ) : sortedChats.length === 0 ? (
+                  <p className="pt-2 font-mono text-xs text-muted-foreground">
+                    No chats yet. Your conversations will appear here.
+                  </p>
+                ) : (
+                  sortedChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={cn(
+                        "flex items-center gap-2 rounded-xl border bg-black/25 pr-2 transition-colors hover:border-gold/45",
+                        chat.id === activeId ? "border-gold/50" : "border-white/10"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => openConversation(chat.id)}
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                      >
+                        <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13px] text-foreground">{chat.title}</span>
+                          <span className="block font-mono text-[10px] text-muted-foreground">
+                            {formatDateTime(chat.updatedAt)} · {chat.messages.length}{" "}
+                            {chat.messages.length === 1 ? "message" : "messages"}
+                          </span>
+                        </span>
+                      </button>
+                      <CloseX onClick={() => deleteConversation(chat.id)} label="Delete this chat" />
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 space-y-2 overflow-y-auto p-4">
+                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                  {queueLoading
+                    ? "Loading…"
+                    : queueError
+                    ? "Unavailable"
+                    : `${pendingCount ?? 0} waiting for your decision`}
+                </p>
                 {reviewError && (
                   <div className="flex items-center gap-2 font-mono text-xs text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0" />
@@ -1489,6 +1489,7 @@ function IgxAi() {
                   })
                 )}
               </div>
+            )}
           </aside>
         </div>
       )}
