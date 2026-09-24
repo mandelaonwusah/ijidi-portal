@@ -1,1343 +1,1085 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import {
-  Link,
-  Outlet,
-  createRootRouteWithContext,
-  useRouter,
-  useRouterState,
-  useNavigate,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
-import { navItems, navGroupOrder, floatingSwitcherItems } from "@/lib/portal-data";
-import { getActivity } from "@/lib/portal-queries";
+// src/components/IgxShowcase.tsx
+// The IGX AI settings panels: glass tab bar, the living orb (Ecosystem), Architecture,
+// Decisions, Agents, Models and the Brand library. Look and structure follow the IGX
+// Executive Command Center prototype, in the portal's gold and blue. The main IGX AI page
+// is the chat; everything here lives behind its settings button.
+//
+// Honest-state rules for this file:
+//  - The orb's status text is the REAL console state (idle / submitting / awaiting
+//    review / error). The six animation states are only a labelled PREVIEW.
+//  - The four stat cards are real counts from `proposals`, or "Not tracked".
+//  - Decisions come from the real `decisions` table.
+//  - Agents and Models list what is recorded in the IGX AI knowledge base; every
+//    runtime metric says "Not tracked" until something real reports it.
+//  - Architecture is design documentation, not system status.
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { AlertCircle, Camera, ChevronRight, Loader2, RotateCcw } from "lucide-react";
+import { Eyebrow } from "@/components/portal-ui";
+import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
-import { logActivity } from "@/lib/logger";
+import {
+  BRAND_ASSETS,
+  brandSrc,
+  hasBrandOverride,
+  loadBrandOverrides,
+  resetBrandImage,
+  uploadBrandImage,
+  useBrandVersion,
+} from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { HexBadge, Eyebrow } from "@/components/portal-ui";
-import { CircuitBackground } from "@/components/CircuitBackground";
-import { TickerBar } from "@/components/TickerBar";
-import { VisualStateProvider } from "@/lib/visual-state";
-import { usePortalRealtime } from "@/lib/use-portal-realtime";
-import { sounds } from "@/lib/sound-engine";
-import { brandFor, brandSrc, loadBrandOverrides, useBrandVersion } from "@/lib/brand-assets";
 
-// Sidebar sections, built once from the flat navItems list in portal-data.ts.
-const navSections = navGroupOrder.map((label) => ({
-  label,
-  items: navItems.filter((item) => item.group === label),
-}));
+/* ------------------------------------------------------------------ */
+/* Tabs                                                                */
+/* ------------------------------------------------------------------ */
+export const IGX_TABS = [
+  { key: "ecosystem", label: "Ecosystem" },
+  { key: "architecture", label: "Architecture" },
+  { key: "decisions", label: "Decisions" },
+  { key: "agents", label: "Agents" },
+  { key: "models", label: "Models" },
+  { key: "brand", label: "Brand library" },
+] as const;
 
-// A nav item is active on its own path and on any nested path under it.
-function isNavActive(pathname: string, to: string) {
-  if (to === "/") return pathname === "/";
-  return pathname === to || pathname.startsWith(`${to}/`);
-}
+export type IgxTabKey = (typeof IGX_TABS)[number]["key"];
 
-// Shell glass text: a dark halo behind the text and brighter grey labels, so the
-// interface text stays strong while the circuit board shows through the glass.
-const SHELL_TEXT =
-  "[text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_8px_rgba(0,0,0,0.55)] [&_[class*=text-muted-foreground]]:text-[#D8DCE8]";
-
-function NotFoundComponent() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
-      <div>
-        <Eyebrow>ROUTE NOT FOUND</Eyebrow>
-        <h1 className="mt-3 font-display text-5xl text-gold">404</h1>
-        <p className="mt-3 text-sm text-muted-foreground">This command path does not exist.</p>
-        <Link to="/"
-          onMouseEnter={() => sounds.playHover()}
-          onClick={() => sounds.playClick()}
-          className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-gold"
-        >
-          Return to command center
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
-  const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "root" });
-  }, [error]);
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
-      <div>
-        <Eyebrow>SYSTEM FAULT</Eyebrow>
-        <h1 className="mt-3 font-display text-3xl text-foreground">Unable to load module</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          The portal encountered an unexpected state.
-        </p>
-        <Button
-          className="mt-6"
-          onMouseEnter={() => sounds.playHover()}
-          onClick={() => {
-            sounds.playClick();
-            router.invalidate();
-            reset();
-          }}
-        >
-          Retry connection
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "IJIDI Portal · Command Center" },
-      {
-        name: "description",
-        content:
-          "IJIDI Portal command center for ecosystem, governance, capital, foundation, vault, and intelligence operations.",
-      },
-      { name: "author", content: "IJIDI" },
-      { property: "og:title", content: "IJIDI Portal · Command Center" },
-      { property: "og:description", content: "A grounded command center for the IJIDI ecosystem." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('ijidi_theme');
-                  var theme = saved || 'dark';
-                  document.documentElement.classList.remove('dark', 'light');
-                  document.documentElement.classList.add(theme);
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-  return (
-    <QueryClientProvider client={queryClient}>
-      <VisualStateProvider>
-        <ChromeGate>
-          <Outlet />
-        </ChromeGate>
-      </VisualStateProvider>
-    </QueryClientProvider>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// AUTH GATE
-// The Supabase session lives in the browser (localStorage), so the server can
-// never see it. The gate therefore runs on the client: the server and the very
-// first client render both show the "checking" screen, so protected content is
-// never present in the server HTML and there is no hydration mismatch.
-// ---------------------------------------------------------------------------
-type AuthState =
-  | { status: "checking" }
-  | { status: "anon" }
-  | { status: "authed"; session: Session };
-
-function useAuthState(): AuthState {
-  const [state, setState] = useState<AuthState>({ status: "checking" });
-
-  useEffect(() => {
-    let active = true;
-
-    // getSession() waits for Supabase to finish initialising, which includes
-    // processing an OAuth redirect in the URL — so a fresh OAuth sign-in is not
-    // bounced back to /login before its session has been read.
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!active) return;
-        setState(data.session ? { status: "authed", session: data.session } : { status: "anon" });
-      })
-      .catch(() => {
-        if (active) setState({ status: "anon" });
-      });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      setState(session ? { status: "authed", session } : { status: "anon" });
-    });
-
-    return () => {
-      active = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  return state;
-}
-
-function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" }) {
-  const label =
-    status === "checking"
-      ? "Verifying session…"
-      : status === "tier"
-      ? "Verifying access level…"
-      : "Redirecting to secure access…";
+export function IgxTabBar({
+  active,
+  onChange,
+}: {
+  active: IgxTabKey;
+  onChange: (key: IgxTabKey) => void;
+}) {
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-[#111111] p-6 text-[#F5F1E8]"
-      role="status"
-      aria-live="polite"
+      role="tablist"
+      aria-label="IGX AI sections"
+      className="mx-auto flex max-w-3xl flex-wrap justify-center gap-1 rounded-2xl border border-gold/20 bg-black/15 p-1 backdrop-blur-[4px]"
     >
-      <div className="text-center">
-        <div className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border border-[#C6A15B]/25 border-t-[#C6A15B]" />
-        <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#C6A15B]">
-          IJIDI Portal
-        </div>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#F5F1E8]/60">
-          {label}
-        </p>
-      </div>
+      {IGX_TABS.map((tab) => {
+        const on = tab.key === active;
+        return (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(tab.key)}
+            className={cn(
+              "flex-1 whitespace-nowrap rounded-xl px-3 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+              on
+                ? "bg-gold font-semibold text-primary-foreground"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+            )}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-// The login screen is a full-bleed standalone experience — it must not be
-// wrapped in any chrome. Every other route requires a signed-in session and
-// otherwise redirects to /login.
-//
-// Signed-in users are split by tier: the governor (is_sovereign() — the same
-// function the database RLS policies use) gets the full PortalShell; everyone
-// else gets the slim MemberShell. This is presentation only — RLS remains the
-// real enforcement. Any failure while checking falls back to the member shell.
-function ChromeGate({ children }: { children: ReactNode }) {
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const navigate = useNavigate();
-  const auth = useAuthState();
-  const isLogin = pathname === "/login";
-  const uid = auth.status === "authed" ? auth.session.user.id : null;
+function PanelHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
+  return (
+    <div className="mb-6 text-center">
+      <p className="font-mono text-[10.5px] uppercase tracking-[0.25em] text-muted-foreground">
+        {eyebrow}
+      </p>
+      <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">{title}</h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
 
-  const {
-    data: isSovereign,
-    isError: roleError,
-  } = useQuery({
-    queryKey: ["role-is-sovereign", uid],
-    enabled: !!uid,
+/* ------------------------------------------------------------------ */
+/* The orb                                                             */
+/* ------------------------------------------------------------------ */
+export type OrbState =
+  | "idle"
+  | "thinking"
+  | "routing"
+  | "orchestrating"
+  | "synthesizing"
+  | "responding";
+
+const ORB_STATES: { key: OrbState; label: string; desc: string }[] = [
+  { key: "idle", label: "Idle", desc: "System ready and monitoring." },
+  { key: "thinking", label: "Thinking", desc: "Information flows in from multiple sources." },
+  { key: "routing", label: "Routing", desc: "Tasks are routed to the best available resources." },
+  { key: "orchestrating", label: "Orchestrating", desc: "Nodes collaborate and exchange data directly." },
+  { key: "synthesizing", label: "Synthesizing", desc: "Insights are synthesized into unified intelligence." },
+  { key: "responding", label: "Responding", desc: "Results are delivered back to you." },
+];
+
+type NodeType = "ai" | "agent" | "tool" | "kb" | "workflow" | "external";
+
+const NODES: { x: number; y: number; color: string; type: NodeType; label: string }[] = [
+  { x: 300, y: 110, color: "#4F86F7", type: "ai", label: "AI Models" },
+  { x: 434.3, y: 165.7, color: "#E3C27A", type: "agent", label: "Agents" },
+  { x: 490, y: 300, color: "#C6A15B", type: "tool", label: "APIs & Tools" },
+  { x: 434.3, y: 434.3, color: "#5E9BFF", type: "kb", label: "Knowledge Bases" },
+  { x: 300, y: 490, color: "#8FB4FF", type: "workflow", label: "Workflows" },
+  { x: 165.7, y: 434.3, color: "#F0D9A0", type: "external", label: "External Systems" },
+  { x: 110, y: 300, color: "#4F86F7", type: "ai", label: "AI Models" },
+  { x: 165.7, y: 165.7, color: "#E3C27A", type: "agent", label: "Agents" },
+];
+
+const MESH_EDGES: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0], [0, 4], [2, 6],
+];
+
+const LEGEND: { type: NodeType; color: string; label: string }[] = [
+  { type: "ai", color: "#4F86F7", label: "AI Models" },
+  { type: "agent", color: "#E3C27A", label: "Agents" },
+  { type: "tool", color: "#C6A15B", label: "APIs & Tools" },
+  { type: "kb", color: "#5E9BFF", label: "Knowledge Bases" },
+  { type: "workflow", color: "#8FB4FF", label: "Workflows" },
+  { type: "external", color: "#F0D9A0", label: "External Systems" },
+];
+
+const NODE_R = 23;
+
+function shapePoints(type: NodeType, cx: number, cy: number, r: number): string {
+  const pt = (a: number) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  const deg = Math.PI / 180;
+  let pts: number[][] = [];
+  if (type === "ai") for (let i = 0; i < 6; i++) pts.push(pt(deg * (60 * i - 30)));
+  else if (type === "tool") pts = [pt(deg * -90), pt(0), pt(deg * 90), pt(deg * 180)];
+  else if (type === "workflow") for (let i = 0; i < 3; i++) pts.push(pt(deg * (120 * i - 90)));
+  else if (type === "external") for (let i = 0; i < 8; i++) pts.push(pt(deg * (45 * i - 22.5)));
+  return pts.map((p) => p.join(",")).join(" ");
+}
+
+function NodeShape({
+  type,
+  x,
+  y,
+  className,
+}: {
+  type: NodeType;
+  x: number;
+  y: number;
+  className: string;
+}) {
+  if (type === "agent") return <circle className={className} cx={x} cy={y} r={NODE_R} />;
+  if (type === "kb")
+    return (
+      <rect
+        className={className}
+        x={x - NODE_R}
+        y={y - NODE_R * 0.86}
+        width={NODE_R * 2}
+        height={NODE_R * 1.72}
+        rx={9}
+      />
+    );
+  return <polygon className={className} points={shapePoints(type, x, y, NODE_R)} />;
+}
+
+function NodeIcon({ type }: { type: NodeType }) {
+  switch (type) {
+    case "ai":
+      return (
+        <>
+          <circle cx="12" cy="6" r="1.8" />
+          <circle cx="6" cy="17" r="1.8" />
+          <circle cx="18" cy="17" r="1.8" />
+          <line x1="12" y1="7.8" x2="7" y2="15.3" />
+          <line x1="12" y1="7.8" x2="17" y2="15.3" />
+          <line x1="7.7" y1="17" x2="16.3" y2="17" />
+        </>
+      );
+    case "agent":
+      return (
+        <>
+          <rect x="6" y="9" width="12" height="10" rx="3" />
+          <circle className="filled" cx="9.6" cy="14.2" r="1.1" />
+          <circle className="filled" cx="14.4" cy="14.2" r="1.1" />
+          <line x1="12" y1="9" x2="12" y2="5.3" />
+          <circle className="filled" cx="12" cy="4.3" r="1.1" />
+        </>
+      );
+    case "tool":
+      return <path d="M15.6 8.3a3 3 0 1 1-4.2 4.2L6.3 17.6l-1-1 5.1-5.1a3 3 0 0 1 5.2-3.2Z" />;
+    case "kb":
+      return (
+        <>
+          <ellipse cx="12" cy="6.3" rx="6" ry="2.3" />
+          <path d="M6 6.3v5.4c0 1.27 2.7 2.3 6 2.3s6-1.03 6-2.3V6.3" />
+          <path d="M6 11.7v5.4c0 1.27 2.7 2.3 6 2.3s6-1.03 6-2.3v-5.4" />
+        </>
+      );
+    case "workflow":
+      return (
+        <>
+          <rect x="3.5" y="4.5" width="5" height="5" rx="1.2" />
+          <rect x="15.5" y="4.5" width="5" height="5" rx="1.2" />
+          <rect x="9.5" y="14.5" width="5" height="5" rx="1.2" />
+          <path d="M8.5 8 12 14.5M15.5 8 12 14.5" />
+        </>
+      );
+    default:
+      return <path d="M17.5 15.2a3 3 0 0 0 0-6 5 5 0 0 0-9.6-1.4A4 4 0 0 0 6.5 15.2Z" />;
+  }
+}
+
+const ORB_CSS = `
+.igx-orb{ --igx-line:#1c2033; }
+.igx-orb svg{ width:100%; height:auto; display:block; overflow:visible; }
+.igx-orb .igx-conn{ stroke-width:1.3; opacity:.07; transition:opacity .5s ease,stroke .5s ease; fill:none; }
+.igx-orb .igx-conn.mesh{ stroke:#3a4368; stroke-width:1; }
+.igx-orb .igx-particle{ opacity:0; transition:opacity .4s ease; }
+.igx-orb .igx-particle circle{ filter:drop-shadow(0 0 3px currentColor); }
+.igx-orb .igx-node-glow{ filter:drop-shadow(0 0 2px currentColor) drop-shadow(0 0 6px currentColor); }
+.igx-orb .igx-node-ring{ fill:none; stroke:currentColor; stroke-width:2.2; transition:opacity .5s ease,filter .5s ease; }
+.igx-orb .igx-node-fill{ fill:currentColor; opacity:.16; transition:opacity .5s ease; }
+.igx-orb .igx-node-icon{ stroke:#e7eaf5; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; opacity:.92; }
+.igx-orb .igx-node-icon .filled{ fill:#e7eaf5; stroke:none; }
+.igx-orb .igx-node-tag{ font-family:"IBM Plex Mono",monospace; font-size:7.5px; letter-spacing:.5px; fill:#9aa3b5; text-anchor:middle; opacity:0; transition:opacity .4s ease; text-transform:uppercase; }
+.igx-orb[data-state="orchestrating"] .igx-node-tag,.igx-orb[data-state="synthesizing"] .igx-node-tag{ opacity:.85; }
+.igx-orb .igx-core-emblem{ transform-origin:300px 300px; }
+.igx-orb .igx-core-ring{ fill:none; stroke:url(#igx-ring-grad); stroke-width:3; filter:drop-shadow(0 0 12px #f3c96baa) drop-shadow(0 0 26px #4c8dff55); transition:filter .6s ease; }
+
+@keyframes igxBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
+@keyframes igxCoreBright{ 0%,100%{ filter:drop-shadow(0 0 10px #4c8dff88) drop-shadow(0 0 22px #4c8dff44); } 50%{ filter:drop-shadow(0 0 16px #7aa9ffcc) drop-shadow(0 0 34px #4c8dff88); } }
+@keyframes igxContract{ 0%{ transform:scale(1); } 40%{ transform:scale(1.12); } 100%{ transform:scale(1); } }
+@keyframes igxDash{ to{ stroke-dashoffset:-24; } }
+@keyframes igxSeq{ 0%,100%{ opacity:.16; } 50%{ opacity:.85; } }
+
+.igx-orb[data-state="idle"] .igx-node-ring{ opacity:.32; filter:none; }
+.igx-orb[data-state="idle"] .igx-node-fill{ opacity:.07; }
+.igx-orb[data-state="idle"] .igx-conn.spoke{ opacity:.28; }
+.igx-orb[data-state="idle"] .igx-conn.mesh{ opacity:.16; }
+.igx-orb[data-state="idle"] .igx-core-emblem{ animation:igxBreathe 3.2s ease-in-out infinite; }
+
+.igx-orb[data-state="thinking"] .igx-node-ring{ opacity:.65; }
+.igx-orb[data-state="thinking"] .igx-node-fill{ opacity:.2; }
+.igx-orb[data-state="thinking"] .igx-conn.spoke{ opacity:.3; stroke-dasharray:3 5; animation:igxDash 1s linear infinite; }
+.igx-orb[data-state="thinking"] .igx-conn.mesh{ opacity:.18; }
+.igx-orb[data-state="thinking"] .igx-core-ring{ animation:igxCoreBright 1.4s ease-in-out infinite; }
+.igx-orb[data-state="thinking"] .igx-particle.spoke{ opacity:.8; }
+
+.igx-orb[data-state="routing"] .igx-node-ring{ opacity:.32; }
+.igx-orb[data-state="routing"] .igx-node-fill{ opacity:.09; }
+.igx-orb[data-state="routing"] .igx-conn{ opacity:.18; }
+.igx-orb[data-state="routing"] .igx-conn.active{ opacity:.95; stroke-dasharray:5 4; animation:igxDash .7s linear infinite; }
+.igx-orb[data-state="routing"] .igx-node.active .igx-node-ring{ opacity:1; filter:drop-shadow(0 0 6px currentColor); }
+.igx-orb[data-state="routing"] .igx-node.active .igx-node-fill{ opacity:.3; }
+.igx-orb[data-state="routing"] .igx-particle.active{ opacity:1; }
+
+.igx-orb[data-state="orchestrating"] .igx-node-ring{ opacity:1; filter:drop-shadow(0 0 5px currentColor); }
+.igx-orb[data-state="orchestrating"] .igx-node-fill{ opacity:.26; }
+.igx-orb[data-state="orchestrating"] .igx-conn.spoke{ opacity:.55; }
+.igx-orb[data-state="orchestrating"] .igx-conn.mesh{ opacity:.5; stroke-dasharray:2 4; animation:igxDash 1.1s linear infinite; }
+.igx-orb[data-state="orchestrating"] .igx-core-ring{ animation:igxCoreBright 1.8s ease-in-out infinite; }
+.igx-orb[data-state="orchestrating"] .igx-particle{ opacity:.95; }
+
+.igx-orb[data-state="synthesizing"] .igx-node-ring{ opacity:.88; }
+.igx-orb[data-state="synthesizing"] .igx-node-fill{ animation:igxSeq 2.2s ease-in-out infinite; animation-delay:var(--d); }
+.igx-orb[data-state="synthesizing"] .igx-conn{ opacity:.45; stroke-dasharray:4 5; animation:igxDash .9s linear infinite; animation-delay:var(--d); }
+.igx-orb[data-state="synthesizing"] .igx-core-ring{ animation:igxCoreBright 1s ease-in-out infinite; }
+.igx-orb[data-state="synthesizing"] .igx-particle{ opacity:1; }
+
+.igx-orb[data-state="responding"] .igx-node-ring{ opacity:.1; }
+.igx-orb[data-state="responding"] .igx-node-fill{ opacity:.03; }
+.igx-orb[data-state="responding"] .igx-conn{ opacity:.12; }
+.igx-orb[data-state="responding"] .igx-core-ring{ filter:drop-shadow(0 0 20px #a9c6ffee) drop-shadow(0 0 46px #7aa9ffaa); }
+.igx-orb[data-state="responding"] .igx-core-emblem{ animation:igxContract .9s ease-out 1; }
+
+@media (prefers-reduced-motion:reduce){
+  .igx-orb *{ animation:none !important; transition:none !important; }
+  .igx-orb .igx-particle{ display:none; }
+}
+`;
+
+function IgxOrb({ state, activeNodes }: { state: OrbState; activeNodes: number[] }) {
+  return (
+    <div className="igx-orb w-[min(420px,90vw)] shrink-0" data-state={state}>
+      <style>{ORB_CSS}</style>
+      <svg viewBox="0 0 600 600" role="img" aria-label="IGX AI ecosystem map">
+        <defs>
+          <linearGradient id="igx-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f3c96b" />
+            <stop offset="50%" stopColor="#7aa9ff" />
+            <stop offset="100%" stopColor="#f3c96b" />
+          </linearGradient>
+          <clipPath id="igx-core-clip">
+            <circle cx="300" cy="300" r="66" />
+          </clipPath>
+        </defs>
+        <circle cx="300" cy="300" r="190" fill="none" stroke="#1c2033" strokeWidth="1" />
+
+        {/* mesh connections */}
+        <g>
+          {MESH_EDGES.map(([a, b], i) => (
+            <path
+              key={`mesh-${i}`}
+              id={`igx-mesh-${i}`}
+              className="igx-conn mesh"
+              d={`M${NODES[a].x},${NODES[a].y} L${NODES[b].x},${NODES[b].y}`}
+              style={{ ["--d" as string]: `${(i * 0.22).toFixed(2)}s` }}
+            />
+          ))}
+        </g>
+        {/* spokes from the core */}
+        <g>
+          {NODES.map((n, i) => (
+            <path
+              key={`spoke-${i}`}
+              id={`igx-spoke-${i}`}
+              className={cn("igx-conn spoke", activeNodes.includes(i) && "active")}
+              d={`M300,300 L${n.x},${n.y}`}
+              stroke={n.color}
+              style={{ color: n.color, ["--d" as string]: `${(i * 0.18).toFixed(2)}s` }}
+            />
+          ))}
+        </g>
+        {/* moving particles */}
+        <g>
+          {NODES.map((n, i) => (
+            <g
+              key={`sp-${i}`}
+              className={cn("igx-particle spoke", activeNodes.includes(i) && "active")}
+              style={{ color: n.color }}
+            >
+              <circle r="2.6" fill={n.color}>
+                <animateMotion dur={`${(2.2 + ((i * 37) % 8) / 10).toFixed(2)}s`} repeatCount="indefinite">
+                  <mpath href={`#igx-spoke-${i}`} />
+                </animateMotion>
+              </circle>
+            </g>
+          ))}
+          {MESH_EDGES.map((_, i) => (
+            <g key={`mp-${i}`} className="igx-particle mesh" style={{ color: "#9fb3ea" }}>
+              <circle r="2.6" fill="#9fb3ea">
+                <animateMotion dur={`${(2.6 + ((i * 53) % 12) / 10).toFixed(2)}s`} repeatCount="indefinite">
+                  <mpath href={`#igx-mesh-${i}`} />
+                </animateMotion>
+              </circle>
+            </g>
+          ))}
+        </g>
+        {/* nodes */}
+        <g>
+          {NODES.map((n, i) => (
+            <g
+              key={`node-${i}`}
+              className={cn("igx-node", activeNodes.includes(i) && "active")}
+              style={{ color: n.color, ["--d" as string]: `${(i * 0.18).toFixed(2)}s` }}
+            >
+              <NodeShape type={n.type} x={n.x} y={n.y} className="igx-node-fill" />
+              <NodeShape type={n.type} x={n.x} y={n.y} className="igx-node-ring igx-node-glow" />
+              <g
+                className="igx-node-icon"
+                transform={`translate(${n.x - 9},${n.y - 9}) scale(0.75)`}
+              >
+                <NodeIcon type={n.type} />
+              </g>
+              <text className="igx-node-tag" x={n.x} y={n.y + NODE_R + 13}>
+                {n.label}
+              </text>
+            </g>
+          ))}
+        </g>
+        {/* core */}
+        <g className="igx-core-emblem">
+          <circle cx="300" cy="300" r="70" fill="#05060d" />
+          <image
+            href="/brand/igx-core.jpg"
+            x="230"
+            y="230"
+            width="140"
+            height="140"
+            clipPath="url(#igx-core-clip)"
+            preserveAspectRatio="xMidYMid slice"
+          />
+          <circle className="igx-core-ring" cx="300" cy="300" r="66" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function LegendSwatch({ type, color }: { type: NodeType; color: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style={{ color }}>
+      {type === "agent" ? (
+        <circle cx="12" cy="12" r="9" fill="currentColor" opacity=".25" stroke="currentColor" strokeWidth="1.4" />
+      ) : type === "kb" ? (
+        <rect x="3" y="4" width="18" height="16" rx="4" fill="currentColor" opacity=".25" stroke="currentColor" strokeWidth="1.4" />
+      ) : (
+        <polygon
+          points={shapePoints(type, 12, 12, 9.5)}
+          fill="currentColor"
+          opacity=".25"
+          stroke="currentColor"
+          strokeWidth="1.4"
+        />
+      )}
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Ecosystem panel: the orb, the real state, and real counts           */
+/* ------------------------------------------------------------------ */
+export type LiveStage = {
+  key: "idle" | "submitting" | "awaiting" | "error";
+  name: string;
+  detail: string;
+};
+
+function liveToOrb(key: LiveStage["key"]): OrbState {
+  switch (key) {
+    case "submitting":
+      return "thinking";
+    case "awaiting":
+      return "responding";
+    default:
+      return "idle";
+  }
+}
+
+function useDecidedCounts() {
+  return useQuery({
+    queryKey: ["igx-decided-counts"],
     retry: 1,
-    staleTime: 5 * 60 * 1000,
+    refetchInterval: 15_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("is_sovereign");
-      if (error) {
-        console.error("Role check failed:", error);
-        return false;
-      }
-      return data === true;
+      const [approved, rejected] = await Promise.all([
+        supabase.from("proposals").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("proposals").select("id", { count: "exact", head: true }).eq("status", "rejected"),
+      ]);
+      if (approved.error) throw approved.error;
+      if (rejected.error) throw rejected.error;
+      return { approved: approved.count ?? 0, rejected: rejected.count ?? 0 };
+    },
+  });
+}
+
+function StatCard({
+  label,
+  value,
+  note,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+  onClick?: () => void;
+}) {
+  const body = (
+    <>
+      <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="h-1.5 w-1.5 rounded-full bg-gold/60" />
+        {label}
+      </p>
+      <div className="mt-2 font-mono text-xl text-foreground">{value}</div>
+      {note && <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{note}</p>}
+    </>
+  );
+  const cls = "rounded-xl border border-gold/20 bg-black/20 p-3 text-left";
+  return onClick ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(cls, "transition-colors hover:border-gold/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60")}
+    >
+      {body}
+    </button>
+  ) : (
+    <div className={cls}>{body}</div>
+  );
+}
+
+export function EcosystemPanel({
+  live,
+  pendingCount,
+  pendingLoading,
+  pendingError,
+  onOpenQueue,
+}: {
+  live: LiveStage;
+  pendingCount: number | null;
+  pendingLoading: boolean;
+  pendingError: boolean;
+  onOpenQueue: () => void;
+}) {
+  const { data: decided, isLoading: decidedLoading, isError: decidedError } = useDecidedCounts();
+
+  // null = follow the real console state; otherwise a labelled animation preview
+  const [preview, setPreview] = useState<OrbState | null>(null);
+  const [auto, setAuto] = useState(false);
+  const [activeNodes, setActiveNodes] = useState<number[]>([0, 3, 6]);
+
+  const orbState: OrbState = preview ?? liveToOrb(live.key);
+  const previewIndex = preview ? ORB_STATES.findIndex((s) => s.key === preview) : -1;
+  const previewMeta = preview ? ORB_STATES.find((s) => s.key === preview) : undefined;
+
+  useEffect(() => {
+    if (!auto) return;
+    const id = window.setInterval(() => {
+      setPreview((current) => {
+        const at = ORB_STATES.findIndex((s) => s.key === (current ?? "idle"));
+        return ORB_STATES[(at + 1) % ORB_STATES.length].key;
+      });
+    }, 2800);
+    return () => window.clearInterval(id);
+  }, [auto]);
+
+  // Routing lights up two or three nodes at random, like the prototype.
+  useEffect(() => {
+    if (orbState !== "routing") return;
+    const pool = NODES.map((_, i) => i);
+    const picks: number[] = [];
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let k = 0; k < count; k++) {
+      picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    }
+    setActiveNodes(picks);
+  }, [orbState]);
+
+  const pickState = (next: OrbState | null) => {
+    setAuto(false);
+    setPreview(next);
+  };
+
+  const pendingValue = pendingLoading ? "…" : pendingError ? "ERR" : String(pendingCount ?? 0);
+  const decidedValue = (n?: number) => (decidedLoading ? "…" : decidedError ? "ERR" : String(n ?? 0));
+
+  return (
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <div className="flex flex-wrap items-center justify-center gap-7">
+        <IgxOrb state={orbState} activeNodes={activeNodes} />
+
+        <div className="min-w-[240px] flex-1 basis-64">
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.25em] text-muted-foreground">
+            {preview ? "Animation preview" : "Console state"}
+          </p>
+          <h2 className="mt-1.5 flex items-center gap-2 font-display text-2xl font-semibold text-foreground">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[#5E9BFF] shadow-[0_0_8px_#5E9BFF]" />
+            {previewMeta ? previewMeta.label : live.name}
+          </h2>
+          <p className="mt-2 min-h-[44px] text-sm leading-relaxed text-muted-foreground">
+            {previewMeta ? previewMeta.desc : live.detail}
+          </p>
+          <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-gold">
+            {preview ? "Preview only — not a live status" : "Live — read from your proposals"}
+          </p>
+
+          <div className="mt-4 flex gap-1.5" aria-hidden="true">
+            {ORB_STATES.map((s, i) => (
+              <span
+                key={s.key}
+                className={cn(
+                  "h-[3px] flex-1 rounded-full bg-white/10",
+                  i < previewIndex && "bg-[#4F86F7]",
+                  i === previewIndex && "bg-[#8FB4FF]"
+                )}
+              />
+            ))}
+          </div>
+
+          <p className="mt-5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
+            Preview the animation
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => pickState(null)}
+              aria-pressed={preview === null}
+              className={cn(
+                "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                preview === null
+                  ? "border-gold bg-gold font-medium text-primary-foreground"
+                  : "border-gold/25 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Live
+            </button>
+            {ORB_STATES.map((s) => (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => pickState(s.key)}
+                aria-pressed={preview === s.key}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                  preview === s.key
+                    ? "border-[#8FB4FF] bg-[#8FB4FF] font-medium text-[#0a0c18]"
+                    : "border-gold/25 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (auto) {
+                setAuto(false);
+              } else {
+                setPreview((p) => p ?? "idle");
+                setAuto(true);
+              }
+            }}
+            className="mt-3 rounded-lg border border-gold/25 bg-black/20 px-3.5 py-2 font-mono text-[11px] tracking-wide text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+          >
+            {auto ? "‖ Pause auto-cycle" : "▶ Auto-cycle the preview"}
+          </button>
+        </div>
+      </div>
+
+      {/* Real counts only */}
+      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-gold/20 pt-5 lg:grid-cols-4">
+        <StatCard label="Pending review" value={pendingValue} note="Open the queue" onClick={onOpenQueue} />
+        <StatCard label="Approved" value={decidedValue(decided?.approved)} note="Proposals" />
+        <StatCard label="Rejected" value={decidedValue(decided?.rejected)} note="Proposals" />
+        <StatCard label="Model calls" value="Not tracked" note="No model is wired yet" />
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-gold/20 pt-4 text-[11.5px] text-muted-foreground">
+        {LEGEND.map((item) => (
+          <span key={item.label} className="flex items-center gap-1.5">
+            <LegendSwatch type={item.type} color={item.color} />
+            {item.label}
+          </span>
+        ))}
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        The map shows the intended design of the ecosystem. Nothing on it is a live connection.
+      </p>
+    </GlassCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Architecture: design documentation                                  */
+/* ------------------------------------------------------------------ */
+const LAYERS = [
+  { color: "#E3C27A", title: "Constitution Layer", tag: "Boot-time primitive", body: "Vision, mission, governance, ethics. Loaded at boot as a first-class primitive, not a passive document. Every agent and router validates its actions against it before execution: the alignment layer that prevents drift." },
+  { color: "#E5677A", title: "Identity & Trust Layer", tag: "Who is acting", body: "Users, roles, permissions, organizations. Answers who requested a task, under which role, and what they are allowed to approve, spend, or publish. Without this, the system cannot safely scale beyond one user." },
+  { color: "#5E9BFF", title: "Knowledge & Memory Layer", tag: "Track A + cognitive stack", body: "Track A canonical knowledge base, memory engine, retrieval, context builder. Stratified into working, episodic, semantic, and procedural memory, governed by a schema registry so document formats can evolve without corrupting downstream agents." },
+  { color: "#C6A15B", title: "Capability Layer", tag: "Models · tools · agents", body: "Described by capability, not hard-coded name. The router asks who can research, reason or translate rather than which model to call. Includes the tool registry (permissions, health, cost) for the tools IJIDI connects." },
+  { color: "#4F86F7", title: "Executive Intelligence Layer", tag: "Routing · consensus · planning", body: "The model router and the consensus arbiter. Decides who researches, who drafts, who critiques, then evaluates competing outputs against the canonical knowledge base to synthesize one grounded answer." },
+  { color: "#8FB4FF", title: "Execution Layer", tag: "Workflows · automations", body: "Where work actually happens: the 10-agent system (Executive, Research, Content and Automation active; COO, CTO, CMO, Finance, Knowledge and NGO deferred until their unlock conditions are met) plus n8n and API automations, guarded by an adversarial-defense trust boundary." },
+  { color: "#F0D9A0", title: "Learning Layer", tag: "Decision registry · ledger", body: "Turns every human correction into signal: the decision registry, the execution ledger, and a feedback-driven reinforcement router. This is how IGX AI gets better at matching your judgment over time." },
+  { color: "#A9C4FF", title: "Resilience Layer", tag: "Sovereignty · failsafe", body: "Sovereign data vault, simulation sandbox, air-gapped failsafe core. Anonymizes sensitive data before it leaves the system, tests major changes on a digital twin first, and keeps a local fallback alive if every external API goes down." },
+  { color: "#C6A15B", title: "Experience Layer", tag: "What you actually touch", body: "Portal, dashboards, visualizations, approvals. The living ecosystem screen, the executive command center, the state indicators: the human-facing surface of everything below it." },
+] as const;
+
+export function ArchitecturePanel() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="System architecture · design reference"
+        title="Nine Governing Layers"
+        desc="Everything IGX AI does traces back through this stack, from the constitution that bounds it to the experience layer you touch. This describes the intended design, not live system state. Tap a layer to expand."
+      />
+      <div className="space-y-2">
+        {LAYERS.map((layer, i) => {
+          const isOpen = open === i;
+          return (
+            <div
+              key={layer.title}
+              className={cn(
+                "overflow-hidden rounded-xl border bg-black/20 transition-colors",
+                isOpen ? "border-gold/40" : "border-gold/15"
+              )}
+            >
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              >
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-semibold text-[#0a0c18]"
+                  style={{ background: layer.color }}
+                >
+                  {i + 1}
+                </span>
+                <span className="flex-1 text-[14.5px] font-semibold text-foreground">{layer.title}</span>
+                <span className="hidden font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground sm:inline">
+                  {layer.tag}
+                </span>
+                <ChevronRight
+                  className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-90")}
+                />
+              </button>
+              {isOpen && (
+                <p className="px-4 pb-4 pl-[52px] text-[13px] leading-relaxed text-muted-foreground">
+                  {layer.body}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </GlassCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Decisions: the real `decisions` table                               */
+/* ------------------------------------------------------------------ */
+type DecisionRow = {
+  id: string | number;
+  date: string | null;
+  label: string | null;
+  detail: string | null;
+  state: string | null;
+  created_at: string | null;
+};
+
+export function DecisionsPanel() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["igx-decisions"],
+    retry: 1,
+    queryFn: async (): Promise<DecisionRow[]> => {
+      const { data: rows, error } = await supabase
+        .from("decisions")
+        .select("id, date, label, detail, state, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (rows ?? []) as DecisionRow[];
     },
   });
 
-  useEffect(() => {
-    if (auth.status === "anon" && !isLogin) {
-      navigate({ to: "/login", replace: true });
-    }
-  }, [auth.status, isLogin, navigate]);
-
-  if (isLogin) {
-    return <>{children}</>;
-  }
-  if (auth.status !== "authed") {
-    return <AccessCheckScreen status={auth.status} />;
-  }
-  if (isSovereign === undefined && !roleError) {
-    return <AccessCheckScreen status="tier" />;
-  }
-  if (isSovereign === true) {
-    return <PortalShell session={auth.session}>{children}</PortalShell>;
-  }
-  return <MemberShell session={auth.session} />;
-}
-
-// ---------------------------------------------------------------------------
-// LIVE CLOCK — real UTC time, rendered on the client only.
-// ---------------------------------------------------------------------------
-const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-
-function formatUtc(d: Date) {
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  return `UTC ${hh}:${mm} · ${dd} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
-
-function LiveClock() {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    setNow(new Date());
-    const id = setInterval(() => setNow(new Date()), 10_000);
-    return () => clearInterval(id);
-  }, []);
   return (
-    <span className="tabular-nums text-gold" suppressHydrationWarning>
-      {now ? formatUtc(now) : "UTC --:-- · -- --- ----"}
-    </span>
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="Learning layer"
+        title="Decision Registry"
+        desc="Every architectural choice becomes a permanent, referenceable record instead of a forgotten conversation. These are read live from the decisions table."
+      />
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-3 py-6">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <span className="font-mono text-xs text-muted-foreground">Loading decisions...</span>
+        </div>
+      ) : isError ? (
+        <div className="flex items-center justify-center gap-2 py-6 font-mono text-xs text-destructive">
+          <AlertCircle className="h-4 w-4" /> Decisions unavailable
+        </div>
+      ) : !data || data.length === 0 ? (
+        <p className="py-6 text-center font-mono text-xs text-muted-foreground">
+          No decisions recorded yet.
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          {data.map((row) => (
+            <div key={String(row.id)} className="rounded-xl border border-gold/20 bg-black/20 p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="font-mono text-[10.5px] tracking-[0.1em] text-[#8FB4FF]">
+                  REF {String(row.id).slice(0, 8).toUpperCase()}
+                </span>
+                <span className="font-mono text-[10.5px] text-muted-foreground">{row.date ?? "—"}</span>
+              </div>
+              <div className="mt-1.5 text-sm font-semibold text-foreground">{row.label ?? "Untitled decision"}</div>
+              {row.detail && (
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">{row.detail}</p>
+              )}
+              {row.state && (
+                <span className="mt-2.5 inline-block rounded-full border border-gold/35 bg-gold/10 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gold">
+                  {row.state}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </GlassCard>
   );
 }
 
-// ---------------------------------------------------------------------------
-// SESSION TIMER — real time elapsed since the account's last sign-in
-// (Supabase `last_sign_in_at`). Shows dashes if that timestamp is missing.
-// ---------------------------------------------------------------------------
-function formatElapsed(ms: number) {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
-}
+/* ------------------------------------------------------------------ */
+/* Agents: the roster recorded in the knowledge base                   */
+/* ------------------------------------------------------------------ */
+const AGENTS: { name: string; role: string; status: "Active" | "Deferred" }[] = [
+  { name: "Executive", role: "Strategy and investor narrative", status: "Active" },
+  { name: "Research", role: "Market intelligence", status: "Active" },
+  { name: "Content", role: "Multi-platform content", status: "Active" },
+  { name: "Automation", role: "n8n and APIs", status: "Active" },
+  { name: "COO", role: "Unlocks when staff are hired", status: "Deferred" },
+  { name: "CTO", role: "Unlocks when all 15 knowledge-base domains have populated indexes and n8n automation is reactivated", status: "Deferred" },
+  { name: "CMO", role: "Unlocks when paid ads begin", status: "Deferred" },
+  { name: "Finance", role: "Unlocks when monthly recurring revenue exceeds $5,000", status: "Deferred" },
+  { name: "Knowledge", role: "Unlocks when the team exceeds 3 people", status: "Deferred" },
+  { name: "NGO", role: "Unlocks when ijidi.org is fully deployed and the first real programme activity is recorded", status: "Deferred" },
+];
 
-function SessionTimer({ since }: { since: string | null | undefined }) {
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const start = since ? Date.parse(since) : Number.NaN;
-  const valid = now !== null && !Number.isNaN(start);
+export function AgentsPanel() {
   return (
-    <span className="tabular-nums" suppressHydrationWarning>
-      {valid ? formatElapsed(now - start) : "--:--:--"}
-    </span>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// HUD OVERLAYS — shared by the governor shell and the member shell.
-// ---------------------------------------------------------------------------
-function HudOverlays() {
-  return (
-    <>
-      <div className="portal-hud-grid" aria-hidden="true" />
-      <div className="portal-hud-scanlines" aria-hidden="true" />
-      <div className="portal-hud-vignette" aria-hidden="true" />
-      <div className="portal-hud-frame" aria-hidden="true">
-        <span className="c tl" /><span className="c tr" />
-        <span className="c bl" /><span className="c br" />
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="Internal observability"
+        title="Agent Roster"
+        desc="The ten agents recorded in the IGX AI knowledge base, with what unlocks each deferred one. No run, success or cost data is collected yet, so those columns say so."
+      />
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] border-collapse text-[12.5px]">
+          <thead>
+            <tr>
+              {["Agent", "Role / unlock condition", "Status (KB)", "Runs"].map((h) => (
+                <th
+                  key={h}
+                  className="border-b border-gold/20 px-2.5 pb-2.5 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {AGENTS.map((agent) => (
+              <tr key={agent.name} className="border-b border-gold/10 last:border-0">
+                <td className="px-2.5 py-3 font-medium text-foreground">
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "h-[7px] w-[7px] shrink-0 rounded-full",
+                        agent.status === "Active" ? "bg-[#5E9BFF] shadow-[0_0_5px_#5E9BFF]" : "bg-muted-foreground/50"
+                      )}
+                    />
+                    {agent.name}
+                  </span>
+                </td>
+                <td className="px-2.5 py-3 text-muted-foreground">{agent.role}</td>
+                <td className="px-2.5 py-3">
+                  <span
+                    className={cn(
+                      "rounded-full border px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em]",
+                      agent.status === "Active"
+                        ? "border-gold/40 bg-gold/10 text-gold"
+                        : "border-white/15 text-muted-foreground"
+                    )}
+                  >
+                    {agent.status}
+                  </span>
+                </td>
+                <td className="px-2.5 py-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+                  Not tracked
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </>
+    </GlassCard>
   );
 }
 
-// ---------------------------------------------------------------------------
-// PICTURES — the portal emblem, and small logo / portrait badges.
-// A missing file never leaves a hole: the emblem falls back to the older PNG and
-// then to the hex badge; a badge falls back to a letter (or to nothing).
-// ---------------------------------------------------------------------------
-function PortalEmblem({ className, onClick }: { className?: string; onClick?: () => void }) {
-  const sources = ["/brand/ijidi-fan-emblem.png", "/ijidi-fan-emblem.png"];
-  const [failedCount, setFailedCount] = useState(0);
-  if (failedCount >= sources.length) return <HexBadge small />;
+/* ------------------------------------------------------------------ */
+/* Models: the pipeline recorded in the knowledge base                 */
+/* ------------------------------------------------------------------ */
+const MODELS: { name: string; role: string; primary?: boolean }[] = [
+  { name: "Claude", role: "Primary reasoning engine", primary: true },
+  { name: "ChatGPT", role: "Supporting model" },
+  { name: "Gemini", role: "Supporting model" },
+  { name: "DeepSeek", role: "Supporting model" },
+  { name: "Kimi", role: "Supporting model" },
+];
+
+export function ModelsPanel() {
+  return (
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="Capability layer"
+        title="Model Pipeline"
+        desc="The models IGX AI is designed to route between. IGX AI does not call any model yet (real Claude reasoning is waiting on API credit), so health and latency are not tracked."
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {MODELS.map((model) => (
+          <div
+            key={model.name}
+            className={cn(
+              "rounded-xl border bg-black/20 p-4",
+              model.primary ? "border-gold/40" : "border-gold/20"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[13.5px] font-semibold text-foreground">{model.name}</span>
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
+            </div>
+            <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+              Not tracked
+            </div>
+            <div className="mt-3 font-mono text-[11px] text-muted-foreground">{model.role}</div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-center text-[11px] text-muted-foreground">
+        The pipeline is expandable: more models can be added as they are needed.
+      </p>
+    </GlassCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Brand library: every picture, where it is used, and the leads        */
+/* ------------------------------------------------------------------ */
+function BrandThumb({ src, label }: { src: string | null; label: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src) {
+    return (
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gold/40 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-muted-foreground">
+        No art
+      </span>
+    );
+  }
+  if (failed) {
+    return (
+      <span
+        title="The file is not in public/brand yet"
+        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-destructive/50 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-destructive"
+      >
+        Upload me
+      </span>
+    );
+  }
   return (
     <img
-      src={sources[failedCount]}
-      alt="IJIDI Portal"
-      onError={() => setFailedCount((n) => n + 1)}
-      onClick={onClick}
-      className={cn(
-        "h-10 w-10 shrink-0 cursor-pointer object-contain drop-shadow-[0_0_10px_rgba(198,161,91,0.35)] transition-transform hover:scale-105",
-        className
-      )}
+      src={src}
+      alt={label}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="h-16 w-16 shrink-0 rounded-full object-cover"
     />
   );
 }
 
-function BrandBadge({
-  label,
-  size = "h-5 w-5",
-  letterFallback = true,
-}: {
-  label: string;
-  size?: string;
-  letterFallback?: boolean;
-}) {
-  const src = brandSrc(brandFor(label)?.id ?? "");
-  const [failed, setFailed] = useState(false);
-  if (src && !failed) {
-    return (
-      <img
-        src={src}
-        alt={label}
-        loading="lazy"
-        onError={() => setFailed(true)}
-        className={cn("shrink-0 rounded-full object-cover", size)}
-      />
-    );
-  }
-  if (!letterFallback) return null;
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border border-gold/40 text-[9px] font-semibold text-gold",
-        size
-      )}
-    >
-      {label.charAt(0)}
-    </span>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// PAGE HISTORY — back / forward, with the name of the page each one goes to.
-// TanStack Router keeps its position in history.state (__TSR_index); the pages
-// visited at each position are remembered here so the buttons can name them.
-// ---------------------------------------------------------------------------
-function pathLabel(path: string | undefined): string {
-  if (!path) return "";
-  return navItems.find((item) => isNavActive(path, item.to))?.label ?? path;
-}
-
-function useRouteTrail() {
-  const location = useRouterState({ select: (state) => state.location });
-  const stateIndex = (location.state as { __TSR_index?: number } | undefined)?.__TSR_index;
-  const indexKnown = typeof stateIndex === "number";
-  const index = indexKnown ? (stateIndex as number) : 0;
-  const trail = useRef<Record<number, string>>({});
-  const [, refresh] = useState(0);
-
-  useEffect(() => {
-    const known = trail.current[index];
-    if (known === location.pathname) return;
-    if (known !== undefined) {
-      // A new page was opened part-way back: the old "forward" pages are gone.
-      Object.keys(trail.current).forEach((key) => {
-        if (Number(key) > index) delete trail.current[Number(key)];
-      });
-    }
-    trail.current[index] = location.pathname;
-    refresh((n) => n + 1);
-  }, [index, location.pathname]);
-
-  const hasBack = indexKnown ? index > 0 : typeof window !== "undefined" && window.history.length > 1;
-  const hasForward = indexKnown
-    ? Object.keys(trail.current).some((key) => Number(key) > index)
-    : true;
-
-  return {
-    hasBack,
-    hasForward,
-    previous: trail.current[index - 1],
-    next: trail.current[index + 1],
-    back: () => window.history.back(),
-    forward: () => window.history.forward(),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// MEMBER SHELL — slim view for every non-governor tier.
-// No module sidebar, no activity ticker, no entity switcher. Shows the
-// member's own name, tier and the (publicly readable) entity_status rows.
-// ---------------------------------------------------------------------------
-function humanize(key: string) {
-  return key.replace(/_/g, " ").toUpperCase();
-}
-
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
-}
-
-const HIDDEN_ENTITY_KEYS = new Set(["id", "created_at", "updated_at"]);
-const ENTITY_TITLE_KEYS = ["name", "entity", "entity_name", "entity_id", "label", "title"];
-
-function MemberShell({ session }: { session: Session }) {
-  const [signingOut, setSigningOut] = useState(false);
-  const email = session.user.email ?? "Signed in";
-  const meta = session.user.user_metadata as Record<string, unknown> | undefined;
-  const displayName =
-    (typeof meta?.full_name === "string" && meta.full_name) ||
-    (typeof meta?.name === "string" && meta.name) ||
-    email.split("@")[0];
-
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["own-profile", session.user.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("access_tier")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data as { access_tier?: string } | null;
-    },
-  });
-
-  const {
-    data: entities,
-    isLoading: entitiesLoading,
-    isError: entitiesError,
-  } = useQuery({
-    queryKey: ["member-entity-status"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("entity_status").select("*");
-      if (error) throw error;
-      return (data ?? []) as Record<string, unknown>[];
-    },
-  });
-
-  const tier = profile?.access_tier ?? null;
-
-  const handleSignOut = async () => {
-    sounds.playClick();
-    setSigningOut(true);
-    const { error } = await supabase.auth.signOut();
-    setSigningOut(false);
-    if (error) {
-      console.error("Sign-out failed:", error);
-      alert(`Sign-out failed: ${error.message}`);
-    }
-  };
-
-  return (
-    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
-      <HudOverlays />
-      <CircuitBackground />
-
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/10 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <PortalEmblem />
-            <div className="min-w-0">
-              <div className="font-display text-sm font-semibold tracking-wide text-foreground">
-                IJIDI <span className="text-gold">PORTAL</span>
-              </div>
-              <Eyebrow className="mt-1 text-[8px]">Member Access</Eyebrow>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <span
-              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
-              title={email}
-            >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse-teal" />
-              <span className="truncate">{email}</span>
-            </span>
-            <button
-              onClick={handleSignOut}
-              onMouseEnter={() => sounds.playHover()}
-              disabled={signingOut}
-              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
-              title="Sign out of the portal"
-            >
-              {signingOut ? "Signing out…" : "Sign out"}
-            </button>
-          </div>
-        </header>
-
-        <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
-          {/* Member Home — identity card */}
-          <section className="relative overflow-hidden rounded-lg border border-gold/30 bg-panel/90 p-6 backdrop-blur-md sm:p-8">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
-            <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
-            <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
-              Welcome, <span className="text-gold">{displayName}</span>
-            </h1>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Access tier
-              </span>
-              <span className="rounded-md border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">
-                {profileLoading ? "…" : tier ?? "Unavailable"}
-              </span>
-            </div>
-            <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Your account has a limited view of the portal. Operational modules are reserved for the
-              governor.
-            </p>
-          </section>
-
-          {/* Entity status */}
-          <section className="mt-8">
-            <Eyebrow className="pb-3">ENTITY STATUS</Eyebrow>
-            {entitiesLoading ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Loading entity status…
-              </p>
-            ) : entitiesError ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Entity status unavailable
-              </p>
-            ) : !entities || entities.length === 0 ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                No entities reported
-              </p>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {entities.map((row, i) => {
-                  const titleKey = ENTITY_TITLE_KEYS.find(
-                    (k) => typeof row[k] === "string" && row[k],
-                  );
-                  const title = titleKey ? String(row[titleKey]) : `Entity ${i + 1}`;
-                  const fields = Object.entries(row).filter(
-                    ([k, v]) =>
-                      !HIDDEN_ENTITY_KEYS.has(k) && k !== titleKey && v !== null && v !== undefined,
-                  );
-                  return (
-                    <div
-                      key={String(row.id ?? i)}
-                      className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-gold live-pulse-gold" />
-                        <div className="font-display text-base text-foreground">{title}</div>
-                      </div>
-                      <dl className="mt-3 space-y-1.5">
-                        {fields.map(([k, v]) => (
-                          <div key={k} className="flex items-baseline justify-between gap-3">
-                            <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-                              {humanize(k)}
-                            </dt>
-                            <dd className="break-words text-right text-xs text-foreground">
-                              {formatValue(v)}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </main>
-
-        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
-          <LiveClock />
-        </footer>
-      </div>
-    </div>
-  );
-}
-
-// Floating entity dock — a translucent pill at the bottom centre of every
-// governor page except the IGX AI console (which has its own rail).
-// Mandela / Ifeoma open the IGX AI console on that person; Group / Foundation
-// go to their pages. On small screens only the active chip shows its label.
-function EntityDock({ hidden }: { hidden: boolean }) {
-  const currentPath = useRouterState({ select: (state) => state.location.pathname });
-  if (hidden) return null;
-  return (
-    <nav
-      aria-label="Entity switcher"
-      style={{
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)",
-        zIndex: 50,
-      }}
-      className="fixed left-4 flex items-center gap-1 rounded-full border border-border bg-black/30 p-1.5 shadow-lg backdrop-blur-[6px] sm:left-1/2 sm:-translate-x-1/2"
-    >
-      {floatingSwitcherItems.map((item) => {
-        const active = item.kind === "route" && isNavActive(currentPath, item.to);
-        const chipClass = cn(
-          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-all sm:px-3.5",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-          active
-            ? "border-gold/40 bg-gold/15 text-gold"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-        );
-        const inner = (
-          <>
-            <BrandBadge label={item.label} size="h-6 w-6" />
-            <span className={cn(active ? "inline" : "hidden sm:inline")}>{item.label}</span>
-          </>
-        );
-        return item.kind === "person" ? (
-          <Link key={item.key}
-            to="/igx-ai"
-            search={{ entity: item.entity }}
-            title={`Open IGX AI — ${item.label}`}
-            onMouseEnter={() => sounds.playHover()}
-            onClick={() => sounds.playClick()}
-            className={chipClass}
-          >
-            {inner}
-          </Link>
-        ) : (
-          <Link key={item.key}
-            to={item.to}
-            title={item.label}
-            aria-current={active ? "page" : undefined}
-            onMouseEnter={() => sounds.playHover()}
-            onClick={() => sounds.playClick()}
-            className={chipClass}
-          >
-            {inner}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-// Floating IGX AI shortcut (bottom right). The badge is the real number of
-// proposals waiting in review; it is hidden if the count can't be loaded.
-function IgxFloatingButton({ hidden }: { hidden: boolean }) {
-  const { data: pending } = useQuery({
-    queryKey: ["igx-pending-count"],
-    refetchInterval: 15_000,
-    retry: 1,
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("proposals")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending_review");
-      if (error) throw error;
-      return count ?? 0;
-    },
-  });
-
+// Change or reset one picture. Works from a phone (gallery or camera) or a computer.
+function BrandPictureControls({ assetId, label }: { assetId: string; label: string }) {
   useBrandVersion();
-  if (hidden) return null;
-  const iconSrc = brandSrc("igx-button") ?? "/brand/igx-ai-button.webp";
-  const label = pending ? `Open IGX AI — ${pending} pending review` : "Open IGX AI";
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const replaced = hasBrandOverride(assetId);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await uploadBrandImage(assetId, file);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Picture updated." } : { tone: "error", text: result.error });
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const useDefault = async () => {
+    setBusy(true);
+    setMessage(null);
+    const result = await resetBrandImage(assetId);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Back to the default picture." } : { tone: "error", text: result.error });
+  };
+
+  const pill =
+    "inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
 
   return (
-    <Link to="/igx-ai"
-      title={label}
-      aria-label={label}
-      onMouseEnter={() => sounds.playHover()}
-      onClick={() => sounds.playClick()}
-      style={{
-        position: "fixed",
-        right: "1rem",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)",
-        zIndex: 60,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(198,161,91,0.3)",
-      }}
-      className="group flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-gold/40 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
-    >
-      <img
-        src={iconSrc}
-        alt="IGX AI"
-        className="h-full w-full object-cover"
+    <div className="mt-3">
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label={`Choose a picture for ${label}`}
+        onChange={(e) => pick(e.target.files?.[0])}
       />
-      {pending !== undefined && pending > 0 && (
-        <span
-          style={{ backgroundColor: "#D97B3F", color: "#FFFFFF" }}
-          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-[10px] font-bold ring-2 ring-background"
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className={pill}>
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+          Change picture
+        </button>
+        {replaced && (
+          <button type="button" disabled={busy} onClick={useDefault} className={pill}>
+            <RotateCcw className="h-3 w-3" /> Use default
+          </button>
+        )}
+      </div>
+      {message && (
+        <p
+          role="status"
+          className={cn(
+            "mt-1.5 font-mono text-[10px]",
+            message.tone === "ok" ? "text-gold" : "text-destructive"
+          )}
         >
-          {pending > 99 ? "99+" : pending}
-        </span>
+          {message.text}
+        </p>
       )}
-    </Link>
+    </div>
   );
 }
 
-function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [railOpen, setRailOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState<string[]>([]);
-  const [signingOut, setSigningOut] = useState(false);
-  const currentPath = useRouterState({ select: (state) => state.location.pathname });
-  const navigate = useNavigate();
-  const trail = useRouteTrail();
-  const signedInEmail = session.user.email ?? "Signed in";
-  const isIgxAi = currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/");
-
-  // Pictures changed from inside the portal: load them once at start, and redraw the page
-  // one time if any were found so every screen shows them. Later changes redraw in place.
+export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }) {
   useBrandVersion();
-  const [pictureLoadTick, setPictureLoadTick] = useState(0);
   useEffect(() => {
-    let alive = true;
-    void loadBrandOverrides().then((found) => {
-      if (alive && found) setPictureLoadTick(1);
-    });
-    return () => {
-      alive = false;
-    };
+    void loadBrandOverrides();
   }, []);
-
-  usePortalRealtime();
-
-  // Real governor identity from the profiles row (falls back to the email).
-  const { data: governor } = useQuery({
-    queryKey: ["own-profile-identity", session.user.id],
-    retry: 1,
-    staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("display_name, handle")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data as { display_name?: string | null; handle?: string | null } | null;
-    },
-  });
-  const governorName = governor?.display_name || signedInEmail;
-  const governorHandle = governor?.handle
-    ? governor.handle.startsWith("@")
-      ? governor.handle
-      : `@${governor.handle}`
-    : null;
-
-  // Honest data-link status: reflects the real activity_log query the ticker runs
-  // (same query key, so this adds no extra request).
-  const { isSuccess: linkOk, isError: linkError } = useQuery({
-    queryKey: ["activity-ticker"],
-    queryFn: getActivity,
-    refetchInterval: 5000,
-  });
-  const linkLabel = linkOk ? "Data link verified" : linkError ? "Data link unavailable" : "Checking data link…";
-  const linkText = linkOk ? "text-teal" : linkError ? "text-destructive" : "text-muted-foreground";
-  const linkDot = linkOk ? "bg-teal" : linkError ? "bg-destructive" : "bg-muted-foreground";
-  const linkPulse = linkOk ? "live-pulse-teal" : linkError ? "live-pulse-red" : "";
-
-  // Header label: which page and sidebar group the governor is on.
-  const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
-  const pageLabel = activeItem?.label ?? "Portal";
-
-  // Log one "session started" entry per browser tab (only the governor shell
-  // mounts this). The flag is set only after a successful insert.
-  useEffect(() => {
-    const key = "ijidi_session_logged";
-    try {
-      if (sessionStorage.getItem(key) === session.user.id) return;
-    } catch {
-      /* sessionStorage unavailable — log anyway */
-    }
-    void logActivity("Governor session started", "Portal").then((ok) => {
-      if (!ok) return;
-      try {
-        sessionStorage.setItem(key, session.user.id);
-      } catch {
-        /* ignore */
-      }
-    });
-  }, [session.user.id]);
-
-  // Every page opens at the top of the window, so an in-page scroll (such as the
-  // IGX AI chat stream) can never carry the whole page with it.
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPath]);
-
-  // Remember whether the desktop sidebar was collapsed.
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem("ijidi_rail_collapsed") === "1");
-    } catch {
-      /* localStorage unavailable — stay expanded */
-    }
-  }, []);
-
-  const toggleCollapsed = () => {
-    sounds.playClick();
-    const next = !collapsed;
-    setCollapsed(next);
-    try {
-      localStorage.setItem("ijidi_rail_collapsed", next ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-  };
-
-  // Sidebar parents (COMMAND / ECOSYSTEM / KNOWLEDGE / IDENTITY) fold and unfold.
-  // Restore what was open last time, then always keep the current page's group open.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("ijidi_nav_open");
-      if (!raw) return;
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setOpenGroups(parsed.filter((g): g is string => typeof g === "string"));
-      }
-    } catch {
-      /* ignore — start with only the active group open */
-    }
-  }, []);
-
-  const activeGroup = activeItem?.group;
-  useEffect(() => {
-    if (!activeGroup) return;
-    setOpenGroups((prev) => (prev.includes(activeGroup) ? prev : [...prev, activeGroup]));
-  }, [activeGroup]);
-
-  const toggleGroup = (label: string) => {
-    sounds.playClick();
-    const next = openGroups.includes(label)
-      ? openGroups.filter((g) => g !== label)
-      : [...openGroups, label];
-    setOpenGroups(next);
-    try {
-      localStorage.setItem("ijidi_nav_open", JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-  };
-
-  // Signing out clears the session; the gate in ChromeGate then redirects to
-  // /login on its own. If sign-out fails, stay put and say so.
-  const handleSignOut = async () => {
-    sounds.playClick();
-    setSigningOut(true);
-    const { error } = await supabase.auth.signOut();
-    setSigningOut(false);
-    if (error) {
-      console.error("Sign-out failed:", error);
-      alert(`Sign-out failed: ${error.message}`);
-    }
-  };
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setPaletteOpen(true);
-      }
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "j") {
-        event.preventDefault();
-        navigate({ to: "/igx-ai" });
-      }
-      if (event.key === "Escape") {
-        setRailOpen(false);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [navigate]);
-
+  const rows = BRAND_ASSETS.map((asset) => ({
+    asset,
+    src: brandSrc(asset.id),
+    used: Array.from(new Set([...asset.placedIn, ...(usage[asset.id] ?? [])])),
+  }));
+  const placed = rows.filter((row) => row.used.length > 0).length;
   return (
-    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
-      {/* HUD overlays — carry the login skin across the whole portal */}
-      <HudOverlays />
-
-      <CircuitBackground />
-
-      {/* Mobile: dim the page behind the open sidebar; tap to close */}
-      {railOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[1px] lg:hidden"
-          onClick={() => setRailOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <TickerBar />
-        <div className="lg:flex">
-          <aside
-            className={cn(
-              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
-              SHELL_TEXT,
-              "lg:sticky lg:top-6 lg:h-[calc(100vh-1.5rem)] lg:shrink-0 lg:translate-x-0 lg:bg-black/[0.06] lg:backdrop-blur-[3px]",
-              collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
-              railOpen ? "translate-x-0" : "-translate-x-full"
-            )}
-          >
-
-            <div className="flex h-full flex-col">
-              <div
-                className={cn(
-                  "flex h-[76px] items-center gap-3 border-b border-border px-5",
-                  collapsed && "lg:justify-center lg:px-0"
-                )}
-              >
-                <Link to="/" onClick={() => { sounds.playClick(); setRailOpen(false); }} aria-label="Go to portal home">
-                  <PortalEmblem />
-                </Link>
-                <Link to="/" onClick={() => { sounds.playClick(); setRailOpen(false); }} className={cn("min-w-0", collapsed && "lg:hidden")}>
-                  <div className="font-display text-sm font-semibold tracking-wide text-foreground">
-                    IJIDI <span className="text-gold">PORTAL</span>
-                  </div>
-                  <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setRailOpen(false)}
-                  aria-label="Close navigation"
-                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-gold/30 text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Back / forward + collapse — one row under the brand block */}
-              <div
-                className={cn(
-                  "hidden items-center gap-1 border-b border-border px-4 py-2 lg:flex",
-                  collapsed && "lg:hidden"
-                )}
-                role="group"
-                aria-label="Page history"
-              >
-                <button
-                  type="button"
-                  disabled={!trail.hasBack}
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={() => {
-                    sounds.playClick();
-                    trail.back();
-                  }}
-                  aria-label="Back"
-                  title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  disabled={!trail.hasForward}
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={() => {
-                    sounds.playClick();
-                    trail.forward();
-                  }}
-                  aria-label="Forward"
-                  title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={toggleCollapsed}
-                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  aria-pressed={collapsed}
-                  title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
-                >
-                  {collapsed ? "»" : "«"}
-                </button>
-              </div>
-
-              {/* NAVIGATION label card */}
-              <div className={cn("border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-gold">
-                  Navigation
-                </span>
-              </div>
-
-              <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4" aria-label="Primary">
-                {navSections.map((section, sectionIndex) => {
-                  const isOpen = openGroups.includes(section.label);
-                  const hasActive = section.items.some((item) => isNavActive(currentPath, item.to));
-                  const groupId = `nav-group-${section.label.toLowerCase()}`;
-                  return (
-                    <div key={section.label} className={cn(sectionIndex > 0 && "mt-2")}>
-                      {/* Icon rail: plain divider between groups */}
-                      {sectionIndex > 0 && (
-                        <div
-                          className={cn("mx-3 mb-3 mt-1 hidden h-px bg-border", collapsed && "lg:block")}
-                          aria-hidden="true"
-                        />
-                      )}
-
-                      {/* Parent row — click to fold or unfold its pages */}
-                      <button type="button"
-                        onClick={() => toggleGroup(section.label)}
-                        onMouseEnter={() => sounds.playHover()}
-                        aria-expanded={isOpen}
-                        aria-controls={groupId}
-                        className={cn(
-                          "flex w-full items-center gap-2 rounded-md border border-transparent px-3 py-2.5 text-left font-mono text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                          hasActive ? "text-gold" : "text-foreground/80 hover:text-foreground",
-                          collapsed && "lg:hidden"
-                        )}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "inline-block text-[8px] text-gold/70 transition-transform duration-150",
-                            isOpen && "rotate-90"
-                          )}
-                        >
-                          ▶
-                        </span>
-                        <span className="flex-1">{section.label}</span>
-                        {hasActive && !isOpen && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
-                        )}
-                        <span className="text-[9px] font-normal tracking-normal text-muted-foreground/60">
-                          {section.items.length}
-                        </span>
-                      </button>
-
-                      {/* Child pages — hidden while the parent is folded (the icon rail always shows them) */}
-                      <div
-                        id={groupId}
-                        className={cn(
-                          "mt-1",
-                          isOpen ? "block" : collapsed ? "hidden lg:block" : "hidden",
-                          !collapsed && "ml-4 border-l border-gold/15 pl-1"
-                        )}
-                      >
-                        {section.items.map((item) => {
-                          const active = isNavActive(currentPath, item.to);
-                          return (
-                            <Link key={item.to}
-                              to={item.to}
-                              title={item.label}
-                              aria-current={active ? "page" : undefined}
-                              onMouseEnter={() => sounds.playHover()}
-                              onClick={() => {
-                                sounds.playClick();
-                                setRailOpen(false);
-                              }}
-                              className={cn(
-                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
-                                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                                collapsed && "lg:justify-center lg:gap-0 lg:px-0",
-                                active && "border-gold/30 bg-gold/10 font-bold text-gold"
-                              )}
-                            >
-                              <span
-                                aria-hidden="true"
-                                className={cn(
-                                  "absolute inset-y-2 left-0 w-0.5 rounded-full bg-gold opacity-0 transition-opacity",
-                                  active && "opacity-100"
-                                )}
-                              />
-                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
-                                {item.icon}
-                              </span>
-                              <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
-                                {item.label}
-                              </span>
-                              <span
-                                className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
-                              >
-                                {item.key}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </nav>
-
-              {/* Settings replaces the old visible ⌘K button; Ctrl/⌘ + K still opens the palette */}
-              <div className="border-t border-border p-4">
-                <Link to="/settings"
-                  title="Settings"
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={() => {
-                    sounds.playClick();
-                    setRailOpen(false);
-                  }}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                    collapsed && "lg:justify-center lg:gap-0"
-                  )}
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-gold">
-                    ⚙
-                  </div>
-                  <div className={cn(collapsed && "lg:hidden")}>
-                    <Eyebrow className="text-[8px]">Account</Eyebrow>
-                    <span className="text-xs text-muted-foreground">Settings</span>
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </aside>
-          <div className="min-w-0 flex-1">
-            <div className={cn(
-                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
-                SHELL_TEXT
-              )}>
-              <div className="flex items-center gap-4">
-                <span className={cn("flex items-center gap-1.5", linkText)}>
-                  <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkPulse)} />
-                  {linkLabel}
-                </span>
-                <span className="hidden sm:inline">
-                  Session <SessionTimer since={session.user.last_sign_in_at} />
-                </span>
-                <span className="hidden md:inline">Build / 01</span>
-                <span className="hidden xl:inline">Data / honest-state protocol</span>
-              </div>
-              <LiveClock />
-            </div>
-            <header className={cn(
-                "flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-black/[0.06] backdrop-blur-[3px] px-4 sm:px-6",
-                SHELL_TEXT
-              )}>
-              <div className="flex min-w-0 items-center gap-3">
-                <button type="button"
-                  className="flex shrink-0 items-center gap-2 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition-all hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
-                  onMouseEnter={() => sounds.playHover()}
-                  onClick={() => {
-                    sounds.playClick();
-                    setRailOpen(!railOpen);
-                  }}
-                  aria-label={railOpen ? "Close navigation" : "Open navigation"}
-                  aria-expanded={railOpen}
-                >
-                  <span aria-hidden="true" className="text-sm leading-none">☰</span>
-                  Menu
-                </button>
-                <div className="min-w-0">
-                  <div
-                    className="truncate font-display text-base font-semibold tracking-wide text-foreground"
-                    title="You are here"
-                  >
-                    {pageLabel}
-                  </div>
-                  {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
-                </div>
-              </div>
-
-              {/* Governor identity and sign-out */}
-              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <div
-                  className="hidden items-center gap-3 rounded-md border border-gold/30 bg-black/25 backdrop-blur-[3px] px-3 py-1.5 md:flex"
-                  title={signedInEmail}
-                >
-                  <BrandBadge label={governorName} size="h-8 w-8" letterFallback={false} />
-                  <span className="rounded border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
-                    Governor
-                  </span>
-                  <div className="min-w-0 leading-tight">
-                    <div className="max-w-[170px] truncate text-xs font-medium text-foreground">
-                      {governorName}
-                    </div>
-                    <div className="max-w-[170px] truncate font-mono text-[9px] tracking-wider text-muted-foreground">
-                      {governorHandle ?? signedInEmail}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSignOut}
-                  onMouseEnter={() => sounds.playHover()}
-                  disabled={signingOut}
-                  className="rounded-md border border-border bg-black/25 backdrop-blur-[3px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
-                  title="Sign out of the portal"
-                >
-                  {signingOut ? "Signing out…" : "Sign out"}
-                </button>
-              </div>
-            </header>
-            {/* Tab navigation above the command area (same pages as the sidebar) */}
-            {!isIgxAi && (
-            <div className="px-4 pt-4 sm:px-6 lg:px-8">
-              <nav
-                aria-label="Sections"
-                className={cn(
-                  "flex gap-1 overflow-x-auto rounded-2xl border border-gold/20 bg-black/10 p-1 backdrop-blur-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-                  SHELL_TEXT
-                )}
-              >
-                {navItems.map((item) => {
-                  const active = isNavActive(currentPath, item.to);
-                  return (
-                    <Link key={item.to}
-                      to={item.to}
-                      aria-current={active ? "page" : undefined}
-                      onMouseEnter={() => sounds.playHover()}
-                      onClick={() => sounds.playClick()}
-                      className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
-                        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                        active
-                          ? "bg-gold font-semibold text-primary-foreground"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-            )}
-            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}><Fragment key={pictureLoadTick}>{children}</Fragment></main>
-          </div>
-        </div>
-      </div>
-
-      <IgxFloatingButton hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/")} />
-      <EntityDock
-        hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/") || railOpen}
+    <GlassCard index={1} className="p-5 sm:p-7">
+      <PanelHead
+        eyebrow="Brand library"
+        title="Logos, portraits and leads"
+        desc={`${placed} of ${rows.length} pictures are on a page today. Each of the rest has leads: where it is meant to go next. Change any picture from here; the original files stay in public/brand as the defaults.`}
       />
-
-      <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
-        <CommandInput placeholder="Type a command or search modules..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          {navSections.map((section) => (
-            <CommandGroup key={section.label} heading={section.label}>
-              {section.items.map((item) => (
-                <CommandItem
-                  key={item.to}
-                  onSelect={() => {
-                    sounds.playClick();
-                    navigate({ to: item.to });
-                    setPaletteOpen(false);
-                  }}
-                >
-                  <span>{item.label}</span>
-                  <CommandShortcut>{item.key}</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
-        </CommandList>
-      </CommandDialog>
-    </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {rows.map(({ asset, src, used }) => {
+          const status = !src ? "Artwork needed" : used.length > 0 ? "On a page" : "Not placed yet";
+          return (
+            <div key={asset.id} className="rounded-xl border border-gold/20 bg-black/20 p-4">
+              <div className="flex items-center gap-3">
+                <BrandThumb key={src ?? "none"} src={src} label={asset.label} />
+                <div className="min-w-0">
+                  <div className="truncate text-[13.5px] font-semibold text-foreground">{asset.label}</div>
+                  {asset.tagline && (
+                    <div className="mt-0.5 text-[11px] italic text-muted-foreground">{asset.tagline}</div>
+                  )}
+                  <span
+                    className={cn(
+                      "mt-2 inline-block rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]",
+                      status === "On a page"
+                        ? "border-[#5E9BFF]/50 bg-[#5E9BFF]/10 text-[#8FB4FF]"
+                        : "border-gold/40 bg-gold/10 text-gold"
+                    )}
+                  >
+                    {status}
+                  </span>
+                </div>
+              </div>
+              <BrandPictureControls assetId={asset.id} label={asset.label} />
+              {used.length > 0 && (
+                <p className="mt-3 font-mono text-[10px] leading-relaxed text-muted-foreground">
+                  Shown in: {used.join(" · ")}
+                </p>
+              )}
+              {asset.leads.length > 0 && (
+                <ul className="mt-2 space-y-1 text-[11.5px] text-muted-foreground">
+                  {asset.leads.map((lead) => (
+                    <li key={lead} className="flex gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+                      <span>{lead}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </GlassCard>
   );
 }
