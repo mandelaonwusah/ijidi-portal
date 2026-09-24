@@ -147,7 +147,7 @@ function Governance() {
             <div className="mt-4 flex items-center gap-2">
               <span
                 className={`h-2 w-2 rounded-full ${
-                  sessionEmail ? "bg-teal live-pulse" : "bg-muted-foreground/40"
+                  sessionEmail ? "bg-teal live-pulse-teal" : "bg-muted-foreground/40"
                 }`}
               />
               <span
@@ -258,7 +258,7 @@ function Governance() {
                 </div>
               </div>
               <div className="flex items-center gap-2 font-mono text-[9px] uppercase text-muted-foreground">
-                {decisionsQ.isLoading && <span className="text-gold live-pulse">FETCHING…</span>}
+                {decisionsQ.isLoading && <span className="text-gold live-pulse-amber">FETCHING…</span>}
                 {!decisionsQ.isLoading && !decisionsQ.isError && (
                   <span>{decisions.length} records</span>
                 )}

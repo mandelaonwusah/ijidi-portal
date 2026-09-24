@@ -569,7 +569,7 @@ function MemberShell({ session }: { session: Session }) {
               className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
               title={email}
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse-teal" />
               <span className="truncate">{email}</span>
             </span>
             <button
@@ -638,7 +638,7 @@ function MemberShell({ session }: { session: Session }) {
                       className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-teal live-pulse" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-gold live-pulse-gold" />
                         <div className="font-display text-base text-foreground">{title}</div>
                       </div>
                       <dl className="mt-3 space-y-1.5">
@@ -826,6 +826,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   const linkLabel = linkOk ? "Data link verified" : linkError ? "Data link unavailable" : "Checking data link…";
   const linkText = linkOk ? "text-teal" : linkError ? "text-destructive" : "text-muted-foreground";
   const linkDot = linkOk ? "bg-teal" : linkError ? "bg-destructive" : "bg-muted-foreground";
+  const linkPulse = linkOk ? "live-pulse-teal" : linkError ? "live-pulse-red" : "";
 
   // Header label: which page and sidebar group the governor is on.
   const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
@@ -1187,7 +1188,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               )}>
               <div className="flex items-center gap-4">
                 <span className={cn("flex items-center gap-1.5", linkText)}>
-                  <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkOk && "live-pulse")} />
+                  <span className={cn("h-1.5 w-1.5 rounded-full", linkDot, linkPulse)} />
                   {linkLabel}
                 </span>
                 <span className="hidden sm:inline">
