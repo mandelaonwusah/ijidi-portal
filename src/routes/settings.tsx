@@ -1,11 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Gauge, Palette, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, Gauge, Loader2, Palette, RotateCcw, ShieldCheck } from "lucide-react";
 import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
-import { brandFor, brandSrc } from "@/lib/brand-assets";
+import {
+  brandFor,
+  brandSrc,
+  hasBrandOverride,
+  loadBrandOverrides,
+  resetBrandImage,
+  uploadBrandImage,
+  useBrandVersion,
+} from "@/lib/brand-assets";
 import { TICKER_PX_PER_SEC, setUiPref, useUiPrefs, type TickerSpeed } from "@/lib/ui-prefs";
 import { cn } from "@/lib/utils";
 
@@ -36,22 +44,92 @@ type Identity = {
   profile: { display_name?: string | null; handle?: string | null; access_tier?: string | null } | null;
 };
 
-function IdentityPicture({ name }: { name: string }) {
-  const src = brandSrc(brandFor(name)?.id ?? "");
+function IdentityPicture({ name, canEdit }: { name: string; canEdit: boolean }) {
+  useBrandVersion();
+  const assetId = brandFor(name)?.id ?? null;
+  const src = assetId ? brandSrc(assetId) : null;
   const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const pick = async (file: File | undefined) => {
+    if (!file || !assetId) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await uploadBrandImage(assetId, file);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Picture updated." } : { tone: "error", text: result.error });
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const useDefault = async () => {
+    if (!assetId) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await resetBrandImage(assetId);
+    setBusy(false);
+    setMessage(result.ok ? { tone: "ok", text: "Back to the default picture." } : { tone: "error", text: result.error });
+  };
+
+  const pillClass =
+    "inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+
   return (
-    <span className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-gold/10 font-display text-4xl font-semibold text-gold">
-      {src && !failed ? (
-        <img
-          src={src}
-          alt={name}
-          onError={() => setFailed(true)}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        name.charAt(0).toUpperCase()
+    <div className="flex flex-col items-center">
+      {/* Large governor portrait: gold-to-blue ring with a soft glow */}
+      <span className="rounded-full bg-gradient-to-br from-[#E3C27A] via-[#C6A15B] to-[#4F86F7] p-[3px] shadow-[0_0_44px_rgba(198,161,91,0.28)]">
+        <span className="flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-[#0a0d14] font-display text-6xl font-semibold text-gold sm:h-48 sm:w-48">
+          {src && !failed ? (
+            <img
+              src={src}
+              alt={name}
+              onError={() => setFailed(true)}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            name.charAt(0).toUpperCase()
+          )}
+        </span>
+      </span>
+
+      {canEdit && assetId && (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-label="Choose a picture"
+            onChange={(e) => pick(e.target.files?.[0])}
+          />
+          <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className={pillClass}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+            Change picture
+          </button>
+          {hasBrandOverride(assetId) && (
+            <button type="button" disabled={busy} onClick={useDefault} className={pillClass}>
+              <RotateCcw className="h-3.5 w-3.5" /> Use default
+            </button>
+          )}
+        </div>
       )}
-    </span>
+      {message && (
+        <p
+          role="status"
+          className={cn(
+            "mt-2 text-center font-mono text-[10.5px]",
+            message.tone === "ok" ? "text-gold" : "text-destructive"
+          )}
+        >
+          {message.text}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -71,6 +149,11 @@ function formatWhen(iso?: string | null): string {
 
 function Settings() {
   const { tickerSpeed } = useUiPrefs();
+
+  // Pick up any pictures changed from inside the portal.
+  useEffect(() => {
+    void loadBrandOverrides();
+  }, []);
 
   const {
     data: identity,
@@ -131,10 +214,10 @@ function Settings() {
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         {/* Identity */}
         <GlassCard index={1} className="p-6">
-          <div className="flex items-start gap-5">
-            <IdentityPicture name={name} />
-            <div className="min-w-0">
-              <Eyebrow className="text-teal">{isGovernor ? "Governor" : "Signed-in identity"}</Eyebrow>
+          <div className="flex flex-col items-center text-center">
+            <IdentityPicture name={name} canEdit={isGovernor} />
+            <div className="mt-5 min-w-0">
+              <Eyebrow className="text-gold">{isGovernor ? "Governor" : "Signed-in identity"}</Eyebrow>
               <h2 className="mt-2 break-words font-display text-2xl font-semibold">
                 {isLoading ? "Loading…" : name}
               </h2>
