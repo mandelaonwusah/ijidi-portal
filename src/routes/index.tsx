@@ -149,6 +149,7 @@ function stateTone(state?: string | null): { dot: string; text: string } {
 function CommandCenterOverview() {
   const [isEntitiesOpen, setIsEntitiesOpen] = useState(false);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("Welcome back");
 
   useEffect(() => {
     let active = true;
@@ -158,6 +159,11 @@ function CommandCenterOverview() {
     return () => {
       active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setGreeting(hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
   }, []);
 
   const {
@@ -221,8 +227,52 @@ function CommandCenterOverview() {
     { label: "SYSTEM UPTIME", raw: metrics?.uptime, icon: Server },
   ];
 
+  const pendingReviewCount =
+    metricsLoading || metricsError || !metrics ? null : Number(metrics.activeProposals) || 0;
+  const latestActivityAt = activity && activity.length > 0 ? activity[0].timestamp : null;
+
   return (
     <div className="space-y-8">
+      {/* Home brief strip — real, honest-state summary, sits above the header banner
+          (which carries the Governor identity block up in the shared shell). */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-black/20 px-5 py-3 backdrop-blur-[3px]">
+        <div className="font-mono text-sm">
+          <span className="font-semibold text-gold">{greeting}</span>
+          {sessionEmail && <span className="text-muted-foreground">, {sessionEmail}</span>}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px]">
+          {pendingReviewCount === null ? (
+            <span className="text-muted-foreground">Pending review: …</span>
+          ) : pendingReviewCount > 0 ? (
+            <Link
+              to="/governance"
+              className="flex items-center gap-1.5 text-amber-400 transition-colors hover:text-amber-300"
+            >
+              <Target className="h-3 w-3" /> {pendingReviewCount} pending review
+              {pendingReviewCount === 1 ? "" : "s"}
+            </Link>
+          ) : (
+            <span className="flex items-center gap-1.5 text-teal-400">
+              <Target className="h-3 w-3" /> Nothing pending
+            </span>
+          )}
+          <span className="text-muted-foreground">
+            {entitiesLoading
+              ? "Entities: …"
+              : entitiesError
+              ? "Entities: unavailable"
+              : `${entityList.length} entities tracked`}
+          </span>
+          <span className="text-muted-foreground">
+            {activityLoading
+              ? "Last activity: …"
+              : latestActivityAt
+              ? `Last activity ${formatRelativeTime(latestActivityAt)}`
+              : "No activity on record"}
+          </span>
+        </div>
+      </div>
+
       {/* Header banner */}
       <GlassCard
         index={0}
