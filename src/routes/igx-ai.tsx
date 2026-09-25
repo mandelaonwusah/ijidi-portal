@@ -1378,9 +1378,9 @@ function IgxAi() {
           animation: igxBreathe 4.5s ease-in-out infinite; }
 
         .igx-chat .igx-composer { position: relative; border-radius: 24px; border: 1px solid transparent;
-          background: linear-gradient(rgba(9,12,20,.74), rgba(7,9,15,.8)) padding-box,
+          background: linear-gradient(rgba(9,12,20,.42), rgba(7,9,15,.5)) padding-box,
                       linear-gradient(135deg, rgba(198,161,91,.5), rgba(79,134,247,.4)) border-box;
-          backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%);
+          backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
           box-shadow: 0 18px 50px rgba(0,0,0,.45); transition: box-shadow .3s ease; }
         .igx-chat .igx-composer:focus-within { box-shadow: 0 18px 60px rgba(79,134,247,.2), 0 0 0 1px rgba(198,161,91,.12);
           background: linear-gradient(rgba(9,12,20,.8), rgba(7,9,15,.86)) padding-box,
@@ -1535,7 +1535,7 @@ function IgxAi() {
                     <p className="mb-1 text-right font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
                       {msg.scopeLabel}
                     </p>
-                    <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-foreground">
+                    <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-gold backdrop-blur-md backdrop-saturate-150">
                       {msg.text}
                     </div>
                   </div>
@@ -1544,9 +1544,9 @@ function IgxAi() {
                 {/* IGX AI */}
                 <div className="flex items-start gap-3">
                   <Avatar src={igxAvatar} label="IGX" bare className="h-9 w-9 text-sm" />
-                  <div className="max-w-[88%] space-y-3 rounded-2xl rounded-tl-md border border-white/10 bg-black/25 px-4 py-3">
+                  <div className="max-w-[88%] space-y-3 rounded-2xl rounded-tl-md border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md backdrop-saturate-150">
                     <div className="flex items-start justify-between gap-4">
-                      <p className="text-[14px] leading-relaxed text-foreground">
+                      <p className="text-[14px] leading-relaxed text-blue">
                         {msg.status === "error"
                           ? "I could not save that request."
                           : !msg.proposalId
