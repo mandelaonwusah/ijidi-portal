@@ -1467,9 +1467,10 @@ function IgxAi() {
       )}
 
       {empty ? (
-        /* Empty state: logo and name on one line, greeting, composer, centred */
+        /* Empty state: logo and name lifted tight against the greeting and
+           composer, clustered close to center instead of spread apart. */
         <div className="flex flex-1 flex-col items-center justify-center px-1 pb-6">
-          <div className="igx-rise flex items-center justify-center gap-5">
+          <div className="igx-rise flex items-center justify-center gap-3">
             <div className="igx-emblem">
               <Avatar src={igxAvatar} label="IGX" bare className="h-full w-full border-0 text-xl" />
             </div>
@@ -1478,14 +1479,14 @@ function IgxAi() {
             </h1>
           </div>
           <p
-            className="igx-rise mt-6 text-center font-display text-2xl text-foreground sm:text-[28px]"
+            className="igx-rise mt-2 text-center font-display text-2xl text-foreground sm:text-[28px]"
             style={{ animationDelay: ".08s" }}
           >
             {greetingWord()}
             {firstName ? `, ${firstName}` : ""}
           </p>
           <p
-            className="igx-rise mt-2 max-w-md text-center text-sm text-muted-foreground"
+            className="igx-rise mt-1.5 max-w-md text-center text-sm text-muted-foreground"
             style={{ animationDelay: ".14s" }}
           >
             Tell IGX AI what needs doing. It becomes a proposal, and nothing runs without your
@@ -1494,13 +1495,13 @@ function IgxAi() {
           {/* The entrance animation makes each block its own layer, so the block that holds
               the pop-up must sit above the blocks after it (the starter chips). */}
           <div
-            className={cn("igx-rise mt-7 w-full max-w-2xl", popoverOpen && "relative z-50")}
+            className={cn("igx-rise mt-4 w-full max-w-2xl", popoverOpen && "relative z-50")}
             style={{ animationDelay: ".2s" }}
           >
             {composer(true)}
           </div>
           <div
-            className="igx-rise mt-5 flex max-w-2xl flex-wrap justify-center gap-2"
+            className="igx-rise mt-3 flex max-w-2xl flex-wrap justify-center gap-2"
             style={{ animationDelay: ".26s" }}
           >
             {STARTERS.map((starter) => (
