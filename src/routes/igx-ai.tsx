@@ -1546,7 +1546,7 @@ function IgxAi() {
                   <Avatar src={igxAvatar} label="IGX" bare className="h-9 w-9 text-sm" />
                   <div className="max-w-[88%] space-y-3 rounded-2xl rounded-tl-md border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md backdrop-saturate-150">
                     <div className="flex items-start justify-between gap-4">
-                      <p className="text-[14px] leading-relaxed text-blue">
+                      <p className="text-[14px] leading-relaxed text-white">
                         {msg.status === "error"
                           ? "I could not save that request."
                           : !msg.proposalId
