@@ -1427,17 +1427,21 @@ function IgxAi() {
         <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closePopovers} />
       )}
 
-      {/* Top bar */}
+      {/* Top bar — New chat, History, Requests and IGX AI settings kept as one tight group,
+          all with their text label always showing (no more icon-only on narrow screens). */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {navArrows}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button type="button" onClick={newChat} className={cn(pillButton, "lg:hidden")} aria-label="New chat">
+            <Plus className="h-3.5 w-3.5 text-gold" /> <span>New</span>
+          </button>
           <button type="button" onClick={() => setDrawer("chats")} className={cn(pillButton, "lg:hidden")} aria-label="Chat history">
-            <History className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">History</span>
+            <History className="h-3.5 w-3.5 text-gold" /> <span>History</span>
           </button>
           <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
-            <Clock className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">Requests</span>
+            <Clock className="h-3.5 w-3.5 text-gold" /> <span>Requests</span>
             {!queueLoading && !queueError && (pendingCount ?? 0) > 0 && (
               <span className="rounded-full bg-gold px-1.5 py-px text-[10px] font-bold text-primary-foreground">
                 {pendingCount}
@@ -1449,9 +1453,9 @@ function IgxAi() {
             onClick={() => go({ mode: "settings", tab: view.tab, chatId: view.chatId })}
             aria-label="IGX AI settings"
             title="IGX AI settings"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            className={pillButton}
           >
-            <Settings2 className="h-4 w-4" />
+            <Settings2 className="h-4 w-4 text-gold" /> <span>IGX AI</span>
           </button>
         </div>
       </div>
