@@ -27,9 +27,9 @@ export const navItems = [
 // "forming" = --gold).
 export const entitySwitcherItems = [
   { key: "group", label: "IJIDI Group", to: "/ecosystem", status: "standby" },
-  { key: "foundation", label: "IJIDI Foundation", to: "/foundation", status: "standby" },
   { key: "atelier", label: "IJIDI Atelier", to: "/atelier", status: "forming" },
   { key: "media", label: "IJIDI Media", to: "/media", status: "forming" },
+  { key: "foundation", label: "IJIDI Foundation", to: "/foundation", status: "standby" },
 ] as const;
 
 // Floating entity dock (bottom centre of every governor page except the IGX AI
@@ -75,6 +75,21 @@ export const modules = [
     siteUrl: "https://ijidigroup.com",
   },
   {
+    name: "IJIDI Atelier",
+    code: "ATL-01",
+    detail: "Luxury fashion house",
+    state: "forming",
+    to: "/atelier",
+    handle: "@ijidiatelier",
+  },
+  {
+    name: "IJIDI Media",
+    code: "MED-01",
+    detail: "AI-generated content studio",
+    state: "forming",
+    to: "/media",
+  },
+  {
     name: "IJIDI Foundation",
     code: "FND-01",
     detail: "Programmes & impact registry",
@@ -89,21 +104,6 @@ export const modules = [
     detail: "Intelligence console",
     state: "ready",
     to: "/igx-ai",
-  },
-  {
-    name: "IJIDI Atelier",
-    code: "ATL-01",
-    detail: "Luxury fashion house",
-    state: "forming",
-    to: "/atelier",
-    handle: "@ijidiatelier",
-  },
-  {
-    name: "IJIDI Media",
-    code: "MED-01",
-    detail: "AI-generated content studio",
-    state: "forming",
-    to: "/media",
   },
 ] as const;
 
@@ -122,10 +122,10 @@ export const activity = [
 ];
 
 export const ecosystemNodes = [
-  { name: "IJIDI Foundation", code: "FND", kind: "philanthropic", state: "forming", x: 15, y: 68 },
-  { name: "IJIDI Group", code: "GRP", kind: "corporate", state: "forming", x: 38, y: 68 },
-  { name: "IJIDI Atelier", code: "ATL", kind: "creative", state: "forming", x: 61, y: 68 },
-  { name: "IJIDI Media", code: "MED", kind: "creative", state: "forming", x: 84, y: 68 },
+  { name: "IJIDI Group", code: "GRP", kind: "corporate", state: "forming", x: 15, y: 68 },
+  { name: "IJIDI Atelier", code: "ATL", kind: "creative", state: "forming", x: 38, y: 68 },
+  { name: "IJIDI Media", code: "MED", kind: "creative", state: "forming", x: 61, y: 68 },
+  { name: "IJIDI Foundation", code: "FND", kind: "philanthropic", state: "forming", x: 84, y: 68 },
 ];
 
 export const vaultItems = [
