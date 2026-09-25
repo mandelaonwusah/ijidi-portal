@@ -42,33 +42,6 @@ export const floatingSwitcherItems = [
   { key: "foundation", label: "Foundation", kind: "route", to: "/foundation" },
 ] as const;
 
-export const metricTiles = [
-  {
-    label: "Tracked capital",
-    value: "—",
-    status: "not-tracked" as const,
-    detail: "No verified entries",
-  },
-  {
-    label: "Active programmes",
-    value: "—",
-    status: "not-tracked" as const,
-    detail: "No verified entries",
-  },
-  {
-    label: "System readiness",
-    value: "—",
-    status: "not-tracked" as const,
-    detail: "No verified check",
-  },
-  {
-    label: "Open decisions",
-    value: "—",
-    status: "not-tracked" as const,
-    detail: "No decisions logged",
-  },
-];
-
 export const modules = [
   {
     name: "IJIDI Group",
@@ -213,7 +186,6 @@ export const igxPeople = {
     label: "Mandela Onwusah",
     state: "active",
     subs: [
-      { id: "overview", label: "Overview" },
       { id: "thought-leader", label: "Thought Leader" },
       { id: "strategic-consultant", label: "Strategic Consultant" },
       { id: "diplomatic-architect", label: "Diplomatic Architect" },
