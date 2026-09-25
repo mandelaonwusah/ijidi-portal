@@ -1431,9 +1431,6 @@ function IgxAi() {
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {navArrows}
-          <button type="button" onClick={newChat} className={pillButton} aria-label="New chat">
-            <Plus className="h-3.5 w-3.5 text-gold" /> <span className="hidden sm:inline">New chat</span>
-          </button>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setDrawer("chats")} className={cn(pillButton, "lg:hidden")} aria-label="Chat history">
