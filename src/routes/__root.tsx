@@ -323,7 +323,7 @@ function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="tabular-nums text-gold" suppressHydrationWarning>
+    <span className="tabular-nums text-blue" suppressHydrationWarning>
       {now ? formatUtc(now) : "UTC --:-- · -- --- ----"}
     </span>
   );
@@ -835,15 +835,43 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
   // Honest data-link status: reflects the real activity_log query the ticker runs
   // (same query key, so this adds no extra request).
-  const { isSuccess: linkOk, isError: linkError } = useQuery({
+  const { isSuccess: linkOk, isError: linkError, isFetching: linkRefreshing } = useQuery({
     queryKey: ["activity-ticker"],
     queryFn: getActivity,
     refetchInterval: 5000,
   });
-  const linkLabel = linkOk ? "Data link verified" : linkError ? "Data link unavailable" : "Checking data link…";
-  const linkText = linkOk ? "text-teal" : linkError ? "text-destructive" : "text-muted-foreground";
-  const linkDot = linkOk ? "bg-teal" : linkError ? "bg-destructive" : "bg-muted-foreground";
-  const linkPulse = linkOk ? "live-pulse-teal" : linkError ? "live-pulse-red" : "";
+  // Fourth, genuine state: already verified but the 5s poll is mid-flight —
+  // distinct from the initial "checking" state, using React Query's own
+  // isFetching flag rather than a made-up signal.
+  const linkSyncing = linkOk && linkRefreshing;
+  const linkLabel = linkSyncing
+    ? "Data link syncing…"
+    : linkOk
+      ? "Data link verified"
+      : linkError
+        ? "Data link unavailable"
+        : "Checking data link…";
+  const linkText = linkSyncing
+    ? "text-blue"
+    : linkOk
+      ? "text-teal"
+      : linkError
+        ? "text-destructive"
+        : "text-muted-foreground";
+  const linkDot = linkSyncing
+    ? "bg-blue"
+    : linkOk
+      ? "bg-teal"
+      : linkError
+        ? "bg-destructive"
+        : "bg-muted-foreground";
+  const linkPulse = linkSyncing
+    ? "live-pulse-blue"
+    : linkOk
+      ? "live-pulse-teal"
+      : linkError
+        ? "live-pulse-red"
+        : "";
 
   // Header label: which page and sidebar group the governor is on.
   const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
