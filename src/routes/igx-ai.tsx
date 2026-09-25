@@ -1535,7 +1535,7 @@ function IgxAi() {
                     <p className="mb-1 text-right font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
                       {msg.scopeLabel}
                     </p>
-                    <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-gold backdrop-blur-md backdrop-saturate-150">
+                    <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-white backdrop-blur-md backdrop-saturate-150">
                       {msg.text}
                     </div>
                   </div>
@@ -1546,7 +1546,7 @@ function IgxAi() {
                   <Avatar src={igxAvatar} label="IGX" bare className="h-9 w-9 text-sm" />
                   <div className="max-w-[88%] space-y-3 rounded-2xl rounded-tl-md border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md backdrop-saturate-150">
                     <div className="flex items-start justify-between gap-4">
-                      <p className="text-[14px] leading-relaxed text-blue">
+                      <p className="text-[14px] leading-relaxed text-gold">
                         {msg.status === "error"
                           ? "I could not save that request."
                           : !msg.proposalId
