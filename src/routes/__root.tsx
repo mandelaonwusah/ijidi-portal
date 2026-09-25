@@ -1074,8 +1074,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               </div>
 
               {/* NAVIGATION label card */}
-              <div className={cn("border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-gold">
+              <div className={cn("flex items-center justify-center border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
+                <span className="font-mono text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold">
                   Navigation
                 </span>
               </div>
