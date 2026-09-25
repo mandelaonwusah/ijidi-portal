@@ -1001,7 +1001,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     }
 
     /* glowing nodes */
-    for (const o of STILL_LIGHTS ? orbs : []) {
+    for (const o of orbs) {
       if (!o.hex) continue;
       const k = animate ? 0.62 + 0.38 * Math.sin(T * o.f * 2.2 * SPEED + o.ph) : 0.75;
       const r = o.r * 2;
