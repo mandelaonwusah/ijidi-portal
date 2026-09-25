@@ -15,7 +15,7 @@ export const navItems = [
   { label: "Capital Engine", to: "/capital", icon: "◈", key: "05", group: "ECOSYSTEM" },
   { label: "Foundation", to: "/foundation", icon: "✦", key: "06", group: "ECOSYSTEM" },
   { label: "Atelier", to: "/atelier", icon: "◆", key: "07", group: "ECOSYSTEM" },
-  { label: "Media", to: "/media", icon: "▶", key: "08", group: "ECOSYSTEM" },
+  { label: "Media", to: "/media", icon: "▤", key: "08", group: "ECOSYSTEM" },
   { label: "Directory", to: "/directory", icon: "⊞", key: "09", group: "ECOSYSTEM" },
   { label: "The Vault", to: "/vault", icon: "▣", key: "10", group: "KNOWLEDGE" },
   { label: "Identity", to: "/settings", icon: "◌", key: "11", group: "IDENTITY" },
