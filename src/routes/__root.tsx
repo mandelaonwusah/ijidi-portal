@@ -1187,27 +1187,32 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                                 setRailOpen(false);
                               }}
                               className={cn(
-                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                                "group relative mb-2 flex items-center gap-3.5 rounded-xl border border-transparent px-3.5 py-3.5 font-mono text-[12px] uppercase tracking-[0.08em] text-muted-foreground shadow-sm transition-all hover:-translate-y-px hover:border-gold/20 hover:bg-muted hover:text-foreground hover:shadow-md",
                                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                                 collapsed && "lg:justify-center lg:gap-0 lg:px-0",
-                                active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                                active &&
+                                  "border-gold bg-gold font-bold text-primary-foreground shadow-[0_10px_26px_rgba(198,161,91,.35)] hover:-translate-y-0 hover:border-gold hover:bg-gold hover:text-primary-foreground"
                               )}
                             >
                               <span
-                                aria-hidden="true"
                                 className={cn(
-                                  "absolute inset-y-2 left-0 w-0.5 rounded-full bg-gold opacity-0 transition-opacity",
-                                  active && "opacity-100"
+                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm transition-colors",
+                                  active
+                                    ? "border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground"
+                                    : "border-gold/20 bg-black/20 text-gold/80 group-hover:border-gold/40"
                                 )}
-                              />
-                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
+                              >
                                 {item.icon}
                               </span>
-                              <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
+                              <span className={cn("flex-1 truncate text-[12.5px] tracking-[0.06em]", collapsed && "lg:hidden")}>
                                 {item.label}
                               </span>
                               <span
-                                className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
+                                className={cn(
+                                  "text-[9px] tracking-normal",
+                                  active ? "text-primary-foreground/70" : "text-muted-foreground/60",
+                                  collapsed && "lg:hidden"
+                                )}
                               >
                                 {item.key}
                               </span>
