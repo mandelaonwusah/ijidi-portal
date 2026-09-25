@@ -1013,11 +1013,15 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </button>
               </div>
 
-              {/* Back / forward + collapse — one row under the brand block */}
+              {/* Back / forward + collapse — one row under the brand block.
+                  FIX (25 Sep 2026): this row used to fully hide itself when the
+                  sidebar was collapsed, taking its own re-expand button down with
+                  it — that was the bug where collapsing left no way back. Now it
+                  stays visible and just centers/tightens for the narrow rail. */}
               <div
                 className={cn(
                   "hidden items-center gap-1 border-b border-border px-4 py-2 lg:flex",
-                  collapsed && "lg:hidden"
+                  collapsed && "lg:justify-center lg:gap-1.5 lg:px-1"
                 )}
                 role="group"
                 aria-label="Page history"
@@ -1046,7 +1050,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   }}
                   aria-label="Forward"
                   title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
+                    collapsed && "lg:hidden"
+                  )}
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
@@ -1057,7 +1064,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   aria-pressed={collapsed}
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    !collapsed && "ml-auto"
+                  )}
                 >
                   {collapsed ? "»" : "«"}
                 </button>
