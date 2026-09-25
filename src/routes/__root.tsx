@@ -1143,10 +1143,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         aria-controls={groupId}
                         className={cn(
                           "flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-3 text-left font-mono text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
-                          isOpen
+                          isOpen || hasActive
                             ? "border-gold bg-gold text-primary-foreground shadow-[0_10px_26px_rgba(198,161,91,.3)] hover:bg-gold"
-                            : hasActive
-                            ? "text-gold"
                             : "text-foreground/80 hover:text-foreground",
                           collapsed && "lg:hidden"
                         )}
@@ -1155,19 +1153,20 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                           aria-hidden="true"
                           className={cn(
                             "inline-block text-[9px] transition-transform duration-150",
-                            isOpen ? "rotate-90 text-primary-foreground" : "text-gold/70"
+                            isOpen ? "rotate-90" : "",
+                            isOpen || hasActive ? "text-primary-foreground" : "text-gold/70"
                           )}
                         >
                           ▶
                         </span>
                         <span className="flex-1">{section.label}</span>
                         {hasActive && !isOpen && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" aria-hidden="true" />
                         )}
                         <span
                           className={cn(
                             "text-[9px] font-normal tracking-normal",
-                            isOpen ? "text-primary-foreground/70" : "text-muted-foreground/60"
+                            isOpen || hasActive ? "text-primary-foreground/70" : "text-muted-foreground/60"
                           )}
                         >
                           {section.items.length}
