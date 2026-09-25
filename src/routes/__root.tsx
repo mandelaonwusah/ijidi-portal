@@ -785,6 +785,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
 function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [igxRevealed, setIgxRevealed] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [signingOut, setSigningOut] = useState(false);
@@ -958,6 +959,45 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
     return () => window.removeEventListener("keydown", onKey);
   }, [navigate]);
 
+  // IGX AI screen (mobile): starts collapsed to just the ticker bar. A
+  // downward swipe from the top reveals the session bar, header, and the
+  // navigation list on top of the page; swiping up collapses it again.
+  // Leaving the screen resets it so it's collapsed next time.
+  useEffect(() => {
+    setIgxRevealed(false);
+    if (!isIgxAi) setRailOpen(false);
+  }, [isIgxAi]);
+
+  useEffect(() => {
+    if (!isIgxAi) return;
+    let startY: number | null = null;
+    const onTouchStart = (event: TouchEvent) => {
+      startY = event.touches[0]?.clientY ?? null;
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      if (startY == null) return;
+      const dy = (event.touches[0]?.clientY ?? startY) - startY;
+      if (dy > 60 && window.scrollY <= 4) {
+        setIgxRevealed(true);
+        setRailOpen(true);
+      } else if (dy < -60) {
+        setIgxRevealed(false);
+        setRailOpen(false);
+      }
+    };
+    const onTouchEnd = () => {
+      startY = null;
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [isIgxAi]);
+
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
       {/* HUD overlays — carry the login skin across the whole portal */}
@@ -1075,7 +1115,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
               {/* NAVIGATION label card */}
               <div className={cn("flex items-center justify-center border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
-                <span className="font-mono text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold">
+                <span className="font-mono text-sm font-extrabold uppercase tracking-[0.18em] text-blue">
                   Navigation
                 </span>
               </div>
@@ -1208,7 +1248,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           <div className="min-w-0 flex-1">
             <div className={cn(
                 "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
-                SHELL_TEXT
+                SHELL_TEXT,
+                isIgxAi && !igxRevealed && "hidden lg:flex"
               )}>
               <div className="flex items-center gap-4">
                 <span className={cn("flex items-center gap-1.5", linkText)}>
@@ -1225,7 +1266,8 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             </div>
             <header className={cn(
                 "flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-black/[0.06] backdrop-blur-[3px] px-4 sm:px-6",
-                SHELL_TEXT
+                SHELL_TEXT,
+                isIgxAi && !igxRevealed && "hidden lg:flex"
               )}>
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
