@@ -1,27 +1,14 @@
 // src/components/TickerBar.tsx
 // The activity ticker at the top of every governor page.
 // Reads the real activity_log (same query as the data-link status in the shell).
-// Each entry's text cycles through the portal's gold / white / blue / white
-// palette word by word, rather than one solid colour per entry.
+// Each entry gets its own lead dot colour, cycling gold / blue / violet / sky / amber.
+// The entry's text stays one consistent, readable colour.
 import { useQuery } from "@tanstack/react-query";
 import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
 
-const CYCLE_COLORS = ["#C6A15B", "#EAF1FF", "#6BA4F7", "#EAF1FF"]; // gold, white, blue, white
-
-function MulticolorText({ text }: { text: string }) {
-  const words = text.split(" ");
-  return (
-    <>
-      {words.map((word, i) => (
-        <span key={i} style={{ color: CYCLE_COLORS[i % CYCLE_COLORS.length] }}>
-          {word}
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </>
-  );
-}
+const DOT_COLORS = ["#C6A15B", "#6BA4F7", "#9B8FE0", "#5EC8E0", "#D9A441"]; // gold, blue, violet, sky, amber
+const TEXT_COLOR = "#EAF1FF"; // ice-white, constant
 
 export function TickerBar() {
   const { tickerSpeed } = useUiPrefs();
@@ -62,7 +49,8 @@ export function TickerBar() {
             key={i}
             className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em]"
           >
-            <span style={{ color: "#C6A15B" }}>◆</span> <MulticolorText text={item.text} />
+            <span style={{ color: DOT_COLORS[i % DOT_COLORS.length] }}>◆</span>{" "}
+            <span style={{ color: TEXT_COLOR }}>{item.text}</span>
           </span>
         ))}
       </div>
