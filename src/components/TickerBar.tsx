@@ -1,53 +1,26 @@
 // src/components/TickerBar.tsx
 // The activity ticker at the top of every governor page.
 // Reads the real activity_log (same query as the data-link status in the shell).
-// Entry colours rotate through the portal's palette: gold, teal, soft blue,
-// warm amber, and soft white — each keyed to a different entry type.
+// Each entry's text cycles through the portal's gold / white / blue / white
+// palette word by word, rather than one solid colour per entry.
 import { useQuery } from "@tanstack/react-query";
 import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
 
-type Tone = "gold" | "teal" | "blue" | "amber" | "white";
+const CYCLE_COLORS = ["#C6A15B", "#EAF1FF", "#6BA4F7", "#EAF1FF"]; // gold, white, blue, white
 
-const TONE_TEXT: Record<Tone, string> = {
-  gold: "text-[#C6A15B]",
-  teal: "text-[#5BB89C]",
-  blue: "text-[#6BA4F7]",
-  amber: "text-[#E3B567]",
-  white: "text-[#EAF1FF]/80",
-};
-
-const TONE_MARKER: Record<Tone, string> = {
-  gold: "text-[#C6A15B]",
-  teal: "text-[#5BB89C]",
-  blue: "text-[#6BA4F7]",
-  amber: "text-[#E3B567]",
-  white: "text-[#EAF1FF]/50",
-};
-
-const TONE_SYMBOL: Record<Tone, string> = {
-  gold: "◆",
-  teal: "▲",
-  blue: "●",
-  amber: "◇",
-  white: "○",
-};
-
-function toneForEntry(actor: string | undefined, action: string | undefined): Tone {
-  const text = `${actor ?? ""} ${action ?? ""}`.toUpperCase();
-  if (text.includes("GOVERN") || text.includes("SESSION") || text.includes("PROPOSAL")) {
-    return "gold";
-  }
-  if (text.includes("SESSION") || text.includes("STARTED")) {
-    return "amber";
-  }
-  if (text.includes("IGX") || text.includes("AI")) {
-    return "blue";
-  }
-  if (text.includes("SYSTEM") || text.includes("DATA") || text.includes("SYNC") || text.includes("QUERY")) {
-    return "teal";
-  }
-  return "white";
+function MulticolorText({ text }: { text: string }) {
+  const words = text.split(" ");
+  return (
+    <>
+      {words.map((word, i) => (
+        <span key={i} style={{ color: CYCLE_COLORS[i % CYCLE_COLORS.length] }}>
+          {word}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </>
+  );
 }
 
 export function TickerBar() {
@@ -59,20 +32,15 @@ export function TickerBar() {
   });
 
   const rawItems = isLoading
-    ? [{ actor: undefined, action: "LOADING ACTIVITY LOG…", tone: "white" as Tone }]
+    ? [{ actor: undefined, action: "LOADING ACTIVITY LOG…" }]
     : isError || !activity
-    ? [{ actor: undefined, action: "ACTIVITY LOG UNAVAILABLE", tone: "white" as Tone }]
+    ? [{ actor: undefined, action: "ACTIVITY LOG UNAVAILABLE" }]
     : activity.length > 0
-    ? activity.map((a) => ({
-        actor: a.actor,
-        action: a.action,
-        tone: toneForEntry(a.actor, a.action),
-      }))
-    : [{ actor: undefined, action: "NO VERIFIED ENTRIES", tone: "white" as Tone }];
+    ? activity.map((a) => ({ actor: a.actor, action: a.action }))
+    : [{ actor: undefined, action: "NO VERIFIED ENTRIES" }];
 
   const items = rawItems.map((a) => ({
     text: `${a.actor?.toUpperCase() ?? "SYSTEM"} · ${a.action}`,
-    tone: a.tone,
   }));
 
   const loop = [...items, ...items];
@@ -92,9 +60,9 @@ export function TickerBar() {
         {loop.map((item, i) => (
           <span
             key={i}
-            className={`mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em] ${TONE_TEXT[item.tone]}`}
+            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em]"
           >
-            <span className={TONE_MARKER[item.tone]}>{TONE_SYMBOL[item.tone]}</span> {item.text}
+            <span style={{ color: "#C6A15B" }}>◆</span> <MulticolorText text={item.text} />
           </span>
         ))}
       </div>
