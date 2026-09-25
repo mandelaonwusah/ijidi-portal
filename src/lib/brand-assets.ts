@@ -47,18 +47,9 @@ export const BRAND_ASSETS: BrandAsset[] = [
     label: "IGX AI core",
     kind: "igx",
     src: `${B}/igx-core.jpg`,
-    placedIn: ["IGX AI orb", "IGX AI chat avatar"],
+    placedIn: ["IGX AI orb", "IGX AI chat avatar", "Floating IGX AI button (bottom right)"],
     leads: [],
     match: ["igx"],
-  },
-  {
-    id: "igx-button",
-    label: "IGX AI floating button",
-    kind: "igx",
-    src: `${B}/igx-ai-button.webp`,
-    placedIn: ["Floating IGX AI button (bottom right)"],
-    leads: [],
-    match: [],
   },
 
   // ---- Entities ---------------------------------------------------------------
