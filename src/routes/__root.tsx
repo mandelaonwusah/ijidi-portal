@@ -747,7 +747,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
 
   useBrandVersion();
   if (hidden) return null;
-  const iconSrc = brandSrc("igx-button") ?? "/brand/igx-ai-button.webp";
+  const iconSrc = brandSrc("igx") ?? "/brand/igx-core.jpg";
   const label = pending ? `Open IGX AI — ${pending} pending review` : "Open IGX AI";
 
   return (
