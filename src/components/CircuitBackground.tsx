@@ -13,6 +13,12 @@
 // Decoration only: it never claims a system state.
 import { useEffect, useRef } from "react";
 import { useVisualState } from "@/lib/visual-state";
+import {
+  resolveCircuitBackground,
+  useUiPrefs,
+  type CircuitMotion,
+  type CircuitPalette,
+} from "@/lib/ui-prefs";
 
 /* ------------------------------------------------------------------ */
 /* Tuning                                                              */
@@ -35,22 +41,111 @@ const STILL_LIGHTS = false;
 const LIGHT = 1.6; // brightness of the lights: moving pulses and glowing nodes (1 = as before)
 const PULSE_WIDTH = 0.75; // pulse thickness
 const HEAD = 2.2; // size of the bright dot at the front of each moving light
-const SPEED = 0.34; // pulse and glow speed, as a share of the original
-const BASE_PULSES = 130; // ambient pulses per cell at medium intensity
+// SPEED and BASE_PULSES are mutable: the Settings > Circuit background studio
+// "motion" control (Calm/Normal/Lively) scales them at runtime. Both start at
+// the board's original values, so the default look is byte-for-byte unchanged.
+let SPEED = 0.34; // pulse and glow speed, as a share of the original
+let BASE_PULSES = 130; // ambient pulses per cell at medium intensity
 const FRAME_MS = 1000 / 30;
+
+// Motion presets for the Circuit background studio. "normal" reproduces the
+// board's original SPEED/BASE_PULSES exactly.
+const MOTION_MULT: Record<CircuitMotion, { speed: number; pulses: number }> = {
+  calm: { speed: 0.72, pulses: 0.62 },
+  normal: { speed: 1, pulses: 1 },
+  lively: { speed: 1.35, pulses: 1.5 },
+};
 
 // Board colours: the portal's own champagne gold and electric blue, kept calm.
 // Cool blue carries most of the board; gold marks the chip and its buses.
-const PALETTE: Record<string, string[]> = {
-  hot: ["#C69B4A", "#D2A85A", "#B98A3E"],
-  amber: ["#E0C078", "#D2B064"],
-  cool: ["#3F7BEB", "#5A92F5", "#4A86F0", "#6A9CF8"],
-  teal: ["#5CB3E8", "#7CC6F2"],
-  violet: ["#5B6FE0", "#7382EA", "#6674E6"],
-  pink: ["#7E8BE6", "#98A3EE"],
-  red: ["#C98A3A", "#D69A4A"],
-  white: ["#CFE0FA", "#EEF5FF"],
+// This is the "portal" (default) entry in PALETTE_SETS below — the Circuit
+// background studio's palette picker swaps which of these is active.
+const PALETTE_SETS: Record<CircuitPalette, Record<string, string[]>> = {
+  portal: {
+    hot: ["#C69B4A", "#D2A85A", "#B98A3E"],
+    amber: ["#E0C078", "#D2B064"],
+    cool: ["#3F7BEB", "#5A92F5", "#4A86F0", "#6A9CF8"],
+    teal: ["#5CB3E8", "#7CC6F2"],
+    violet: ["#5B6FE0", "#7382EA", "#6674E6"],
+    pink: ["#7E8BE6", "#98A3EE"],
+    red: ["#C98A3A", "#D69A4A"],
+    white: ["#CFE0FA", "#EEF5FF"],
+  },
+  ember: {
+    hot: ["#E08A3C", "#F0A050", "#D2762E"],
+    amber: ["#F0B860", "#E8A64E"],
+    cool: ["#E86A3C", "#F58152", "#DB5A30", "#F2996A"],
+    teal: ["#F0955A", "#F7B27C"],
+    violet: ["#D9622E", "#E87A44", "#CF531F"],
+    pink: ["#F29A6E", "#F8B48E"],
+    red: ["#D2542A", "#E06638"],
+    white: ["#FCE3C8", "#FFF1DE"],
+  },
+  glacier: {
+    hot: ["#7FB8E8", "#9CCBF2", "#6AA9DE"],
+    amber: ["#BFE4F7", "#A9D8F2"],
+    cool: ["#4FA9E8", "#6ABFF5", "#3E97DE", "#82C8F8"],
+    teal: ["#6FD0E8", "#8FDCEF"],
+    violet: ["#7FA9E8", "#93B7EE", "#6C9AE0"],
+    pink: ["#9AC4EE", "#B2D3F2"],
+    red: ["#5CA6D8", "#71B3E0"],
+    white: ["#E3F3FC", "#F5FBFF"],
+  },
+  crimson: {
+    hot: ["#C0405A", "#D45870", "#AC324A"],
+    amber: ["#D97E64", "#CC6A50"],
+    cool: ["#D33A54", "#E1526C", "#C22848", "#E86A82"],
+    teal: ["#D66A7E", "#E38494"],
+    violet: ["#B93A66", "#C9527C", "#A82C56"],
+    pink: ["#E084A0", "#EA9DB4"],
+    red: ["#9E2438", "#B93348"],
+    white: ["#F6D8DE", "#FDEBEE"],
+  },
+  amethyst: {
+    hot: ["#9068D0", "#A480DE", "#7E56C2"],
+    amber: ["#B79CE8", "#A386DE"],
+    cool: ["#7C56E0", "#9270EC", "#6A44D2", "#A484F0"],
+    teal: ["#8C6CE6", "#A488EE"],
+    violet: ["#6E42C8", "#8258D8", "#5C34B6"],
+    pink: ["#A47EE8", "#BA9AEE"],
+    red: ["#7B4AC4", "#8E5FD2"],
+    white: ["#E4D8F8", "#F1E9FC"],
+  },
+  sunset: {
+    hot: ["#E88A4C", "#F2A264", "#DC7A3E"],
+    amber: ["#F0C070", "#E8AC5C"],
+    cool: ["#E0648C", "#EC7EA2", "#D2517A", "#F096B2"],
+    teal: ["#EE9A6E", "#F4B084"],
+    violet: ["#D2608E", "#E078A2", "#C4507E"],
+    pink: ["#F0A0BC", "#F6BACE"],
+    red: ["#D65C3C", "#E27050"],
+    white: ["#FCE6D4", "#FFF2E4"],
+  },
+  mono: {
+    hot: ["#C8CDD8", "#DCE0E8", "#B4BAC6"],
+    amber: ["#D8DCE4", "#CCD1DA"],
+    cool: ["#A8B0C0", "#BCC4D2", "#98A2B4", "#CAD1DC"],
+    teal: ["#B8C2CE", "#C8D0DA"],
+    violet: ["#AEB6C6", "#C0C7D4", "#9CA6B8"],
+    pink: ["#C4CAD6", "#D2D7E0"],
+    red: ["#9EA6B6", "#B0B8C6"],
+    white: ["#EEF1F6", "#FAFBFD"],
+  },
+  gold: {
+    hot: ["#C6A15B", "#D4AF6E", "#B4914C"],
+    amber: ["#DFC07E", "#D2B06A"],
+    cool: ["#B8935A", "#C9A56E", "#AA854E", "#D4B482"],
+    teal: ["#CBAE72", "#D8BD84"],
+    violet: ["#B08F58", "#C09E68", "#A0804A"],
+    pink: ["#D6BC86", "#E2C996"],
+    red: ["#A87A3E", "#BA8C4E"],
+    white: ["#F1E4C8", "#F8EFDC"],
+  },
 };
+
+// The active palette object — reassigned by setCircuitPalette(). Defaults to
+// "portal", so col() behaves exactly as before until the studio is touched.
+let PALETTE: Record<string, string[]> = PALETTE_SETS.portal;
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -631,6 +726,27 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
   let wasReduced: boolean | null = null;
   let axisView = false;
 
+  // Background colour: crossfades smoothly whenever the studio changes it,
+  // instead of cutting hard from one colour to the next.
+  let bgHex = "#03050a";
+  let bgFromRGB: RGB = hexRgb(bgHex);
+  let bgToRGB: RGB = hexRgb(bgHex);
+  let bgT = 1; // 0..1, 1 = fully settled on bgToRGB
+  const BG_FADE_S = 0.6;
+  function lerpRGB(a: RGB, b: RGB, t: number): RGB {
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function currentBgRGB(): RGB {
+    return bgT >= 1 ? bgToRGB : lerpRGB(bgFromRGB, bgToRGB, bgT);
+  }
+  function setBackground(hex: string) {
+    if (hex === bgHex) return;
+    bgFromRGB = currentBgRGB();
+    bgToRGB = hexRgb(hex);
+    bgHex = hex;
+    bgT = 0;
+  }
+
   /* ---------- static layer (lines, nodes, chip, frames) ---------- */
   function paintStatic() {
     const c = sctx;
@@ -1001,7 +1117,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     }
 
     /* glowing nodes */
-    for (const o of orbs) {
+    for (const o of STILL_LIGHTS ? orbs : []) {
       if (!o.hex) continue;
       const k = animate ? 0.62 + 0.38 * Math.sin(T * o.f * 2.2 * SPEED + o.ph) : 0.75;
       const r = o.r * 2;
@@ -1067,7 +1183,7 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     const Hh = canvas.height;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "#03050a";
+    ctx.fillStyle = rgba(currentBgRGB(), 1);
     ctx.fillRect(0, 0, W, Hh);
     const cxm = Math.round(W / 2) - (axis ? cw : 0);
     const y0 = Math.round((Hh - ch) / 2);
@@ -1108,8 +1224,21 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
   }
 
   function redrawStill() {
+    bgT = 1;
     drawCell(false);
     present(axisView);
+  }
+
+  /* ---------- Circuit background studio hooks ---------- */
+  function applyPalette(next: Record<string, string[]>) {
+    PALETTE = next;
+    paintStatic();
+    redrawStill();
+  }
+  function applyMotion(motion: CircuitMotion) {
+    const m = MOTION_MULT[motion];
+    SPEED = 0.34 * m.speed;
+    BASE_PULSES = 130 * m.pulses;
   }
 
   /* ---------- one frame ---------- */
@@ -1127,6 +1256,8 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     if (wasReduced !== false) seedPulses();
     wasReduced = false;
 
+    if (bgT < 1) bgT = Math.min(1, bgT + dt / BG_FADE_S);
+
     const t0 = performance.now();
     update(Math.min(0.06, dt));
     drawCell(true);
@@ -1137,7 +1268,20 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
     else if (work < 7 && quality < 1) quality = Math.min(1, quality * 1.03);
   }
 
-  return { resize, step, redrawStill, frameMs: FRAME_MS };
+  return {
+    resize,
+    step,
+    redrawStill,
+    setBackground,
+    applyPalette,
+    applyMotion,
+    frameMs: FRAME_MS,
+  };
+}
+
+/** 0.5 (the studio's default) maps to 1 — the board's original brightness. */
+export function circuitDimMult(dimming: number): number {
+  return clamp(0.7 + dimming * 0.6, 0.7, 1.3);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1145,14 +1289,27 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
 /* ------------------------------------------------------------------ */
 export function CircuitBackground() {
   const { activeSection, circuitIntensity, ambientOpacity, reducedMotion } = useVisualState();
+  const prefs = useUiPrefs();
+  const backgroundHex = resolveCircuitBackground(prefs);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const engineRef = useRef<ReturnType<typeof createCircuitEngine> | null>(null);
   const controlRef = useRef<EngineControl>({ intensity: circuitIntensity, reduced: reducedMotion });
   controlRef.current = { intensity: circuitIntensity, reduced: reducedMotion };
+
+  const opacityFor = (dimming: number) =>
+    String((0.6 + 0.2 * ambientOpacity) * circuitDimMult(dimming));
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const engine = createCircuitEngine(canvas, () => controlRef.current);
+    engineRef.current = engine;
+
+    // Circuit background studio: applied once up front so the very first
+    // frame already matches the saved settings (default = original look).
+    engine.applyMotion(prefs.circuitMotion);
+    engine.applyPalette(PALETTE_SETS[prefs.circuitPalette]);
+    engine.setBackground(backgroundHex);
 
     const fit = () => {
       const w = window.innerWidth;
@@ -1182,21 +1339,40 @@ export function CircuitBackground() {
     window.addEventListener("resize", onResize);
 
     // Fade in once the first frame is painted.
-    canvas.style.opacity = String(0.6 + 0.2 * ambientOpacity);
+    canvas.style.opacity = opacityFor(prefs.circuitDimming);
 
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(resizeTimer);
       window.removeEventListener("resize", onResize);
+      engineRef.current = null;
     };
-    // The engine is created once; live values are read through controlRef.
+    // The engine is created once; live values are read through controlRef
+    // and the studio-effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Section brightness follows the visual-state preset.
+  // Section brightness and the studio's dimming slider together set opacity.
   useEffect(() => {
-    if (canvasRef.current) canvasRef.current.style.opacity = String(0.6 + 0.2 * ambientOpacity);
-  }, [ambientOpacity]);
+    if (canvasRef.current) canvasRef.current.style.opacity = opacityFor(prefs.circuitDimming);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ambientOpacity, prefs.circuitDimming]);
+
+  // Studio: line palette.
+  useEffect(() => {
+    engineRef.current?.applyPalette(PALETTE_SETS[prefs.circuitPalette]);
+  }, [prefs.circuitPalette]);
+
+  // Studio: motion (Calm/Normal/Lively) — pulses ease toward the new count
+  // and speed on their own via the engine's existing per-frame adjustment.
+  useEffect(() => {
+    engineRef.current?.applyMotion(prefs.circuitMotion);
+  }, [prefs.circuitMotion]);
+
+  // Studio: background colour — crossfades smoothly inside the engine.
+  useEffect(() => {
+    engineRef.current?.setBackground(backgroundHex);
+  }, [backgroundHex]);
 
   return (
     <div
@@ -1208,7 +1384,8 @@ export function CircuitBackground() {
         zIndex: 0,
         pointerEvents: "none",
         overflow: "hidden",
-        background: "#03050a",
+        background: backgroundHex,
+        transition: "background-color 0.6s ease",
       }}
     >
       <canvas
