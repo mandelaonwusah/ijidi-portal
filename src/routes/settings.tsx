@@ -14,7 +14,22 @@ import {
   uploadBrandImage,
   useBrandVersion,
 } from "@/lib/brand-assets";
-import { TICKER_PX_PER_SEC, setUiPref, useUiPrefs, type TickerSpeed } from "@/lib/ui-prefs";
+import {
+  CIRCUIT_BACKGROUND_HEX,
+  CIRCUIT_BACKGROUND_LABELS,
+  CIRCUIT_MOTION_LABELS,
+  CIRCUIT_PALETTE_LABELS,
+  CIRCUIT_PALETTE_PREVIEW,
+  TICKER_PX_PER_SEC,
+  resetCircuitStudio,
+  resolveCircuitBackground,
+  setUiPref,
+  useUiPrefs,
+  type CircuitBackground,
+  type CircuitMotion,
+  type CircuitPalette,
+  type TickerSpeed,
+} from "@/lib/ui-prefs";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/settings")({
@@ -37,6 +52,10 @@ const SPEED_OPTIONS: { value: TickerSpeed; label: string }[] = [
   { value: "normal", label: "Normal" },
   { value: "fast", label: "Fast" },
 ];
+
+const BACKGROUND_OPTIONS = Object.keys(CIRCUIT_BACKGROUND_LABELS) as CircuitBackground[];
+const PALETTE_OPTIONS = Object.keys(CIRCUIT_PALETTE_LABELS) as CircuitPalette[];
+const MOTION_OPTIONS = Object.keys(CIRCUIT_MOTION_LABELS) as CircuitMotion[];
 
 type Identity = {
   email: string | null;
@@ -145,6 +164,173 @@ function formatWhen(iso?: string | null): string {
     minute: "2-digit",
     hour12: false,
   });
+}
+
+function CircuitStudioCard() {
+  const prefs = useUiPrefs();
+  const activeBg = resolveCircuitBackground(prefs);
+
+  const pillClass = (active: boolean) =>
+    cn(
+      "rounded-md px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+      active
+        ? "bg-gold font-semibold text-primary-foreground"
+        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+    );
+
+  return (
+    <GlassCard index={4} className="p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Palette className="h-4 w-4 text-gold" />
+          <Eyebrow>Circuit background studio</Eyebrow>
+        </div>
+        <button
+          type="button"
+          onClick={resetCircuitStudio}
+          className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+        >
+          <RotateCcw className="h-3 w-3" /> Reset to default
+        </button>
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Tunes the live circuit board behind the whole Portal. Everything below starts on the
+        board's original look — nothing changes until you pick something else, and every change
+        is saved to this browser.
+      </p>
+
+      {/* Background colour */}
+      <div className="mt-6">
+        <div className="text-sm">Background colour</div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {BACKGROUND_OPTIONS.filter((key) => key !== "custom").map((key) => {
+            const active = prefs.circuitBackground === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setUiPref("circuitBackground", key)}
+                title={CIRCUIT_BACKGROUND_LABELS[key]}
+                className={cn(
+                  "h-9 w-9 rounded-full border-2 transition-transform",
+                  active ? "scale-110 border-gold shadow-[0_0_12px_rgba(198,161,91,0.5)]" : "border-white/15 hover:scale-105"
+                )}
+                style={{ background: CIRCUIT_BACKGROUND_HEX[key] }}
+              />
+            );
+          })}
+          <label
+            title="Custom"
+            className={cn(
+              "flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 transition-transform",
+              prefs.circuitBackground === "custom"
+                ? "scale-110 border-gold shadow-[0_0_12px_rgba(198,161,91,0.5)]"
+                : "border-white/15 hover:scale-105"
+            )}
+            style={{ background: prefs.circuitBackgroundCustom }}
+          >
+            <input
+              type="color"
+              className="h-12 w-12 -translate-x-0.5 -translate-y-0.5 cursor-pointer opacity-0"
+              value={prefs.circuitBackgroundCustom}
+              onChange={(e) => {
+                setUiPref("circuitBackgroundCustom", e.target.value);
+                setUiPref("circuitBackground", "custom");
+              }}
+            />
+          </label>
+        </div>
+        <div className="mt-1.5 text-[10.5px] uppercase tracking-widest text-muted-foreground">
+          {CIRCUIT_BACKGROUND_LABELS[prefs.circuitBackground]} · {activeBg}
+        </div>
+      </div>
+
+      {/* Line palette */}
+      <div className="mt-6">
+        <div className="text-sm">Line palette</div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {PALETTE_OPTIONS.map((key) => {
+            const active = prefs.circuitPalette === key;
+            const [c1, c2] = CIRCUIT_PALETTE_PREVIEW[key];
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setUiPref("circuitPalette", key)}
+                className={cn(
+                  "flex items-center gap-2 rounded-full border px-3 py-1.5 transition-colors",
+                  active ? "border-gold bg-gold/10" : "border-white/15 hover:border-white/30"
+                )}
+              >
+                <span className="flex h-4 w-4 overflow-hidden rounded-full ring-1 ring-black/40">
+                  <span className="h-full w-1/2" style={{ background: c1 }} />
+                  <span className="h-full w-1/2" style={{ background: c2 }} />
+                </span>
+                <span
+                  className={cn(
+                    "font-mono text-[10.5px] uppercase tracking-[0.1em]",
+                    active ? "text-gold" : "text-muted-foreground"
+                  )}
+                >
+                  {CIRCUIT_PALETTE_LABELS[key]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Motion */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="text-sm">Motion</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            How dense and fast the pulses run — eases in smoothly either way
+          </div>
+        </div>
+        <div role="group" aria-label="Circuit motion" className="inline-flex rounded-lg border border-gold/25 bg-black/25 p-1">
+          {MOTION_OPTIONS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={prefs.circuitMotion === key}
+              onClick={() => setUiPref("circuitMotion", key)}
+              className={pillClass(prefs.circuitMotion === key)}
+            >
+              {CIRCUIT_MOTION_LABELS[key]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Dimming */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between">
+          <div className="text-sm">Dimming</div>
+          <span className="font-mono text-[10.5px] uppercase tracking-widest text-muted-foreground">
+            {prefs.circuitDimming === 0.5 ? "Default" : prefs.circuitDimming < 0.5 ? "Darker" : "Brighter"}
+          </span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.02}
+          value={prefs.circuitDimming}
+          onChange={(e) => setUiPref("circuitDimming", Number(e.target.value))}
+          className="mt-3 w-full accent-[#C6A15B]"
+          aria-label="Background dimming"
+        />
+        <div className="mt-1 flex justify-between font-mono text-[9.5px] uppercase tracking-widest text-muted-foreground">
+          <span>Darker</span>
+          <span>Brighter</span>
+        </div>
+      </div>
+    </GlassCard>
+  );
 }
 
 function Settings() {
@@ -318,16 +504,7 @@ function Settings() {
             </div>
           </GlassCard>
 
-          <GlassCard index={4} className="border-dashed p-5">
-            <div className="flex items-center gap-3">
-              <Palette className="h-4 w-4 text-gold" />
-              <Eyebrow>Circuit background studio</Eyebrow>
-            </div>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Colours, line palette, density and speed for the circuit board will live here. Not
-              built yet.
-            </p>
-          </GlassCard>
+          <CircuitStudioCard />
         </section>
       </div>
     </div>
