@@ -500,6 +500,23 @@ function formatValue(value: unknown): string {
 const HIDDEN_ENTITY_KEYS = new Set(["id", "created_at", "updated_at"]);
 const ENTITY_TITLE_KEYS = ["name", "entity", "entity_name", "entity_id", "label", "title"];
 
+// Each entity's dot now reflects its real current_state instead of one
+// uniform colour for every card — teal for live, blue for open, gold for
+// building, amber for forming, and a still grey for standby (no pulse:
+// standby means nothing is actively happening).
+const ENTITY_STATE_TONE: Record<string, { dot: string; pulse: string }> = {
+  live: { dot: "bg-teal", pulse: "live-pulse-teal" },
+  open: { dot: "bg-blue", pulse: "live-pulse-blue" },
+  building: { dot: "bg-gold", pulse: "live-pulse-gold" },
+  forming: { dot: "bg-[#FBBF24]", pulse: "live-pulse-amber" },
+  standby: { dot: "bg-muted-foreground", pulse: "" },
+};
+function entityDotClass(row: Record<string, unknown>): string {
+  const state = typeof row["current_state"] === "string" ? (row["current_state"] as string).toLowerCase() : "";
+  const tone = ENTITY_STATE_TONE[state] ?? { dot: "bg-muted-foreground", pulse: "" };
+  return cn("h-1.5 w-1.5 rounded-full", tone.dot, tone.pulse);
+}
+
 function MemberShell({ session }: { session: Session }) {
   const [signingOut, setSigningOut] = useState(false);
   const email = session.user.email ?? "Signed in";
@@ -638,7 +655,7 @@ function MemberShell({ session }: { session: Session }) {
                       className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-gold live-pulse-gold" />
+                        <span className={entityDotClass(row)} />
                         <div className="font-display text-base text-foreground">{title}</div>
                       </div>
                       <dl className="mt-3 space-y-1.5">
