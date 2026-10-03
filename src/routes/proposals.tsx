@@ -8,9 +8,6 @@ export const Route = createFileRoute("/proposals")({
   component: ProposalsReview,
 });
 
-// Sovereign account — single-owner app, no auth session to derive this from.
-const SOVEREIGN_ID = "4eaf3b85-f48f-478a-96d6-388020770422";
-
 type ProposalStatus = "pending_review" | "approved" | "rejected";
 
 type Proposal = {
@@ -79,11 +76,20 @@ function ProposalsReview() {
   async function handleReview(proposal: Proposal, decision: "approved" | "rejected") {
     setSubmittingId(proposal.id);
     const note = noteDraft[proposal.id]?.trim() || null;
+    // The reviewer is whoever is signed in; the database rules decide whether
+    // that account may review at all.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const reviewerId = sessionData.session?.user.id;
+    if (!reviewerId) {
+      setSubmittingId(null);
+      alert("Update failed: you are not signed in.");
+      return;
+    }
     const { error } = await supabase
       .from("proposals")
       .update({
         status: decision,
-        reviewed_by: SOVEREIGN_ID,
+        reviewed_by: reviewerId,
         reviewed_at: new Date().toISOString(),
         review_note: note,
         updated_at: new Date().toISOString(),
