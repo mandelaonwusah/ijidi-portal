@@ -939,38 +939,14 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
     }
   };
 
-  // Sidebar parents (COMMAND / ECOSYSTEM / KNOWLEDGE / IDENTITY) fold and unfold.
-  // Restore what was open last time, then always keep the current page's group open.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("ijidi_nav_open");
-      if (!raw) return;
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setOpenGroups(parsed.filter((g): g is string => typeof g === "string"));
-      }
-    } catch {
-      /* ignore — start with only the active group open */
-    }
-  }, []);
-
-  const activeGroup = activeItem?.group;
-  useEffect(() => {
-    if (!activeGroup) return;
-    setOpenGroups((prev) => (prev.includes(activeGroup) ? prev : [...prev, activeGroup]));
-  }, [activeGroup]);
-
+  // Sidebar parents (COMMAND / ECOSYSTEM / KNOWLEDGE / IDENTITY) start folded after
+  // sign-in and open only when clicked. The current page's group is still marked
+  // (gold, with a dot) while folded.
   const toggleGroup = (label: string) => {
     sounds.playClick();
-    const next = openGroups.includes(label)
-      ? openGroups.filter((g) => g !== label)
-      : [...openGroups, label];
-    setOpenGroups(next);
-    try {
-      localStorage.setItem("ijidi_nav_open", JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
+    setOpenGroups((prev) =>
+      prev.includes(label) ? prev.filter((g) => g !== label) : [...prev, label],
+    );
   };
 
   // Signing out clears the session; the gate in ChromeGate then redirects to
@@ -1050,21 +1026,22 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
       <CircuitBackground />
 
-      {/* Mobile: dim the page behind the open sidebar; tap to close */}
-      {railOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[1px] lg:hidden"
-          onClick={() => setRailOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
       <div className="relative z-10 flex min-h-screen flex-col">
+        {/* Mobile: dim the page behind the open sidebar; tap to close. It sits in the
+            same stacking layer as the sidebar (z-30 under its z-40), so it covers the
+            page but never the menu itself. */}
+        {railOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[1px] lg:hidden"
+            onClick={() => setRailOpen(false)}
+            aria-hidden="true"
+          />
+        )}
         <TickerBar />
         <div className="lg:flex">
           <aside
             className={cn(
-              "fixed inset-y-0 left-0 z-40 w-[244px] border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
+              "fixed inset-y-0 left-0 z-[60] w-[244px] lg:z-40 border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
               SHELL_TEXT,
               "lg:sticky lg:top-6 lg:h-[calc(100vh-1.5rem)] lg:shrink-0 lg:translate-x-0 lg:bg-black/[0.06] lg:backdrop-blur-[3px]",
               collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
@@ -1378,9 +1355,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </button>
               </div>
             </header>
-            {/* Tab navigation above the command area (same pages as the sidebar) */}
-            {!isIgxAi && (
-            <div className="px-4 pt-4 sm:px-6 lg:px-8">
+            {/* Tab navigation above the command area (same pages as the sidebar).
+                Also shown on IGX AI, so every page is one tap away from the chat. */}
+            <div className={cn("px-4 pt-4 sm:px-6 lg:px-8", isIgxAi && "pb-3 pt-3")}>
               <nav
                 aria-label="Sections"
                 className={cn(
@@ -1410,7 +1387,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 })}
               </nav>
             </div>
-            )}
             <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}><Fragment key={pictureLoadTick}>{children}</Fragment></main>
           </div>
         </div>

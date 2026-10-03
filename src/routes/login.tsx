@@ -93,18 +93,16 @@ function LoginPage() {
       <CircuitBackground />
 
       <div className="login-stage">
-        <main className="login-card">
-          <span className="corner tl" aria-hidden="true" />
-          <span className="corner tr" aria-hidden="true" />
-          <span className="corner bl" aria-hidden="true" />
-          <span className="corner br" aria-hidden="true" />
-
+        <div className="brand">
           {emblemOk && (
             <img className="emblem" src="/ijidi-fan-emblem.png" alt="IJIDI Portal emblem" onError={() => setEmblemOk(false)} />
           )}
           <div className="portal-name">
             IJIDI <span>PORTAL</span>
           </div>
+        </div>
+
+        <main className="login-main">
           <h1 className="form-title">Sign in</h1>
           <p className="form-sub">Enter your Access ID and Passkey to continue.</p>
 
@@ -177,39 +175,31 @@ function LoginPage() {
           background:#03050a;}
         .ijidi-login *{box-sizing:border-box}
 
-        /* Soft gold and blue light over the circuit board, so the card sits in its own glow */
+        /* A dark veil over the circuit board (same on every screen size), with soft
+           gold and blue light so the form sits in its own glow */
         .ijidi-login::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
           background:
             radial-gradient(ellipse 60% 48% at 50% 28%,rgba(var(--gold-rgb),.10),transparent 70%),
-            radial-gradient(ellipse 90% 60% at 50% 108%,rgba(var(--blue-rgb),.10),transparent 70%)}
+            radial-gradient(ellipse 90% 60% at 50% 108%,rgba(var(--blue-rgb),.10),transparent 70%),
+            rgba(3,5,10,.62)}
 
         .login-stage{position:relative;z-index:2;min-height:100vh;min-height:100dvh;display:flex;align-items:center;
-          justify-content:center;padding:32px 20px}
+          justify-content:center;padding:132px 40px 48px}
 
-        /* Glass card: the board shows through; the text stays solid and lifted */
-        .login-card{position:relative;width:100%;max-width:420px;padding:40px 36px 28px;
-          border:1px solid var(--line);border-radius:20px;
-          background:linear-gradient(180deg,rgba(14,18,28,.5),rgba(7,9,15,.68));
-          backdrop-filter:blur(9px) saturate(140%);-webkit-backdrop-filter:blur(9px) saturate(140%);
-          box-shadow:0 34px 90px rgba(0,0,0,.55),0 0 60px rgba(var(--gold-rgb),.07),inset 0 1px 0 rgba(255,255,255,.06);
+        /* No card: the form sits straight on the board; the shadow keeps the text lifted */
+        .login-main{width:100%;max-width:420px;
           text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.55);
           animation:ijidiRise .7s var(--ease) both}
-        .login-card::before{content:"";position:absolute;top:-1px;left:14%;right:14%;height:1px;
-          background:linear-gradient(90deg,transparent,var(--gold-hi),transparent)}
         @keyframes ijidiRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-        /* Gold corner arcs, as on the portal cards */
-        .corner{position:absolute;width:20px;height:20px;border:1px solid rgba(var(--gold-rgb),.75);pointer-events:none}
-        .corner.tl{top:-1px;left:-1px;border-right:0;border-bottom:0;border-top-left-radius:20px}
-        .corner.tr{top:-1px;right:-1px;border-left:0;border-bottom:0;border-top-right-radius:20px}
-        .corner.bl{bottom:-1px;left:-1px;border-right:0;border-top:0;border-bottom-left-radius:20px}
-        .corner.br{bottom:-1px;right:-1px;border-left:0;border-top:0;border-bottom-right-radius:20px}
-
-        .emblem{display:block;width:140px;height:140px;margin:-6px auto 14px;object-fit:contain;
-          filter:drop-shadow(0 8px 28px rgba(var(--gold-rgb),.4))}
-        .portal-name{text-align:center;font:600 12px/1 var(--mono);letter-spacing:.44em;color:var(--ivory)}
+        /* Logo and portal name pinned to the top-left corner of the page */
+        .brand{position:absolute;top:32px;left:40px;display:flex;align-items:center;gap:14px;
+          text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.55);animation:ijidiRise .7s var(--ease) both}
+        .emblem{display:block;width:68px;height:68px;margin:0;object-fit:contain;
+          filter:drop-shadow(0 6px 20px rgba(var(--gold-rgb),.4))}
+        .portal-name{font:600 12px/1 var(--mono);letter-spacing:.38em;color:var(--ivory)}
         .portal-name span{color:var(--gold)}
-        .form-title{margin:22px 0 0;text-align:center;font:500 32px/1.1 var(--display);letter-spacing:.01em;color:var(--ivory)}
+        .form-title{margin:0;text-align:center;font:500 32px/1.1 var(--display);letter-spacing:.01em;color:var(--ivory)}
         .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Karla","Segoe UI",sans-serif;color:rgba(245,241,232,.75)}
 
         .fields{margin-top:28px;display:flex;flex-direction:column;gap:16px;text-align:left}
@@ -268,11 +258,13 @@ function LoginPage() {
           color:rgba(245,241,232,.6)}
         .card-foot b{color:var(--gold);font-weight:600}
 
+        /* Phones: same layout as desktop — logo in the top-left corner, form centred */
         @media (max-width:520px){
-          .login-stage{align-items:flex-start;padding:28px 16px 24px}
-          .login-card{padding:32px 22px 24px;border-radius:18px}
-          .emblem{width:120px;height:120px}
-          .form-title{font-size:28px}
+          .login-stage{padding:112px 20px 28px}
+          .brand{top:20px;left:20px;gap:12px}
+          .emblem{width:52px;height:52px}
+          .portal-name{letter-spacing:.32em}
+          .form-title{font-size:30px}
           /* 16px inputs stop iPhones zooming in when a field is tapped */
           .field input{font-size:16px;min-height:52px}
           .btn{min-height:54px}
