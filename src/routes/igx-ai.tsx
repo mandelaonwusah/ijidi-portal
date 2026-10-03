@@ -1356,7 +1356,7 @@ function IgxAi() {
   );
 
   return (
-    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[560px] w-full max-w-6xl gap-4">
+    <div className="igx-chat mx-auto flex h-[calc(100dvh-15rem)] min-h-[500px] w-full max-w-6xl gap-4">
       <style>{`
         @property --igx-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
         @keyframes igxSpin { to { --igx-a: 360deg; } }

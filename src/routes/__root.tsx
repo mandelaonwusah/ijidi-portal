@@ -1355,9 +1355,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 </button>
               </div>
             </header>
-            {/* Tab navigation above the command area (same pages as the sidebar) */}
-            {!isIgxAi && (
-            <div className="px-4 pt-4 sm:px-6 lg:px-8">
+            {/* Tab navigation above the command area (same pages as the sidebar).
+                Also shown on IGX AI, so every page is one tap away from the chat. */}
+            <div className={cn("px-4 pt-4 sm:px-6 lg:px-8", isIgxAi && "pb-3 pt-3")}>
               <nav
                 aria-label="Sections"
                 className={cn(
@@ -1387,7 +1387,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 })}
               </nav>
             </div>
-            )}
             <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}><Fragment key={pictureLoadTick}>{children}</Fragment></main>
           </div>
         </div>

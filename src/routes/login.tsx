@@ -175,11 +175,13 @@ function LoginPage() {
           background:#03050a;}
         .ijidi-login *{box-sizing:border-box}
 
-        /* Soft gold and blue light over the circuit board, so the card sits in its own glow */
+        /* A dark veil over the circuit board (same on every screen size), with soft
+           gold and blue light so the form sits in its own glow */
         .ijidi-login::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
           background:
             radial-gradient(ellipse 60% 48% at 50% 28%,rgba(var(--gold-rgb),.10),transparent 70%),
-            radial-gradient(ellipse 90% 60% at 50% 108%,rgba(var(--blue-rgb),.10),transparent 70%)}
+            radial-gradient(ellipse 90% 60% at 50% 108%,rgba(var(--blue-rgb),.10),transparent 70%),
+            rgba(3,5,10,.62)}
 
         .login-stage{position:relative;z-index:2;min-height:100vh;min-height:100dvh;display:flex;align-items:center;
           justify-content:center;padding:132px 40px 48px}
@@ -256,16 +258,13 @@ function LoginPage() {
           color:rgba(245,241,232,.6)}
         .card-foot b{color:var(--gold);font-weight:600}
 
-        /* Phones: the logo drops back into the flow, above a left-aligned form */
+        /* Phones: same layout as desktop — logo in the top-left corner, form centred */
         @media (max-width:520px){
-          .login-stage{flex-direction:column;align-items:stretch;justify-content:flex-start;padding:20px 20px 28px}
-          .brand{position:static;gap:12px}
-          .login-main{max-width:none}
+          .login-stage{padding:112px 20px 28px}
+          .brand{top:20px;left:20px;gap:12px}
           .emblem{width:52px;height:52px}
           .portal-name{letter-spacing:.32em}
-          .form-title{margin-top:48px;text-align:left;font-size:30px}
-          .form-sub{text-align:left}
-          .card-foot{align-items:flex-start;text-align:left}
+          .form-title{font-size:30px}
           /* 16px inputs stop iPhones zooming in when a field is tapped */
           .field input{font-size:16px;min-height:52px}
           .btn{min-height:54px}
