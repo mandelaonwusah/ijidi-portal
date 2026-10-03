@@ -1,15 +1,54 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+// Plain Vite config for the IJIDI Portal (TanStack Start + Nitro).
+//
+// This replaces @lovable.dev/vite-tanstack-config. It keeps everything that
+// wrapper did outside the Lovable sandbox: Tailwind, tsconfig paths, TanStack
+// Start (with the server-only import guard and our SSR entry), Nitro for the
+// build (Vercel is detected automatically; Cloudflare is the fallback when no
+// host is detected), React, the lightningcss CSS transformer, the @ alias,
+// React/TanStack Query de-duplication, and the dev server on port 8080.
+// VITE_* variables reach the app through Vite's own import.meta.env.
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
+import viteReact from "@vitejs/plugin-react";
 
-export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
+export default defineConfig(({ command }) => ({
+  plugins: [
+    tailwindcss(),
+    tsConfigPaths({ projects: ["./tsconfig.json"] }),
+    tanstackStart({
+      // Files under a server/ folder, and the "server-only" package, must never
+      // end up in the browser bundle.
+      importProtection: {
+        behavior: "error",
+        client: {
+          files: ["**/server/**"],
+          specifiers: ["server-only"],
+        },
+      },
+      // Use src/server.ts (our SSR error wrapper) as the server entry; Nitro builds from it.
+      server: { entry: "server" },
+    }),
+    ...(command === "build" ? [nitro({ defaultPreset: "cloudflare-module" })] : []),
+    viteReact(),
+  ],
+  css: { transformer: "lightningcss" },
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    dedupe: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "@tanstack/react-query",
+      "@tanstack/query-core",
+    ],
   },
-});
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"],
+  },
+  server: { host: "::", port: 8080 },
+}));

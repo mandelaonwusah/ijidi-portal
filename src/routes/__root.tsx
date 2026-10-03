@@ -28,7 +28,6 @@ import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { HexBadge, Eyebrow } from "@/components/portal-ui";
 import { CircuitBackground } from "@/components/CircuitBackground";
 import { TickerBar } from "@/components/TickerBar";
@@ -76,9 +75,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "root" });
-  }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
       <div>
