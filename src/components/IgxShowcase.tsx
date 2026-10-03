@@ -800,11 +800,12 @@ export function DecisionsPanel() {
 /* ------------------------------------------------------------------ */
 /* Agents: the roster recorded in the knowledge base                   */
 /* ------------------------------------------------------------------ */
-const AGENTS: { name: string; role: string; status: "Active" | "Deferred" }[] = [
-  { name: "Executive", role: "Strategy and investor narrative", status: "Active" },
-  { name: "Research", role: "Market intelligence", status: "Active" },
-  { name: "Content", role: "Multi-platform content", status: "Active" },
-  { name: "Automation", role: "n8n and APIs", status: "Active" },
+// No agent runs yet: IGX AI has no model connected, so none may show as active.
+const AGENTS: { name: string; role: string; status: "Not connected" | "Deferred" }[] = [
+  { name: "Executive", role: "Strategy and investor narrative", status: "Not connected" },
+  { name: "Research", role: "Market intelligence", status: "Not connected" },
+  { name: "Content", role: "Multi-platform content", status: "Not connected" },
+  { name: "Automation", role: "n8n and APIs", status: "Not connected" },
   { name: "COO", role: "Unlocks when staff are hired", status: "Deferred" },
   { name: "CTO", role: "Unlocks when all 15 knowledge-base domains have populated indexes and n8n automation is reactivated", status: "Deferred" },
   { name: "CMO", role: "Unlocks when paid ads begin", status: "Deferred" },
@@ -819,13 +820,13 @@ export function AgentsPanel() {
       <PanelHead
         eyebrow="Internal observability"
         title="Agent Roster"
-        desc="The ten agents recorded in the IGX AI knowledge base, with what unlocks each deferred one. No run, success or cost data is collected yet, so those columns say so."
+        desc="The ten agents recorded in the IGX AI knowledge base, with what unlocks each deferred one. No agent is connected to a model yet, and no run, success or cost data is collected, so those columns say so."
       />
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] border-collapse text-[12.5px]">
           <thead>
             <tr>
-              {["Agent", "Role / unlock condition", "Status (KB)", "Runs"].map((h) => (
+              {["Agent", "Role / unlock condition", "Status", "Runs"].map((h) => (
                 <th
                   key={h}
                   className="border-b border-gold/20 px-2.5 pb-2.5 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
@@ -840,12 +841,7 @@ export function AgentsPanel() {
               <tr key={agent.name} className="border-b border-gold/10 last:border-0">
                 <td className="px-2.5 py-3 font-medium text-foreground">
                   <span className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "h-[7px] w-[7px] shrink-0 rounded-full",
-                        agent.status === "Active" ? "bg-[#5E9BFF] shadow-[0_0_5px_#5E9BFF]" : "bg-muted-foreground/50"
-                      )}
-                    />
+                    <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-muted-foreground/50" />
                     {agent.name}
                   </span>
                 </td>
@@ -853,9 +849,9 @@ export function AgentsPanel() {
                 <td className="px-2.5 py-3">
                   <span
                     className={cn(
-                      "rounded-full border px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em]",
-                      agent.status === "Active"
-                        ? "border-gold/40 bg-gold/10 text-gold"
+                      "whitespace-nowrap rounded-full border px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em]",
+                      agent.status === "Not connected"
+                        ? "border-destructive/40 text-destructive"
                         : "border-white/15 text-muted-foreground"
                     )}
                   >
@@ -877,12 +873,13 @@ export function AgentsPanel() {
 /* ------------------------------------------------------------------ */
 /* Models: the pipeline recorded in the knowledge base                 */
 /* ------------------------------------------------------------------ */
+// The planned pipeline only. None of these models is connected: IGX AI calls no model.
 const MODELS: { name: string; role: string; primary?: boolean }[] = [
-  { name: "Claude", role: "Primary reasoning engine", primary: true },
-  { name: "ChatGPT", role: "Supporting model" },
-  { name: "Gemini", role: "Supporting model" },
-  { name: "DeepSeek", role: "Supporting model" },
-  { name: "Kimi", role: "Supporting model" },
+  { name: "Claude", role: "Planned: primary reasoning engine", primary: true },
+  { name: "ChatGPT", role: "Planned: supporting model" },
+  { name: "Gemini", role: "Planned: supporting model" },
+  { name: "DeepSeek", role: "Planned: supporting model" },
+  { name: "Kimi", role: "Planned: supporting model" },
 ];
 
 export function ModelsPanel() {
@@ -891,7 +888,7 @@ export function ModelsPanel() {
       <PanelHead
         eyebrow="Capability layer"
         title="Model Pipeline"
-        desc="The models IGX AI is designed to route between. IGX AI does not call any model yet (real Claude reasoning is waiting on API credit), so health and latency are not tracked."
+        desc="The models IGX AI is designed to route between. None of them is connected: IGX AI does not call any model yet, so health and latency are not tracked."
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {MODELS.map((model) => (
@@ -906,8 +903,8 @@ export function ModelsPanel() {
               <span className="text-[13.5px] font-semibold text-foreground">{model.name}</span>
               <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
             </div>
-            <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
-              Not tracked
+            <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-destructive">
+              Not connected
             </div>
             <div className="mt-3 font-mono text-[11px] text-muted-foreground">{model.role}</div>
           </div>
