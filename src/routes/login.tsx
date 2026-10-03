@@ -99,11 +99,13 @@ function LoginPage() {
           <span className="corner bl" aria-hidden="true" />
           <span className="corner br" aria-hidden="true" />
 
-          {emblemOk && (
-            <img className="emblem" src="/ijidi-fan-emblem.png" alt="IJIDI Portal emblem" onError={() => setEmblemOk(false)} />
-          )}
-          <div className="portal-name">
-            IJIDI <span>PORTAL</span>
+          <div className="brand">
+            {emblemOk && (
+              <img className="emblem" src="/ijidi-fan-emblem.png" alt="IJIDI Portal emblem" onError={() => setEmblemOk(false)} />
+            )}
+            <div className="portal-name">
+              IJIDI <span>PORTAL</span>
+            </div>
           </div>
           <h1 className="form-title">Sign in</h1>
           <p className="form-sub">Enter your Access ID and Passkey to continue.</p>
@@ -268,11 +270,19 @@ function LoginPage() {
           color:rgba(245,241,232,.6)}
         .card-foot b{color:var(--gold);font-weight:600}
 
+        /* Phones: no card. The form sits straight on the board and the logo
+           moves to the top-left corner beside the portal name. */
         @media (max-width:520px){
-          .login-stage{align-items:flex-start;padding:28px 16px 24px}
-          .login-card{padding:32px 22px 24px;border-radius:18px}
-          .emblem{width:120px;height:120px}
-          .form-title{font-size:28px}
+          .login-stage{align-items:flex-start;padding:20px 20px 28px}
+          .login-card{max-width:none;padding:0;border:0;border-radius:0;background:none;box-shadow:none;
+            backdrop-filter:none;-webkit-backdrop-filter:none}
+          .login-card::before,.corner{display:none}
+          .brand{display:flex;align-items:center;gap:12px}
+          .emblem{width:52px;height:52px;margin:0}
+          .portal-name{text-align:left;letter-spacing:.32em}
+          .form-title{margin-top:48px;text-align:left;font-size:30px}
+          .form-sub{text-align:left}
+          .card-foot{align-items:flex-start;text-align:left}
           /* 16px inputs stop iPhones zooming in when a field is tapped */
           .field input{font-size:16px;min-height:52px}
           .btn{min-height:54px}
