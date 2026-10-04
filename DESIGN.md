@@ -52,7 +52,11 @@ not run the businesses. The design follows from that job:
 | Gold high / low | — | `#e3c27a` / `#a98443` | Primary button gradient only |
 | Electric Blue | `--accent` / `--blue` | `#4f86f7` | **Verified** state, links |
 | Electric Blue (light) | `--teal` today | `#5e9bff` | Verified text on dark where `#4f86f7` is too dim. **Rename `teal` → `blue-light`**; it was never teal. |
+| Attention orange | `--attention` (new) | `#d97b3f` | **Pending / Warning** state. IJIDI's existing IGX attention orange (recorded in the console palette decision in `src/lib/portal-data.ts`). |
 | Error | `--destructive` | `#e5677a` | Errors, danger buttons |
+
+Champagne Gold `#c6a15b` stays reserved for selected, focus and governor-only (plus the corner
+arcs). It is **never** used to mean "pending" or "warning".
 
 ### Borders
 
@@ -70,12 +74,17 @@ not run the businesses. The design follows from that job:
 | State | Meaning | Colour | Surface | Dot |
 |---|---|---|---|---|
 | **Verified** | The system checked it just now (a query succeeded, a session exists, a role check returned true) | Electric Blue `#4f86f7` (text `#5e9bff`) | `rgba(79,134,247,0.10)` | Solid; **may pulse only if it is verified and live** |
-| **Pending / Warning** | Waiting on someone, declared but unchecked, loading | Amber `#f0b860` | `rgba(240,184,96,0.10)` | Solid, never pulses |
+| **Pending / Warning** | Waiting on someone, declared but unchecked, loading | Attention orange `#d97b3f` | `rgba(217,123,63,0.10)` | Solid, never pulses |
 | **Error** | A check failed, or a decision was rejected | `#e5677a` | Dark error surface `rgba(229,103,122,0.10)` over Obsidian | Solid, never pulses |
 | **NOT CONNECTED** | Nothing is wired to check this | Grey `#9aa3b5` text, `#5c6476` dot | `rgba(255,255,255,0.04)` | Solid grey, **no pulse** |
 
-Amber `#f0b860` is an IJIDI value already present in the code; it replaces the stray Tailwind
-`amber-400`, `amber-300`, `#FBBF24` and the gold-as-amber `--amber` token.
+Attention orange `#d97b3f` replaces every warning/pending colour in use today:
+- the stray Tailwind `amber-400` and `amber-300`
+- the `#FBBF24` "forming" dot
+- the `--amber` / `--amber-bright` tokens, which are really gold
+
+Gold-tinted "pending" badges (StatusBadge's gold tone) also move to orange, so gold keeps
+only its reserved meaning.
 
 ### StatusBadge mapping (every status in use today)
 
@@ -107,7 +116,7 @@ A pulsing dot means **verified and live right now**. Allowed today:
 
 Not allowed (to be removed): the entity dock dots (hand-typed state), the member view's
 email chip (always on), "FETCHING…" on Governance (loading is Pending, not live), and every
-red, gold or amber pulse.
+red, gold or orange pulse.
 
 ---
 
@@ -123,10 +132,10 @@ red, gold or amber pulse.
 - **Load exactly these two** from Google Fonts in `__root.tsx`.
 - **Drop:**
   - **Fraunces** and **Karla**: loaded globally today but used only on `/login`.
-  - **Cormorant Garamond**: loaded on `/igx-ai` for the wordmark only.
+  - **Cormorant Garamond**: loaded on `/igx-ai` only to typeset the "IGX AI" wordmark. The
+    wordmark becomes an image (see "Logos and wordmarks" in section 6), so no font is needed.
 - **Today:** the CSS asks for Inter but never loads it, so the UI renders in the system sans-serif.
-- **Decision needed:** the "IGX AI" wordmark currently uses Cormorant Garamond. The default
-  in this document is Inter 600 with the blue `X` kept. Confirm before the tokens PR.
+- **Wordmarks are never typeset** in any font, including Inter.
 
 ### Type scale
 
@@ -269,6 +278,24 @@ Groups, in this order:
 - **Off** when `prefers-reduced-motion` is set (already tracked by `visual-state.tsx`).
 - No new looping animations; the pulse rule in section 2 governs the existing ones.
 
+### Logos and wordmarks
+
+Logos and wordmarks are **approved artwork shown as images**, never typeset in a font.
+
+- **Format:** SVG preferred; PNG accepted (at 2× its display size). Stored in `public/brand/`.
+- **Rendering:** `<img>` with `alt` set to the name (e.g. `alt="IGX AI"`), and explicit width
+  and height so nothing shifts while it loads. If the file fails to load, show nothing: never
+  fall back to typed text in a font.
+- **IGX AI wordmark** (the "IGX AI" title on the IGX AI screen):
+  - **Today:** typeset in Cormorant Garamond with a blue "X".
+  - **Target:** the approved wordmark artwork as an image.
+  - **Asset status: not in the repo.** `public/brand/igx-ai-button.webp` is the round emblem,
+    not the wordmark. The approved wordmark file (SVG or PNG) has to be supplied.
+  - **Until it's supplied,** the screen shows the emblem image only, with no typed wordmark
+    next to it, and `aria-label="IGX AI"` on the heading.
+- **Other emblems already in use** (unchanged): `ijidi-fan-emblem.png` (portal emblem),
+  `ijidi-group-medallion.png`, and the entity images in `public/brand/`.
+
 ### Header
 
 Glass + 10 px blur + top inset highlight + bottom neutral border. **The header is the only
@@ -313,6 +340,8 @@ Wording rules:
 | Use the four honest states and their colours | Invent a fifth colour for a status |
 | Pulse only verified-live signals | Pulse loading, warnings, errors or declared states |
 | Use Inter for UI and Plex Mono for machine values | Load or inline any other font |
+| Show logos and wordmarks as the approved image files | Typeset a wordmark in any font |
+| Use attention orange `#d97b3f` for pending and warning | Use gold to mean pending or warning |
 | Confirm before reject, revoke, sign out | Use `alert()` or act without a confirm |
 | Keep every action in the palette | Hide a governor action behind hover only |
 | Respect `prefers-reduced-motion` | Add motion that ignores it |
@@ -366,7 +395,8 @@ value that realises them is IJIDI's.
 | Motion | Press scale 0.98; 3 px arrow nudge; off under reduced motion | Timing values; the pulse rule |
 | Header | Glass header with top highlight | Obsidian glass over the circuit board |
 | Footer | Build tag showing the real commit | Plex Mono, muted; left out if the commit can't be read |
-| Colours | — | Obsidian, Ivory, Champagne Gold, Electric Blue, amber `#f0b860`, error `#e5677a` |
+| Colours | — | Obsidian, Ivory, Champagne Gold, Electric Blue, attention orange `#d97b3f`, error `#e5677a` |
+| Logos | — | Approved IJIDI and IGX AI artwork as images; no typeset wordmarks |
 | Fonts | — | Inter + IBM Plex Mono |
 | Cards | — | GlassCard glass and gold corner arcs, four variants |
 | Background | — | Circuit background and the Settings studio |
