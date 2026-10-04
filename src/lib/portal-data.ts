@@ -262,11 +262,13 @@ export const igxOrgEntities = {
     label: "IJIDI Media",
     state: "forming",
     subs: [
-      { id: "orbit", label: "IJIDI Orbit" },
       { id: "wild", label: "IJIDI Wild" },
+      { id: "orbit", label: "IJIDI Orbit" },
       { id: "arena", label: "IJIDI Arena" },
-      { id: "drama", label: "IJIDI Drama" },
+      { id: "stage", label: "IJIDI Stage" },
       { id: "toons", label: "IJIDI Toons" },
+      { id: "sound", label: "IJIDI Sound" },
+      { id: "restore", label: "IJIDI Restore" },
     ],
   },
 } as const;
