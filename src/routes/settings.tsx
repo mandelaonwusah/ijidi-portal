@@ -96,7 +96,7 @@ function IdentityPicture({ name, canEdit }: { name: string; canEdit: boolean }) 
   };
 
   const pillClass =
-    "inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
 
   return (
     <div className="flex flex-col items-center">
@@ -189,7 +189,7 @@ function CircuitStudioCard() {
         <button
           type="button"
           onClick={resetCircuitStudio}
-          className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
         >
           <RotateCcw className="h-3 w-3" /> Reset to default
         </button>
@@ -377,13 +377,13 @@ function Settings() {
   const isGovernor = tier === "SOVEREIGN";
 
   const badge = isLoading ? (
-    <StatusBadge status="forming" label="CHECKING" />
+    <StatusBadge state="pending" label="CHECKING…" />
   ) : isError ? (
-    <StatusBadge status="error" label="UNAVAILABLE" />
+    <StatusBadge state="error" label="UNAVAILABLE" />
   ) : isGovernor ? (
-    <StatusBadge status="active" label="GOVERNOR SESSION" />
+    <StatusBadge state="verified" label="GOVERNOR SESSION" />
   ) : (
-    <StatusBadge status="ready" label={tier ?? "SIGNED IN"} />
+    <StatusBadge state="verified" label={tier ?? "SIGNED IN"} />
   );
 
   return (
@@ -450,11 +450,15 @@ function Settings() {
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {isLoading ? (
-                <StatusBadge status="forming" label="CHECKING" />
+                <StatusBadge state="pending" label="CHECKING…" />
               ) : isError ? (
-                <StatusBadge status="error" label="UNAVAILABLE" />
+                <StatusBadge state="error" label="UNAVAILABLE" />
               ) : (
-                <StatusBadge status={isGovernor ? "active" : "ready"} label={tier ?? "NO TIER"} />
+                tier ? (
+                  <StatusBadge state="verified" label={tier} />
+                ) : (
+                  <StatusBadge state="not-connected" label="NO TIER" />
+                )
               )}
             </div>
             <p className="mt-4 text-xs text-muted-foreground">

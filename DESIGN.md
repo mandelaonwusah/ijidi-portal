@@ -94,7 +94,8 @@ only its reserved meaning.
 | `active` (GOVERNOR, SINGLE GOVERNOR, GOVERNOR SESSION) | ecosystem, governance, settings | **Verified**: backed by `is_sovereign()` / a real session | As now |
 | `active` with `N SITES LISTED` | ecosystem | **Verified**: a count from the database | As now |
 | `active` from `entity_status = live` | ecosystem | **Pending**: typed in by hand, not checked | `DECLARED · LIVE` |
-| `ready` | ecosystem, settings | **Verified** | As now |
+| `ready` from a real session | settings | **Verified** | As now |
+| `ready` typed into the code (IGX AI card on Ecosystem; no model is connected) | ecosystem | **Pending** | `DECLARED · READY` |
 | `tracked` | MetricTile | **Verified** | `TRACKED` |
 | `frozen` | decisions | **Verified**: a recorded decision state | `FROZEN` |
 | `standby`, `forming`, `open`, `building` | foundation, atelier, media, ecosystem | **Pending** | `DECLARED · <STATE>` when read from `entity_status` |
@@ -102,6 +103,7 @@ only its reserved meaning.
 | `forming` used as CHECKING | ecosystem, settings | **Pending** (loading) | `CHECKING…` |
 | `restricted` (UNAVAILABLE) | ecosystem | **Error** | As now |
 | `error` (UNAVAILABLE) | settings: **not a valid status today, renders gold** | **Error** | As now |
+| No tier on the profile | settings | **NOT CONNECTED** | `NO TIER` |
 | `not-tracked` (NOT TRACKED, NOT CONFIGURED, NO FINANCIAL DATA) | capital, foundation, atelier, media, MetricTile | **NOT CONNECTED** | As now |
 | proposal `pending_review` | IGX AI: **renders gold today** | **Pending** | `PENDING REVIEW` |
 | proposal `approved` | IGX AI: **renders gold today** | **Verified** | `APPROVED` |
@@ -300,6 +302,9 @@ Logos and wordmarks are **approved artwork shown as images**, never typeset in a
     not the wordmark. The approved wordmark file (SVG or PNG) has to be supplied.
   - **Until it's supplied,** the screen shows the emblem image only, with no typed wordmark
     next to it, and `aria-label="IGX AI"` on the heading.
+- **IJIDI wordmark** (sign-in top bar and the portal name):
+  - **"IJIDI"** becomes the approved wordmark image once it is uploaded; **"PORTAL"** stays as Inter text beside it.
+  - **Asset status: not in the repo yet.** Until it's uploaded, the emblem and "IJIDI PORTAL" text stay as they are.
 - **Other emblems already in use** (unchanged): `ijidi-fan-emblem.png` (portal emblem),
   `ijidi-group-medallion.png`, and the entity images in `public/brand/`.
 
@@ -323,10 +328,20 @@ Not built yet. A bar across the top of the sign-in page (`src/routes/login.tsx`)
 
 | Position | Content |
 |---|---|
-| Left | The **IJIDI wordmark image** (artwork, per "Logos and wordmarks"). Until it's uploaded, the current emblem and "IJIDI PORTAL" text stay exactly as they are. |
-| Centre / right | An **"Ecosystem"** menu linking out to the public sites (below). |
-| Right | **"Sign in"**: scrolls to the form and focuses the Access ID field. |
+| Order | Item |
+|---|---|
+| 1 (left) | **"IJIDI" wordmark image** + **"PORTAL"** in Inter text (see "Logos and wordmarks"). Until the image is uploaded, the current emblem and "IJIDI PORTAL" text stay exactly as they are. |
+| 2 | **Home** |
+| 3 | **What we do** |
+| 4 | **Ecosystem** menu linking out to the public sites (below) |
+| 5 (right) | **Sign in**: scrolls to the form and focuses the Access ID field |
 | Mobile (< 640) | Collapses to a single menu button; the same items open from it. |
+
+- **Link targets for Home and What we do are not decided yet;** they are confirmed with the
+  Governor before Group 5 is built. No placeholder links.
+- **Not on the page:** no Sign up, no apps list, and **no OAuth buttons until the providers
+  are enabled** (and sign-ups restricted) in Supabase. Today `OAUTH_ENABLED = false` in
+  `login.tsx` keeps them hidden.
 
 **Ecosystem menu items:**
 
@@ -419,7 +434,7 @@ The design work ships in five groups, one PR each, in this order:
 | 1 Tokens | Colour, border, type-scale and shadow tokens; fonts; focus ring; footer build tag |
 | 2 Cards | GlassCard variants; old card classes removed; neutral borders; header glass; portal uses the sign-in background |
 | 3 States | StatusBadge four states; pulse rule; loading / empty / error states; toasts instead of `alert()`; danger button and confirm dialogs |
-| 4 Palette | Kbd keycap; palette groups (Navigate, Actions, Entities, Recent); "?" shortcuts sheet |
+| 4 Palette | Kbd keycap; palette groups (Navigate, Actions, Entities, Recent); "?" shortcuts sheet; **13 px minimum text** (section 3); **font-weight trim** to Inter 400–600 and Plex Mono 400–500; **gold decoration removed** from headings, icons and text (gold stays only for selected, focus, governor-only and the corner arcs) |
 | 5 Motion (last) | Press and arrow nudge; ticker pause on hover; reduced motion; **sign-in page top bar** (section 6) |
 
 ---

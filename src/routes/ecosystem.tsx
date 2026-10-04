@@ -3,7 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AtSign, ChevronDown, ExternalLink, Globe2, LayoutGrid, Network, Users } from "lucide-react";
 import { ecosystemNodes, igxOrgEntities, igxPeople, modules, personalBrand } from "@/lib/portal-data";
-import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
+import {
+  Eyebrow,
+  SectionHeader,
+  StatusBadge,
+  buttonKind,
+  declaredLabel,
+  errorMessage,
+} from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
 import { brandFor, brandSrc, loadBrandOverrides, useBrandVersion } from "@/lib/brand-assets";
@@ -129,7 +136,7 @@ function Channels({ handle, siteUrl }: { handle?: string | undefined; siteUrl?: 
 
 function Tag({ children }: { children: string }) {
   return (
-    <span className="rounded-full border border-gold/35 bg-gold/10 px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-gold">
+    <span className="rounded-full border border-border bg-white/[0.04] px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted-foreground">
       {children}
     </span>
   );
@@ -295,12 +302,13 @@ function HierarchyTab({
 
   const badgeFor = (row: EntityRow | undefined) => {
     const state = row?.current_state?.trim() ?? "";
-    if (isLoading) return <StatusBadge status="forming" label="CHECKING" />;
-    if (isError) return <StatusBadge status="restricted" label="UNAVAILABLE" />;
+    if (isLoading) return <StatusBadge state="pending" label="CHECKING…" />;
+    if (isError) return <StatusBadge state="error" label="UNAVAILABLE" />;
     if (state) {
-      return <StatusBadge status={state.toLowerCase() === "live" ? "active" : "forming"} label={state.toUpperCase()} />;
+      // entity_status is typed in by hand, never checked: declared, not verified.
+      return <StatusBadge state="pending" label={declaredLabel(state)} />;
     }
-    return <StatusBadge status="not-tracked" label="NOT TRACKED" />;
+    return <StatusBadge state="not-connected" label="NOT TRACKED" />;
   };
 
   const trunk = "absolute bottom-6 left-3 top-2 w-px bg-gradient-to-b from-gold via-teal/50 to-transparent sm:left-5";
@@ -394,7 +402,7 @@ function HierarchyTab({
         src={brandSrc("mandela")}
         handle={personalBrand.handle}
         siteUrl={personalBrand.siteUrl}
-        badge={<StatusBadge status="active" label="GOVERNOR" />}
+        badge={<StatusBadge state="verified" label="GOVERNOR" />}
         structureLabel="Roles & lanes"
         count={igxPeople.mandela.subs.length}
         groups={plainGroup(igxPeople.mandela.subs)}
@@ -451,7 +459,7 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <StatusBadge status="ready" label="READY" />
+            <StatusBadge state="pending" label={declaredLabel("ready")} />
             <Link
               to={igxModule.to}
               className="font-mono text-[10px] uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
@@ -492,7 +500,7 @@ function DirectoryTab() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <Eyebrow>{entry.code}</Eyebrow>
-                  {state && <StatusBadge status={state} />}
+                  {state && <StatusBadge state="pending" label={declaredLabel(state)} />}
                 </div>
                 <h3 className="mt-1.5 font-display text-lg font-semibold">{entry.name}</h3>
                 <p className="mt-0.5 text-[11.5px] text-muted-foreground">{entry.detail}</p>
@@ -582,7 +590,7 @@ function PeopleTab() {
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 function Ecosystem() {
-  const { data: rows, isLoading, isError } = useEntityRows();
+  const { data: rows, isLoading, isError, error, refetch } = useEntityRows();
   useBrandVersion();
   useEffect(() => {
     void loadBrandOverrides();
@@ -596,10 +604,25 @@ function Ecosystem() {
           eyebrow="04 / ECOSYSTEM & DIRECTORY"
           title="One root. Clear boundaries."
           detail="The whole structure in one place: who governs, each entity and its arms, and where each one lives online. States come from the registry; anything unconfirmed reads as not tracked."
-          action={<StatusBadge status="active" label={`${sitesListed} SITES LISTED`} />}
+          action={<StatusBadge state="verified" label={`${sitesListed} SITES LISTED`} />}
         />
       </GlassCard>
 
+      {/* Registry state (DESIGN.md page states): a failed query is an error, and an
+          empty registry says so, instead of every badge silently reading NOT TRACKED. */}
+      {isError && (
+        <GlassCard variant="danger" className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-xs text-destructive">
+            Could not load entity states: {errorMessage(error)}.
+          </p>
+          <button type="button" onClick={() => refetch()} className={buttonKind.secondary}>
+            Retry
+          </button>
+        </GlassCard>
+      )}
+      {!isLoading && !isError && (rows?.length ?? 0) === 0 && (
+        <p className="mb-6 font-mono text-xs text-muted-foreground">No entities recorded yet.</p>
+      )}
       <Tabs defaultValue="hierarchy">
         <TabsList className="mb-4">
           <TabsTrigger value="hierarchy">

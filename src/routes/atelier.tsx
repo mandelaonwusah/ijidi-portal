@@ -26,7 +26,7 @@ function Atelier() {
         eyebrow="09 / ATELIER"
         title="Designed for Distinction."
         detail="A future-facing registry for collections, product lines, and production status."
-        action={<StatusBadge status="forming" label="BUILDING" />}
+        action={<StatusBadge state="pending" label="BUILDING" />}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <MetricTile
@@ -63,7 +63,7 @@ function Atelier() {
               <h3 className="mt-5 font-display font-semibold">First collection</h3>
               <p className="mt-2 text-xs text-muted-foreground">Not yet tracked.</p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
             <div className="border border-dashed border-border p-4">
@@ -71,7 +71,7 @@ function Atelier() {
               <h3 className="mt-5 font-display font-semibold">Signature pieces</h3>
               <p className="mt-2 text-xs text-muted-foreground">Not yet tracked.</p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
           </div>

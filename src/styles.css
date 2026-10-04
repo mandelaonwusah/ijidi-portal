@@ -471,63 +471,15 @@ a {
 
 /* ============================================================
    LIVE PULSE
+   One pulse only: blue, for a state that is verified and live right now
+   (DESIGN.md pulse rule). Loading, declared, warning and error states never pulse.
    ============================================================ */
-.live-pulse {
-  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.25; transform: scale(1.2); }
-}
-
-/* Colour-specific pulse variants — each glowing dot gets its own hue */
-.live-pulse-teal {
-  animation: pulse-teal 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes pulse-teal {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5); }
-  50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(45, 212, 191, 0.4); }
-}
-
-.live-pulse-gold {
-  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes pulse-gold {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 161, 91, 0.5); }
-  50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(198, 161, 91, 0.4); }
-}
-
 .live-pulse-blue {
   animation: pulse-blue 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 @keyframes pulse-blue {
   0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 134, 247, 0.5); }
   50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(79, 134, 247, 0.4); }
-}
-
-.live-pulse-amber {
-  animation: pulse-amber 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes pulse-amber {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
-  50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.4); }
-}
-
-.live-pulse-green {
-  animation: pulse-green 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes pulse-green {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
-  50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(74, 222, 128, 0.4); }
-}
-
-.live-pulse-red {
-  animation: pulse-red 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  50%      { opacity: 0.3; transform: scale(1.25); box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.4); }
 }
 
 /* ============================================================

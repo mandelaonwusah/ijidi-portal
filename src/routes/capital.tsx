@@ -29,7 +29,7 @@ function Capital() {
         eyebrow="03 / CAPITAL ENGINE"
         title="Capital, without theatre."
         detail="The structure is ready. Verified financial records are not yet loaded."
-        action={<StatusBadge status="not-tracked" label="NO FINANCIAL DATA" />}
+        action={<StatusBadge state="not-connected" label="NO FINANCIAL DATA" />}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <MetricTile
