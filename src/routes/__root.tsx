@@ -356,18 +356,10 @@ function SessionTimer({ since }: { since: string | null | undefined }) {
 // ---------------------------------------------------------------------------
 // HUD OVERLAYS — shared by the governor shell and the member shell.
 // ---------------------------------------------------------------------------
-function HudOverlays() {
-  return (
-    <>
-      <div className="portal-hud-grid" aria-hidden="true" />
-      <div className="portal-hud-scanlines" aria-hidden="true" />
-      <div className="portal-hud-vignette" aria-hidden="true" />
-      <div className="portal-hud-frame" aria-hidden="true">
-        <span className="c tl" /><span className="c tr" />
-        <span className="c bl" /><span className="c br" />
-      </div>
-    </>
-  );
+function PortalVeil() {
+  // The sign-in page's veil over the circuit board (login.tsx), used on every
+  // portal page so the whole portal shares the sign-in background.
+  return <div className="portal-veil" aria-hidden="true" />;
 }
 
 // ---------------------------------------------------------------------------
@@ -564,8 +556,8 @@ function MemberShell({ session }: { session: Session }) {
   };
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
-      <HudOverlays />
+    <div className="relative min-h-screen bg-[#03050a] text-foreground antialiased selection:bg-gold/20 selection:text-gold">
+      <PortalVeil />
       <CircuitBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -1013,9 +1005,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
   }, [isIgxAi]);
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-gold/20 selection:text-gold">
-      {/* HUD overlays — carry the login skin across the whole portal */}
-      <HudOverlays />
+    <div className="relative min-h-screen bg-[#03050a] text-foreground antialiased selection:bg-gold/20 selection:text-gold">
+      {/* The sign-in veil over the circuit board */}
+      <PortalVeil />
 
       <CircuitBackground />
 

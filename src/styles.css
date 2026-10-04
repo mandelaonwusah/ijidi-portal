@@ -705,43 +705,21 @@ a {
 .border-destructive\/30 { border-color: rgba(var(--destructive-rgb), 0.30); }
 
 /* ============================================================
-   PORTAL HUD OVERLAYS
-   The circuit background is now the portal's atmosphere, so the old full-screen
-   grid, scanlines and vignette are switched off (the circuit adds its own soft
-   edge shading). Only the quiet gold corner frame remains.
+   PORTAL VEIL
+   The same veil the sign-in page lays over the circuit board (login.tsx):
+   a dark layer with a soft gold light at the top and blue light at the
+   bottom, so every portal page shares the sign-in background.
+   Sits above the circuit board (z 0) and below the shell (z 10).
    ============================================================ */
-.portal-hud-grid,
-.portal-hud-scanlines,
-.portal-hud-vignette {
-  display: none;
-}
-
-.portal-hud-frame {
+.portal-veil {
   position: fixed;
-  inset: 10px;
-  z-index: 2;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-}
-.portal-hud-frame .c {
-  position: absolute;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(198, 161, 91, 0.4);
-  filter: drop-shadow(0 0 6px rgba(198, 161, 91, 0.3));
-  animation: portalCornerPulse 4s ease-in-out infinite;
-  opacity: 0.5;
-}
-@keyframes portalCornerPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
-.portal-hud-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
-.portal-hud-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 12px; animation-delay: .6s; }
-.portal-hud-frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 12px; animation-delay: 1.2s; }
-.portal-hud-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; animation-delay: 1.8s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .portal-hud-frame .c {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 28%, rgba(198, 161, 91, 0.1), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 108%, rgba(79, 134, 247, 0.1), transparent 70%),
+    rgba(3, 5, 10, 0.62);
 }
 
 /* ============================================================
