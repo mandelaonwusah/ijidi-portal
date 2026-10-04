@@ -109,7 +109,7 @@ function Portrait({ src, name, px }: { src?: string | null | undefined; name: st
 
 function Channels({ handle, siteUrl }: { handle?: string | undefined; siteUrl?: string | undefined }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10.5px]">
+    <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-xs">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-2.5 py-1">
         <AtSign className="h-3 w-3 text-teal" />
         {handle ? <span className="text-foreground">{handle}</span> : <span className="text-muted-foreground">Not tracked</span>}
@@ -136,7 +136,7 @@ function Channels({ handle, siteUrl }: { handle?: string | undefined; siteUrl?: 
 
 function Tag({ children }: { children: string }) {
   return (
-    <span className="rounded-full border border-border bg-white/[0.04] px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted-foreground">
+    <span className="rounded-full border border-border bg-white/[0.04] px-2 py-0.5 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
       {children}
     </span>
   );
@@ -149,7 +149,7 @@ function EcosystemBridge() {
     <div className="rounded-xl border border-dashed border-border-strong bg-black/10 px-5 py-4 text-center">
       <Eyebrow className="text-center text-teal">unified architecture</Eyebrow>
       <h3 className="mt-1 font-display text-base font-semibold">IJIDI Ecosystem</h3>
-      <p className="mx-auto mt-1 max-w-md text-[11.5px] text-muted-foreground">
+      <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
         The connective layer beneath the Governor — Vice Governor, entities and IGX AI all branch from here, not from one another.
       </p>
     </div>
@@ -163,7 +163,7 @@ function SubTree({ groups }: { groups: { heading: string | null; items: SubItem[
       {groups.map((group, gi) => (
         <div key={group.heading ?? `g${gi}`}>
           {group.heading && (
-            <p className="mb-1.5 font-mono text-[9.5px] uppercase tracking-[0.13em] text-teal">{group.heading}</p>
+            <p className="mb-1.5 font-mono text-xs uppercase tracking-[0.13em] text-teal">{group.heading}</p>
           )}
           <ul className="ml-2 space-y-0.5 border-l border-border-strong">
             {group.items.map((item) => {
@@ -172,12 +172,12 @@ function SubTree({ groups }: { groups: { heading: string | null; items: SubItem[
                 <li key={item.id} className="relative py-1.5 pl-5">
                   <span aria-hidden className="absolute left-0 top-[17px] h-px w-3.5 bg-gold/35" />
                   <span aria-hidden className="absolute left-[11px] top-[14px] h-[7px] w-[7px] rounded-full border border-border-strong bg-background" />
-                  <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-foreground">
                     <span>{text}</span>
                     {tag && <Tag>{tag}</Tag>}
                   </div>
                   {group.noteFromPillar && item.pillar && (
-                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{item.pillar}</p>
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{item.pillar}</p>
                   )}
                 </li>
               );
@@ -221,18 +221,18 @@ function Branch(props: BranchProps) {
             <Eyebrow className="text-teal">{[props.code, props.kind].filter(Boolean).join(" / ")}</Eyebrow>
           )}
           <h3 className={cn("mt-1 font-display font-semibold", props.big ? "text-2xl" : "text-lg")}>{props.title}</h3>
-          {props.detail && <p className="mt-1 text-[12px] text-muted-foreground">{props.detail}</p>}
+          {props.detail && <p className="mt-1 text-xs text-muted-foreground">{props.detail}</p>}
           {(props.handle !== undefined || props.siteUrl !== undefined || props.big) && (
             <Channels handle={props.handle} siteUrl={props.siteUrl} />
           )}
         </div>
         <div className="flex flex-col items-end gap-2">
           {props.badge}
-          {props.recorded && <span className="font-mono text-[9.5px] text-muted-foreground">Recorded {props.recorded}</span>}
+          {props.recorded && <span className="font-mono text-xs text-muted-foreground">Recorded {props.recorded}</span>}
           {props.link && (
             <Link
               to={props.link.to}
-              className="font-mono text-[10px] uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+              className="font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
             >
               {props.link.label} →
             </Link>
@@ -241,7 +241,7 @@ function Branch(props: BranchProps) {
       </div>
       {props.count > 0 && (
         <Collapsible open={open} onOpenChange={onOpenChange}>
-          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-border bg-black/25 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.13em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
+          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-border bg-black/25 px-3.5 py-2 font-mono text-xs uppercase tracking-[0.13em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
             <span>
               {props.structureLabel} · {props.count}
             </span>
@@ -373,7 +373,7 @@ function HierarchyTab({
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
           Governor → ecosystem → vice governor → entities → arms
         </p>
         <div className="flex gap-2">
@@ -382,7 +382,7 @@ function HierarchyTab({
               key={label}
               type="button"
               onClick={() => setAll(label === "Expand all")}
-              className="rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               {label}
             </button>
@@ -441,7 +441,7 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
   return (
     <div className="mt-8">
       <div className="section-divider" />
-      <p className="mb-3 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-teal">
+      <p className="mb-3 text-center font-mono text-xs uppercase tracking-[0.14em] text-teal">
         Cross-ecosystem — reasons across every branch above, owns none of them
       </p>
       <GlassCard>
@@ -452,8 +452,8 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
               {[igxModule.code, "executive intelligence layer"].filter(Boolean).join(" / ")}
             </Eyebrow>
             <h3 className="mt-1 font-display text-lg font-semibold">{igxModule.name}</h3>
-            {igxModule.detail && <p className="mt-1 text-[12px] text-muted-foreground">{igxModule.detail}</p>}
-            <p className="mt-2 max-w-xl text-[11.5px] text-muted-foreground">
+            {igxModule.detail && <p className="mt-1 text-xs text-muted-foreground">{igxModule.detail}</p>}
+            <p className="mt-2 max-w-xl text-xs text-muted-foreground">
               Reads and reasons across Group, Atelier, Media and Foundation — and the Portal itself.
               Proposals, not actions: nothing executes without the Governor's approval.
             </p>
@@ -462,7 +462,7 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
             <StatusBadge state="pending" label={declaredLabel("ready")} />
             <Link
               to={igxModule.to}
-              className="font-mono text-[10px] uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+              className="font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
             >
               Open IGX AI →
             </Link>
@@ -503,14 +503,14 @@ function DirectoryTab() {
                   {state && <StatusBadge state="pending" label={declaredLabel(state)} />}
                 </div>
                 <h3 className="mt-1.5 font-display text-lg font-semibold">{entry.name}</h3>
-                <p className="mt-0.5 text-[11.5px] text-muted-foreground">{entry.detail}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{entry.detail}</p>
               </div>
             </div>
             <Channels handle={"handle" in entry ? entry.handle : undefined} siteUrl={"siteUrl" in entry ? entry.siteUrl : undefined} />
             {to && (
               <Link
                 to={to}
-                className="mt-4 inline-block font-mono text-[10px] uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+                className="mt-4 inline-block font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
               >
                 Open page →
               </Link>
@@ -555,7 +555,7 @@ function PeopleTab() {
             <div className="min-w-0">
               <Eyebrow className="text-teal">{person.title}</Eyebrow>
               <h3 className="mt-1 font-display text-xl font-semibold">{person.name}</h3>
-              <div className="mt-2 flex items-center gap-1.5 font-mono text-[11px]">
+              <div className="mt-2 flex items-center gap-1.5 font-mono text-xs">
                 <AtSign className="h-3 w-3 text-teal" />
                 {person.handle ? (
                   <span className="text-foreground">{person.handle}</span>
@@ -565,14 +565,14 @@ function PeopleTab() {
               </div>
             </div>
           </div>
-          <p className="mt-5 font-mono text-[9.5px] uppercase tracking-[0.13em] text-muted-foreground">{person.heading}</p>
+          <p className="mt-5 font-mono text-xs uppercase tracking-[0.13em] text-muted-foreground">{person.heading}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {person.subs.map((sub) => {
               const { text, tag } = splitTag(sub.label);
               return (
                 <span
                   key={sub.id}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 text-[12px] text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 text-xs text-foreground"
                 >
                   {text}
                   {tag && <Tag>{tag}</Tag>}

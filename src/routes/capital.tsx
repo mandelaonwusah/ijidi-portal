@@ -60,11 +60,11 @@ function Capital() {
               <h2 className="mt-1 font-display font-semibold">Capital pipeline</h2>
             </div>
           </div>
-          <span className="font-mono text-[9px] uppercase text-muted-foreground">
+          <span className="font-mono text-xs uppercase text-muted-foreground">
             Schema ready · rows 0
           </span>
         </div>
-        <div className="hidden grid-cols-5 gap-4 border-b border-border px-5 py-3 font-mono text-[9px] uppercase tracking-widest text-muted-foreground md:grid">
+        <div className="hidden grid-cols-5 gap-4 border-b border-border px-5 py-3 font-mono text-xs uppercase tracking-widest text-muted-foreground md:grid">
           <span>Opportunity</span>
           <span>Vehicle</span>
           <span>Stage</span>

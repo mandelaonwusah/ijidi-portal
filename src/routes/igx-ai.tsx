@@ -370,21 +370,21 @@ function PickerChip({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-[12px] transition-colors",
+        "flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs transition-colors",
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
         selected
           ? "border-gold bg-gold/15 text-foreground"
           : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground"
       )}
     >
-      <Avatar src={logo} label={label} bare className="h-6 w-6 text-[10px]" />
+      <Avatar src={logo} label={label} bare className="h-6 w-6 text-xs" />
       {label}
     </button>
   );
 }
 
 const pillButton =
-  "flex items-center gap-2 rounded-full border border-border bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
+  "flex items-center gap-2 rounded-full border border-border bg-black/25 px-3.5 py-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
 
 /* ------------------------------------------------------------------ */
 /* The page                                                            */
@@ -518,7 +518,7 @@ function IgxAi() {
       </button>
       <span
         title={`You are here: ${viewLabel(view)}`}
-        className="hidden max-w-[190px] truncate px-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground md:inline"
+        className="hidden max-w-[190px] truncate px-2 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground md:inline"
       >
         {viewLabel(view)}
       </span>
@@ -995,7 +995,7 @@ function IgxAi() {
                 )}
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Attach</span>
+                  <span className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">Attach</span>
                   <CloseX onClick={() => setAttachOpen(false)} label="Close attach menu" />
                 </div>
                 <div className="space-y-1 font-mono text-xs">
@@ -1019,9 +1019,9 @@ function IgxAi() {
                 setAttachOpen(false);
               }}
               aria-expanded={pickerOpen}
-              className="flex max-w-full items-center gap-2 rounded-full border border-border bg-black/25 py-1 pl-1.5 pr-3 text-[12px] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="flex max-w-full items-center gap-2 rounded-full border border-border bg-black/25 py-1 pl-1.5 pr-3 text-xs text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
-              <Avatar src={scopeLogo} label={scopeLabel} bare className="h-6 w-6 text-[10px]" />
+              <Avatar src={scopeLogo} label={scopeLabel} bare className="h-6 w-6 text-xs" />
               <span className="truncate">{scopeLabel}</span>
               <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </button>
@@ -1034,7 +1034,7 @@ function IgxAi() {
                 )}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     Who or what is this about?
                   </p>
                   <CloseX onClick={() => setPickerOpen(false)} label="Close scope picker" />
@@ -1061,7 +1061,7 @@ function IgxAi() {
 
                 {pickerEntityData && (
                   <>
-                    <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    <p className="mt-4 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       {pickerEntityData.label} · module
                     </p>
                     <div className="mt-3 flex max-h-44 flex-wrap gap-2 overflow-y-auto">
@@ -1114,7 +1114,7 @@ function IgxAi() {
           </div>
         </div>
       </div>
-      <p className="mt-2 text-center font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+      <p className="mt-2 text-center font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
         IGX AI saves your instruction as a proposal for your review. No model is connected yet.
       </p>
     </div>
@@ -1128,7 +1128,7 @@ function IgxAi() {
           <div className="flex items-center gap-4">
             <Avatar src={igxAvatar} label="IGX" className="h-12 w-12 text-lg" />
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">IGX AI</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold">IGX AI</p>
               <h1 className="font-display text-xl font-semibold text-foreground">Settings</h1>
             </div>
           </div>
@@ -1216,14 +1216,14 @@ function IgxAi() {
             <button
               type="button"
               onClick={() => setRenamingId(null)}
-              className="rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="rounded-full px-3 py-1 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={() => renameConversation(chat.id, renameValue)}
-              className="rounded-full bg-gold px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+              className="rounded-full bg-gold px-3 py-1 font-mono text-xs font-medium uppercase tracking-[0.1em] text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
             >
               Save
             </button>
@@ -1235,22 +1235,22 @@ function IgxAi() {
     if (confirmDeleteId === chat.id) {
       return (
         <div key={chat.id} className="rounded-xl border border-destructive/40 bg-destructive/10 p-2.5">
-          <p className="truncate text-[12.5px] text-foreground">Delete “{chat.title}”?</p>
-          <p className="mt-0.5 font-mono text-[9.5px] text-muted-foreground">
+          <p className="truncate text-xs text-foreground">Delete “{chat.title}”?</p>
+          <p className="mt-0.5 font-mono text-xs text-muted-foreground">
             The chat is removed. Requests already sent stay in the queue.
           </p>
           <div className="mt-2 flex items-center justify-end gap-1.5">
             <button
               type="button"
               onClick={() => setConfirmDeleteId(null)}
-              className="rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="rounded-full px-3 py-1 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               Keep
             </button>
             <button
               type="button"
               onClick={() => removeChat(chat.id)}
-              className="rounded-full border border-destructive/50 bg-destructive/20 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/60"
+              className="rounded-full border border-destructive/50 bg-destructive/20 px-3 py-1 font-mono text-xs font-medium uppercase tracking-[0.1em] text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/60"
             >
               Delete
             </button>
@@ -1280,7 +1280,7 @@ function IgxAi() {
           )}
           <span className="min-w-0">
             <span className="block truncate text-[13px] text-foreground">{chat.title}</span>
-            <span className="block font-mono text-[9.5px] text-muted-foreground">
+            <span className="block font-mono text-xs text-muted-foreground">
               {formatDateTime(chat.updatedAt)}
             </span>
           </span>
@@ -1336,7 +1336,7 @@ function IgxAi() {
             onChange={(e) => setChatQuery(e.target.value)}
             placeholder="Search chats"
             aria-label="Search chats"
-            className="h-9 w-full rounded-full border border-border bg-black/30 pl-8 pr-3 text-[12.5px] text-foreground placeholder:text-muted-foreground focus-visible:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+            className="h-9 w-full rounded-full border border-border bg-black/30 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus-visible:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
           />
         </div>
       </div>
@@ -1350,7 +1350,7 @@ function IgxAi() {
         ) : (
           chatGroups.map((group) => (
             <div key={group.label}>
-              <p className="px-2 pb-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="px-2 pb-1 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
                 {group.label}
               </p>
               <div className="space-y-0.5">{group.chats.map(renderChatRow)}</div>
@@ -1408,17 +1408,17 @@ function IgxAi() {
         className="hidden h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,.35)] backdrop-blur-xl lg:flex"
       >
         <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">Chats</p>
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-gold">Chats</p>
           <button
             type="button"
             onClick={newChat}
-            className="flex h-8 items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            className="flex h-8 items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 font-mono text-xs uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
           >
             <Plus className="h-3.5 w-3.5" /> New
           </button>
         </div>
         {chatList}
-        <p className="border-t border-border px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
+        <p className="border-t border-border px-3 py-2 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
           Saved to your account · pins stay on this device
         </p>
       </aside>
@@ -1446,7 +1446,7 @@ function IgxAi() {
           <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
             <Clock className="h-3.5 w-3.5 text-gold" /> <span>Requests</span>
             {!queueLoading && !queueError && (pendingCount ?? 0) > 0 && (
-              <span className="rounded-full bg-gold px-1.5 py-px text-[10px] font-bold text-primary-foreground">
+              <span className="rounded-full bg-gold px-1.5 py-px text-xs font-semibold text-primary-foreground">
                 {pendingCount}
               </span>
             )}
@@ -1464,7 +1464,7 @@ function IgxAi() {
       </div>
 
       {historyNotice && (
-        <div className="mb-3 flex items-start justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-[12.5px] text-foreground">
+        <div className="mb-3 flex items-start justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-xs text-foreground">
           <span className="flex items-start gap-2">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
             {historyNotice}
@@ -1523,7 +1523,7 @@ function IgxAi() {
                     textareaRef.current?.focus({ preventScroll: true });
                   });
                 }}
-                className="igx-chip flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-2 text-[12px] text-muted-foreground hover:border-border-strong hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="igx-chip flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-2 text-xs text-muted-foreground hover:border-border-strong hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 <Sparkles className="h-3.5 w-3.5 text-gold" />
                 {starter}
@@ -1541,7 +1541,7 @@ function IgxAi() {
                 <div className="flex flex-row-reverse items-start gap-3">
                   <Avatar src={mandelaAvatar} label={firstName ?? "You"} className="h-9 w-9 text-sm" />
                   <div className="max-w-[85%]">
-                    <p className="mb-1 text-right font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="mb-1 text-right font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {msg.scopeLabel}
                     </p>
                     <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-gold backdrop-blur-md backdrop-saturate-150">
@@ -1666,7 +1666,7 @@ function IgxAi() {
                     onClick={() => setDrawer(kind)}
                     aria-pressed={drawer === kind}
                     className={cn(
-                      "rounded-full px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                      "rounded-full px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
                       "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                       drawer === kind
                         ? "bg-gold font-semibold text-primary-foreground"
@@ -1685,14 +1685,14 @@ function IgxAi() {
 
             {drawer === "chats" ? (
               <div className="flex min-h-0 flex-1 flex-col pt-3">
-                <p className="px-4 pb-2 font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="px-4 pb-2 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
                   Saved to your account · on every device you sign in on
                 </p>
                 {chatList}
               </div>
             ) : (
               <div className="flex-1 space-y-2 overflow-y-auto p-4">
-                <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
                   {queueLoading
                     ? "Loading…"
                     : queueError
@@ -1722,7 +1722,7 @@ function IgxAi() {
                       >
                         <p className="text-[13px] leading-snug text-foreground">{item.intent}</p>
                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-mono text-xs text-muted-foreground">
                             {formatDateTime(item.created_at)}
                           </span>
                           {pending ? (

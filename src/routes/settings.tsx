@@ -96,7 +96,7 @@ function IdentityPicture({ name, canEdit }: { name: string; canEdit: boolean }) 
   };
 
   const pillClass =
-    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
 
   return (
     <div className="flex flex-col items-center">
@@ -141,7 +141,7 @@ function IdentityPicture({ name, canEdit }: { name: string; canEdit: boolean }) 
         <p
           role="status"
           className={cn(
-            "mt-2 text-center font-mono text-[10.5px]",
+            "mt-2 text-center font-mono text-xs",
             message.tone === "ok" ? "text-gold" : "text-destructive"
           )}
         >
@@ -172,7 +172,7 @@ function CircuitStudioCard() {
 
   const pillClass = (active: boolean) =>
     cn(
-      "rounded-md px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+      "rounded-md px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
       "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
       active
         ? "bg-gold font-semibold text-primary-foreground"
@@ -189,7 +189,7 @@ function CircuitStudioCard() {
         <button
           type="button"
           onClick={resetCircuitStudio}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
         >
           <RotateCcw className="h-3 w-3" /> Reset to default
         </button>
@@ -242,7 +242,7 @@ function CircuitStudioCard() {
             />
           </label>
         </div>
-        <div className="mt-1.5 text-[10.5px] uppercase tracking-widest text-muted-foreground">
+        <div className="mt-1.5 text-xs uppercase tracking-widest text-muted-foreground">
           {CIRCUIT_BACKGROUND_LABELS[prefs.circuitBackground]} · {activeBg}
         </div>
       </div>
@@ -271,7 +271,7 @@ function CircuitStudioCard() {
                 </span>
                 <span
                   className={cn(
-                    "font-mono text-[10.5px] uppercase tracking-[0.1em]",
+                    "font-mono text-xs uppercase tracking-[0.1em]",
                     active ? "text-gold" : "text-muted-foreground"
                   )}
                 >
@@ -310,7 +310,7 @@ function CircuitStudioCard() {
       <div className="mt-6">
         <div className="flex items-center justify-between">
           <div className="text-sm">Dimming</div>
-          <span className="font-mono text-[10.5px] uppercase tracking-widest text-muted-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             {prefs.circuitDimming === 0.5 ? "Default" : prefs.circuitDimming < 0.5 ? "Darker" : "Brighter"}
           </span>
         </div>
@@ -324,7 +324,7 @@ function CircuitStudioCard() {
           className="mt-3 w-full accent-[#C6A15B]"
           aria-label="Background dimming"
         />
-        <div className="mt-1 flex justify-between font-mono text-[9.5px] uppercase tracking-widest text-muted-foreground">
+        <div className="mt-1 flex justify-between font-mono text-xs uppercase tracking-widest text-muted-foreground">
           <span>Darker</span>
           <span>Brighter</span>
         </div>
@@ -407,7 +407,7 @@ function Settings() {
               <h2 className="mt-2 break-words font-display text-2xl font-semibold">
                 {isLoading ? "Loading…" : name}
               </h2>
-              <p className="mt-1 break-all font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <p className="mt-1 break-all font-mono text-xs uppercase tracking-widest text-muted-foreground">
                 {handle ?? identity?.email ?? "—"}
               </p>
             </div>
@@ -428,7 +428,7 @@ function Settings() {
             </div>
           </div>
 
-          <dl className="mt-6 space-y-2 border-t border-border pt-5 font-mono text-[10px] uppercase tracking-widest">
+          <dl className="mt-6 space-y-2 border-t border-border pt-5 font-mono text-xs uppercase tracking-widest">
             <div className="flex justify-between gap-3">
               <dt className="text-muted-foreground">Email</dt>
               <dd className="break-all text-right normal-case tracking-normal text-foreground">
@@ -493,7 +493,7 @@ function Settings() {
                       aria-pressed={active}
                       onClick={() => setUiPref("tickerSpeed", option.value)}
                       className={cn(
-                        "rounded-md px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                        "rounded-md px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
                         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                         active
                           ? "bg-gold font-semibold text-primary-foreground"

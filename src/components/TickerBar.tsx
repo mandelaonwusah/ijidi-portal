@@ -47,7 +47,7 @@ export function TickerBar() {
         {loop.map((item, i) => (
           <span
             key={i}
-            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[9.5px] font-normal uppercase tracking-[0.12em]"
+            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-xs font-normal uppercase tracking-[0.12em]"
           >
             <span style={{ color: DOT_COLORS[i % DOT_COLORS.length] }}>◆</span>{" "}
             <span style={{ color: TEXT_COLOR }}>{item.text}</span>

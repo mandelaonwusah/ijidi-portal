@@ -79,7 +79,7 @@ function displayValue(value: unknown): string {
 
 function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${className}`}>
+    <span className={`font-mono text-xs font-medium uppercase tracking-widest ${className}`}>
       {children}
     </span>
   );
@@ -248,7 +248,7 @@ function CommandCenterOverview() {
           <span className="font-semibold text-gold">{greeting}</span>
           {sessionEmail && <span className="text-muted-foreground">, {sessionEmail}</span>}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px]">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
           {pendingReviewCount === null ? (
             <span className="text-muted-foreground">Pending review: …</span>
           ) : pendingReviewCount > 0 ? (
@@ -297,7 +297,7 @@ function CommandCenterOverview() {
             </div>
             <div>
               <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
-              <h1 className="mt-2 font-sans text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              <h1 className="mt-2 font-sans text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
                 Ecosystem Command
               </h1>
               <p className="mt-1 max-w-xl font-mono text-sm text-muted-foreground">
@@ -314,8 +314,8 @@ function CommandCenterOverview() {
                 link.border
               )}
             >
-              <Eyebrow className="text-[8px] text-muted-foreground">DATA LINK</Eyebrow>
-              <div className={cn("mt-0.5 flex items-center gap-2 font-mono text-sm font-bold", link.text)}>
+              <Eyebrow className="text-xs text-muted-foreground">DATA LINK</Eyebrow>
+              <div className={cn("mt-0.5 flex items-center gap-2 font-mono text-sm font-medium", link.text)}>
                 <span className="relative flex h-2 w-2">
                   {linkState === "connected" && (
                     <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60 motion-safe:animate-ping" />
@@ -326,8 +326,8 @@ function CommandCenterOverview() {
               </div>
             </div>
             <div className="hidden rounded-lg border bg-card px-5 py-3 shadow-sm md:block">
-              <Eyebrow className="text-[8px] text-muted-foreground">LAST SYNC</Eyebrow>
-              <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
+              <Eyebrow className="text-xs text-muted-foreground">LAST SYNC</Eyebrow>
+              <div className="mt-0.5 font-mono text-sm font-medium tabular-nums text-foreground">
                 {lastSync}
               </div>
             </div>
@@ -366,14 +366,14 @@ function CommandCenterOverview() {
             >
               <div className="relative">
                 <div className="flex items-center justify-between">
-                  <Eyebrow className="text-[9px] text-muted-foreground">{item.label}</Eyebrow>
+                  <Eyebrow className="text-xs text-muted-foreground">{item.label}</Eyebrow>
                   <div className="rounded-lg bg-primary/10 p-1.5 ring-1 ring-primary/10">
                     <Icon className="h-3.5 w-3.5 text-primary" />
                   </div>
                 </div>
                 <div
                   className={cn(
-                    "mt-4 truncate font-sans font-bold tabular-nums",
+                    "mt-4 truncate font-sans font-semibold tabular-nums",
                     notTracked && !metricsLoading && !metricsError
                       ? "text-xl text-muted-foreground/60"
                       : "text-3xl text-foreground"
@@ -387,7 +387,7 @@ function CommandCenterOverview() {
                     ? "Not tracked"
                     : displayValue(item.raw)}
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px]">
+                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-xs">
                   <span className={cardTone}>{cardState}</span>
                   <span className="tabular-nums text-muted-foreground/50">
                     {notTracked ? "" : lastSync}
@@ -412,13 +412,13 @@ function CommandCenterOverview() {
                     Activity log
                   </span>
                   {hasRealData && (
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[9px] text-primary">
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-xs text-primary">
                       {totalActivities} LOADED
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 <span>Newest first</span>
               </div>
@@ -452,7 +452,7 @@ function CommandCenterOverview() {
                         <Activity className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate font-mono text-xs font-bold text-foreground">
+                        <div className="truncate font-mono text-xs font-medium text-foreground">
                           {log.actor ?? "unknown actor"}
                         </div>
                         <div className="truncate font-mono text-xs text-muted-foreground">
@@ -460,7 +460,7 @@ function CommandCenterOverview() {
                         </div>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right font-mono text-[10px] tabular-nums">
+                    <div className="shrink-0 text-right font-mono text-xs tabular-nums">
                       <div className="text-muted-foreground">{formatRelativeTime(log.timestamp)}</div>
                       <div className="text-muted-foreground/50">{formatTacticalTime(log.timestamp)}</div>
                     </div>
@@ -482,7 +482,7 @@ function CommandCenterOverview() {
             </div>
 
             {hasRealData && (
-              <div className="mt-4 flex items-center justify-between border-t pt-4 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+              <div className="mt-4 flex items-center justify-between border-t pt-4 font-mono text-xs tabular-nums text-muted-foreground/60">
                 <span>LATEST EVENT {formatTacticalTime(recentActivities[0]?.timestamp)}</span>
                 <span>
                   SHOWING {recentActivities.length} OF {totalActivities}
@@ -519,14 +519,14 @@ function CommandCenterOverview() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-primary">
                           [07] GOVERNANCE
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[8px] text-primary">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary">
                           VAULT
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         Proposals, votes, recovery
                       </p>
                     </div>
@@ -546,14 +546,14 @@ function CommandCenterOverview() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-primary">
                           [02] ECOSYSTEM
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[8px] text-primary">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary">
                           MAP
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         Entities, relations, status
                       </p>
                     </div>
@@ -576,10 +576,10 @@ function CommandCenterOverview() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-accent">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-accent">
                           [ENTITIES]
                         </span>
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[8px] text-accent">
+                        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-xs text-accent">
                           {entitiesLoading
                             ? "LOADING"
                             : entitiesError
@@ -587,7 +587,7 @@ function CommandCenterOverview() {
                             : `${entityList.length} ON RECORD`}
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         State as recorded per entity
                       </p>
                     </div>
@@ -603,16 +603,16 @@ function CommandCenterOverview() {
                 {isEntitiesOpen && (
                   <div className="border-t border-border/50">
                     {entitiesLoading ? (
-                      <div className="flex items-center gap-2 px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-2 px-4 py-3 font-mono text-xs text-muted-foreground">
                         <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
                         Loading entity status…
                       </div>
                     ) : entitiesError ? (
-                      <div className="px-4 py-3 font-mono text-[10px] text-destructive">
+                      <div className="px-4 py-3 font-mono text-xs text-destructive">
                         Entity status could not be loaded.
                       </div>
                     ) : entityList.length === 0 ? (
-                      <div className="px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                      <div className="px-4 py-3 font-mono text-xs text-muted-foreground">
                         No entities on record.
                       </div>
                     ) : (
@@ -632,7 +632,7 @@ function CommandCenterOverview() {
                               <div className="mt-0.5 flex items-center gap-1.5">
                                 <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
                                 <span
-                                  className={cn("font-mono text-[9px] uppercase", tone.text)}
+                                  className={cn("font-mono text-xs uppercase", tone.text)}
                                 >
                                   {item.current_state ?? "no state"}
                                 </span>
@@ -667,7 +667,7 @@ function CommandCenterOverview() {
               </div>
             </div>
 
-            <div className="mt-6 border-t pt-4 font-mono text-[10px] text-muted-foreground/60">
+            <div className="mt-6 border-t pt-4 font-mono text-xs text-muted-foreground/60">
               {latestEntityUpdate > 0
                 ? `Entity records last changed ${formatRelativeTime(
                     new Date(latestEntityUpdate).toISOString()
@@ -705,10 +705,10 @@ function CommandCenterOverview() {
                 <Icon className="h-3.5 w-3.5 text-primary" />
               </div>
               <div className="min-w-0">
-                <div className="font-mono text-[8px] uppercase tracking-wider text-muted-foreground/60">
+                <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground/60">
                   {stat.label}
                 </div>
-                <div className="truncate font-mono text-sm font-bold tabular-nums text-foreground">
+                <div className="truncate font-mono text-sm font-medium tabular-nums text-foreground">
                   {stat.value}
                 </div>
               </div>

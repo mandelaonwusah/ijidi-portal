@@ -36,7 +36,7 @@ export const Route = createFileRoute("/governance")({
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="border border-dashed border-border px-5 py-8 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+    <div className="border border-dashed border-border px-5 py-8 text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
       {text}
     </div>
   );
@@ -46,7 +46,7 @@ function ErrorState({ what, message }: { what: string; message: string }) {
   return (
     <div
       role="alert"
-      className="rounded-xl border border-destructive/35 bg-[var(--error-surface)] px-5 py-5 text-center font-mono text-[11px] text-destructive"
+      className="rounded-xl border border-destructive/35 bg-[var(--error-surface)] px-5 py-5 text-center font-mono text-xs text-destructive"
     >
       Could not load {what}: {message}
       <div className="mt-1 text-muted-foreground">Retrying automatically.</div>
@@ -125,7 +125,7 @@ function Governance() {
           <div className="flex items-center gap-3">
             <button
               onClick={sync}
-              className="flex items-center gap-1.5 font-mono text-[10px] uppercase text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin text-gold" : ""}`} />
               Sync
@@ -148,7 +148,7 @@ function Governance() {
           <div className="mt-8 border-t border-border pt-5">
             <div className="flex justify-between">
               <Eyebrow>Role</Eyebrow>
-              <span className="font-mono text-[10px] text-gold">ROOT</span>
+              <span className="font-mono text-xs text-gold">ROOT</span>
             </div>
             <div className="mt-4 flex items-center gap-2">
               <span
@@ -157,7 +157,7 @@ function Governance() {
                 }`}
               />
               <span
-                className={`font-mono text-[10px] uppercase tracking-widest ${
+                className={`font-mono text-xs uppercase tracking-widest ${
                   sessionEmail ? "text-teal" : "text-muted-foreground"
                 }`}
               >
@@ -169,7 +169,7 @@ function Governance() {
               </span>
             </div>
             {sessionEmail && (
-              <p className="mt-2 break-all font-mono text-[10px] text-muted-foreground">
+              <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
                 {sessionEmail}
               </p>
             )}
@@ -195,7 +195,7 @@ function Governance() {
               </div>
               <Link
                 to="/proposals"
-                className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 Open review
                 <ArrowRight className="h-3 w-3" />
@@ -213,7 +213,7 @@ function Governance() {
               <EmptyState text="No verified proposals found." />
             ) : (
               <>
-                <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   <span>
                     <span className="text-gold">{counts.pending}</span> pending
                   </span>
@@ -242,7 +242,7 @@ function Governance() {
                   ))}
                 </div>
                 {proposals.length > 5 && (
-                  <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <p className="mt-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     Showing 5 of {proposals.length} · see the full queue in Open review
                   </p>
                 )}
@@ -260,7 +260,7 @@ function Governance() {
                   <h2 className="mt-1 font-display text-lg font-semibold">Decision log</h2>
                 </div>
               </div>
-              <div className="flex items-center gap-2 font-mono text-[9px] uppercase text-muted-foreground">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground">
                 {decisionsQ.isLoading && <span className="text-attention">FETCHING…</span>}
                 {!decisionsQ.isLoading && !decisionsQ.isError && (
                   <span>{decisions.length} records</span>

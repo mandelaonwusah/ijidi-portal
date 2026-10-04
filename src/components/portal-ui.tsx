@@ -8,7 +8,7 @@ export function Eyebrow({ children, className }: { children: ReactNode; classNam
   return (
     <div
       className={cn(
-        "font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground",
+        "font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground",
         className,
       )}
     >
@@ -93,7 +93,7 @@ export function ModCombo({ k }: { k: string }) {
  * ghost     text only, for inline links.
  */
 const BTN_BASE =
-  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] transition-colors disabled:cursor-default disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-mono text-xs font-medium uppercase tracking-[0.1em] transition-colors disabled:cursor-default disabled:opacity-50";
 export const buttonKind = {
   primary: `${BTN_BASE} border border-transparent bg-[linear-gradient(180deg,#e3c27a,#c6a15b_55%,#a98443)] text-primary-foreground hover:brightness-105`,
   secondary: `${BTN_BASE} border border-border bg-black/25 text-foreground backdrop-blur-[3px] hover:border-border-strong`,
@@ -133,7 +133,7 @@ export function StatusBadge({
     <span
       data-state={state}
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 font-mono text-xs font-semibold uppercase leading-none tracking-[0.08em]",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 font-mono text-xs font-medium uppercase leading-none tracking-[0.08em]",
         state === "verified" && "border-verified/35 bg-verified/10 text-blue-light",
         state === "pending" && "border-attention/35 bg-attention/10 text-attention",
         state === "error" && "border-destructive/35 bg-destructive/10 text-destructive",
@@ -189,8 +189,8 @@ export function HexBadge({ label = "ROOT", small = false }: { label?: string; sm
   return (
     <div
       className={cn(
-        "hex-badge flex shrink-0 items-center justify-center border border-gold/60 bg-gold/10 font-mono font-bold text-gold shadow-[0_0_20px_var(--gold-glow)]",
-        small ? "h-10 w-10 text-[9px]" : "h-16 w-16 text-[11px]",
+        "hex-badge flex shrink-0 items-center justify-center border border-gold/60 bg-gold/10 font-mono font-medium text-gold shadow-[0_0_20px_var(--gold-glow)]",
+        small ? "h-10 w-10 text-xs" : "h-16 w-16 text-xs",
       )}
     >
       <ShieldCheck className={small ? "h-4 w-4" : "h-6 w-6"} />
@@ -215,12 +215,12 @@ export function MetricTile({
   return (
     <GlassCard variant="metric" className="min-h-[152px] overflow-hidden">
       <div className="flex items-start justify-between gap-2">
-        <div className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
           {label}
         </div>
         <span
           className={cn(
-            "font-mono text-[9px] uppercase",
+            "font-mono text-xs uppercase",
             status === "tracked" ? "text-teal" : "text-muted-foreground",
           )}
         >
@@ -255,7 +255,7 @@ export function EmptyState({
 
         {icon}
       </div>
-      <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-foreground">
+      <div className="font-mono text-xs font-medium uppercase tracking-[0.16em] text-foreground">
         {title}
       </div>
       <div className="mt-2 text-xs text-muted-foreground">{detail}</div>
@@ -271,7 +271,7 @@ export function DataProvenance({ status }: { status: DataStatus }) {
 
 export function Signal({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-teal">
+    <span className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-teal">
       <Radio className="h-3 w-3" />
       {children}
     </span>
@@ -280,7 +280,7 @@ export function Signal({ children }: { children: ReactNode }) {
 
 export function ActionLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-gold transition-colors group-hover:text-teal">
+    <span className="inline-flex items-center gap-1 font-mono text-xs font-medium uppercase tracking-[0.14em] text-gold transition-colors group-hover:text-teal">
       {children}
       <ArrowUpRight className="h-3 w-3" />
     </span>
@@ -289,7 +289,7 @@ export function ActionLabel({ children }: { children: ReactNode }) {
 
 export function RestrictedMark() {
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+    <span className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
       <LockKeyhole className="h-3 w-3" />
       Restricted
     </span>

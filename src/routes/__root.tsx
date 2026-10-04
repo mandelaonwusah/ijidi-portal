@@ -120,7 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         // DESIGN.md §3: Inter for UI, IBM Plex Mono for machine values. Bold and
         // semibold stay loaded until later groups stop using them (no faux bold).
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -233,10 +233,10 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" })
     >
       <div className="text-center">
         <div className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border border-[#C6A15B]/25 border-t-[#C6A15B]" />
-        <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#C6A15B]">
+        <div className="font-mono text-xs uppercase tracking-[0.28em] text-[#C6A15B]">
           IJIDI Portal
         </div>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#F5F1E8]/60">
+        <p className="mt-3 font-mono text-xs uppercase tracking-[0.18em] text-[#F5F1E8]/60">
           {label}
         </p>
       </div>
@@ -409,7 +409,7 @@ function BrandBadge({
     <span
       aria-hidden="true"
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-[9px] font-semibold text-gold",
+        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-xs font-semibold text-gold",
         size
       )}
     >
@@ -592,12 +592,12 @@ function MemberShell({ session }: { session: Session }) {
               <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                 IJIDI <span className="text-gold">PORTAL</span>
               </div>
-              <Eyebrow className="mt-1 text-[8px]">Member Access</Eyebrow>
+              <Eyebrow className="mt-1 text-xs">Member Access</Eyebrow>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <span
-              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-xs tracking-wider text-muted-foreground md:flex"
               title={email}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-verified" />
@@ -616,7 +616,7 @@ function MemberShell({ session }: { session: Session }) {
               Welcome, <span className="text-gold">{displayName}</span>
             </h1>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 Access tier
               </span>
               {profileLoading ? (
@@ -637,15 +637,15 @@ function MemberShell({ session }: { session: Session }) {
           <section className="mt-8">
             <Eyebrow className="pb-3">ENTITY STATUS</Eyebrow>
             {entitiesLoading ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 Loading entity status…
               </p>
             ) : entitiesError ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 Entity status unavailable
               </p>
             ) : !entities || entities.length === 0 ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 No entities reported
               </p>
             ) : (
@@ -671,7 +671,7 @@ function MemberShell({ session }: { session: Session }) {
                       <dl className="mt-3 space-y-1.5">
                         {fields.map(([k, v]) => (
                           <div key={k} className="flex items-baseline justify-between gap-3">
-                            <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               {humanize(k)}
                             </dt>
                             <dd className="break-words text-right text-xs text-foreground">
@@ -688,7 +688,7 @@ function MemberShell({ session }: { session: Session }) {
           </section>
         </main>
 
-        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
+        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
           <LiveClock />
         </footer>
       </div>
@@ -715,7 +715,7 @@ function EntityDock({ hidden }: { hidden: boolean }) {
       {floatingSwitcherItems.map((item) => {
         const active = item.kind === "route" && isNavActive(currentPath, item.to);
         const chipClass = cn(
-          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-all sm:px-3.5",
+          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-xs uppercase tracking-[0.14em] transition-all sm:px-3.5",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
           active
             ? "border-gold/40 bg-gold/15 text-gold"
@@ -800,7 +800,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       {pending !== undefined && pending > 0 && (
         <span
           style={{ backgroundColor: "#D97B3F", color: "#FFFFFF" }}
-          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-[10px] font-bold ring-2 ring-background"
+          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-xs font-medium ring-2 ring-background"
         >
           {pending > 99 ? "99+" : pending}
         </span>
@@ -1069,7 +1069,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
                   </div>
-                  <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
+                  <Eyebrow className="mt-1 text-xs">Command Center</Eyebrow>
                 </Link>
                 <button
                   type="button"
@@ -1133,7 +1133,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-pressed={collapsed}
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-xs leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                     !collapsed && "ml-auto"
                   )}
                 >
@@ -1143,7 +1143,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
               {/* NAVIGATION label card */}
               <div className={cn("flex items-center justify-center border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
-                <span className="font-mono text-sm font-extrabold uppercase tracking-[0.18em] text-blue">
+                <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-blue">
                   Navigation
                 </span>
               </div>
@@ -1170,7 +1170,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         aria-expanded={isOpen}
                         aria-controls={groupId}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-3 text-left font-mono text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                          "flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-3 text-left font-mono text-xs font-medium uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                           isOpen || hasActive
                             ? "border-gold bg-gold text-primary-foreground shadow-[0_10px_26px_rgba(198,161,91,.3)] hover:bg-gold"
                             : "text-foreground/80 hover:text-foreground",
@@ -1180,7 +1180,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         <span
                           aria-hidden="true"
                           className={cn(
-                            "inline-block text-[9px] transition-transform duration-150",
+                            "inline-block text-xs transition-transform duration-150",
                             isOpen ? "rotate-90" : "",
                             isOpen || hasActive ? "text-primary-foreground" : "text-gold/70"
                           )}
@@ -1193,7 +1193,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         )}
                         <span
                           className={cn(
-                            "text-[9px] font-normal tracking-normal",
+                            "text-xs font-normal tracking-normal",
                             isOpen || hasActive ? "text-primary-foreground/70" : "text-muted-foreground/60"
                           )}
                         >
@@ -1223,10 +1223,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                                 setRailOpen(false);
                               }}
                               className={cn(
-                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
                                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                                 collapsed && "lg:justify-center lg:gap-0 lg:px-0",
-                                active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                                active && "border-gold/30 bg-gold/10 font-semibold text-gold"
                               )}
                             >
                               <span
@@ -1269,7 +1269,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                     ⚙
                   </div>
                   <div className={cn(collapsed && "lg:hidden")}>
-                    <Eyebrow className="text-[8px]">Account</Eyebrow>
+                    <Eyebrow className="text-xs">Account</Eyebrow>
                     <span className="text-xs text-muted-foreground">Settings</span>
                   </div>
                 </Link>
@@ -1278,7 +1278,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           </aside>
           <div className="min-w-0 flex-1">
             <div className={cn(
-                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
+                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-xs uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
                 SHELL_TEXT,
                 isIgxAi && "hidden"
               )}>
@@ -1301,7 +1301,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               )}>
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
-                  className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-black/25 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground transition-all hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-black/25 px-3 py-2 font-mono text-xs font-medium uppercase tracking-[0.14em] text-foreground transition-all hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
@@ -1320,7 +1320,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   >
                     {pageLabel}
                   </div>
-                  {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
+                  {activeItem && <Eyebrow className="mt-1 text-xs">{activeItem.group}</Eyebrow>}
                 </div>
               </div>
 
@@ -1333,13 +1333,13 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 >
                   <BrandBadge label={governorName} size="h-12 w-12" letterFallback={false} />
                   <div className="min-w-0 leading-tight">
-                    <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+                    <div className="font-mono text-xs font-medium uppercase tracking-[0.16em] text-gold">
                       Governor
                     </div>
                     <div className="max-w-[170px] truncate text-xs font-medium text-foreground">
                       {governorName}
                     </div>
-                    <div className="max-w-[170px] truncate font-mono text-[9px] tracking-wider text-muted-foreground">
+                    <div className="max-w-[170px] truncate font-mono text-xs tracking-wider text-muted-foreground">
                       {governorHandle ?? signedInEmail}
                     </div>
                   </div>
@@ -1366,7 +1366,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                       onMouseEnter={() => sounds.playHover()}
                       onClick={() => sounds.playClick()}
                       className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
                         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                         active
                           ? "bg-gold font-semibold text-primary-foreground"

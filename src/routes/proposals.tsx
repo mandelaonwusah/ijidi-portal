@@ -33,7 +33,7 @@ type Proposal = {
 
 function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${className}`}>
+    <span className={`font-mono text-xs font-medium uppercase tracking-widest ${className}`}>
       {children}
     </span>
   );
@@ -121,7 +121,7 @@ function ProposalsReview() {
       {/* Header */}
       <GlassCard variant="elevated">
         <Eyebrow className="text-teal">MODULE / PROPOSAL REVIEW</Eyebrow>
-        <h1 className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="mt-1 font-sans text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Proposal Queue
         </h1>
         <p className="mt-1 font-mono text-xs text-muted-foreground">
@@ -170,7 +170,7 @@ function ProposalsReview() {
         ) : (
           filtered.map((proposal, i) => (
             <GlassCard key={proposal.id} index={i} className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-foreground">
                 <span>
                   {proposal.actor_type} · {proposal.source ?? "unknown source"}
                 </span>
@@ -181,23 +181,23 @@ function ProposalsReview() {
               </div>
 
               <div>
-                <Eyebrow className="text-[9px] text-muted-foreground">INTENT</Eyebrow>
+                <Eyebrow className="text-xs text-muted-foreground">INTENT</Eyebrow>
                 <p className="mt-1 font-sans text-sm text-foreground">{proposal.intent}</p>
               </div>
 
               <div>
-                <Eyebrow className="text-[9px] text-muted-foreground">SUGGESTED ACTION</Eyebrow>
+                <Eyebrow className="text-xs text-muted-foreground">SUGGESTED ACTION</Eyebrow>
                 <p className="mt-1 font-mono text-xs text-foreground">{proposal.suggested_action}</p>
               </div>
 
               {proposal.reasoning && (
                 <div>
-                  <Eyebrow className="text-[9px] text-muted-foreground">REASONING</Eyebrow>
+                  <Eyebrow className="text-xs text-muted-foreground">REASONING</Eyebrow>
                   <p className="mt-1 font-mono text-xs text-muted-foreground">{proposal.reasoning}</p>
                 </div>
               )}
 
-              <div className="flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-4 font-mono text-xs text-muted-foreground">
                 <span>
                   CONFIDENCE:{" "}
                   {proposal.confidence_score !== null ? proposal.confidence_score : "NOT TRACKED"}
@@ -209,7 +209,7 @@ function ProposalsReview() {
 
               {proposal.review_note && (
                 <div>
-                  <Eyebrow className="text-[9px] text-muted-foreground">REVIEW NOTE</Eyebrow>
+                  <Eyebrow className="text-xs text-muted-foreground">REVIEW NOTE</Eyebrow>
                   <p className="mt-1 font-mono text-xs text-muted-foreground">{proposal.review_note}</p>
                 </div>
               )}
