@@ -168,10 +168,10 @@ function LoginPage() {
           --blue-rgb:79,134,247;
           --ivory:#F5F1E8;--line:rgba(198,161,91,.3);
           --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-          --display:"Fraunces",Georgia,"Times New Roman",serif;
+          --display:"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
           --ease:cubic-bezier(.2,.8,.2,1);
           position:fixed;inset:0;z-index:100;overflow-x:hidden;overflow-y:auto;color:var(--ivory);
-          font-family:"Karla","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+          font-family:"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
           background:#03050a;}
         .ijidi-login *{box-sizing:border-box}
 
@@ -199,14 +199,14 @@ function LoginPage() {
           filter:drop-shadow(0 6px 20px rgba(var(--gold-rgb),.4))}
         .portal-name{font:600 12px/1 var(--mono);letter-spacing:.38em;color:var(--ivory)}
         .portal-name span{color:var(--gold)}
-        .form-title{margin:0;text-align:center;font:500 32px/1.1 var(--display);letter-spacing:.01em;color:var(--ivory)}
-        .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Karla","Segoe UI",sans-serif;color:rgba(245,241,232,.75)}
+        .form-title{margin:0;text-align:center;font:600 32px/1.25 var(--display);letter-spacing:-.01em;color:var(--ivory)}
+        .form-sub{margin:10px 0 0;text-align:center;font:400 14px/1.6 "Inter","Segoe UI",sans-serif;color:rgba(245,241,232,.75)}
 
         .fields{margin-top:28px;display:flex;flex-direction:column;gap:16px;text-align:left}
         .field label{display:block;margin-bottom:8px;font:600 9.5px/1 var(--mono);letter-spacing:.22em;
           text-transform:uppercase;color:var(--gold)}
         .field input{width:100%;padding:14px 15px;border-radius:10px;border:1px solid var(--line);
-          background:rgba(0,0,0,.32);color:var(--ivory);font:500 14.5px/1.2 "Karla","Segoe UI",sans-serif;
+          background:rgba(0,0,0,.32);color:var(--ivory);font:500 14px/1.2 "Inter","Segoe UI",sans-serif;
           letter-spacing:.02em;outline:none;text-shadow:none;
           transition:border-color .25s,box-shadow .25s,background .25s}
         .field input::placeholder{color:rgba(245,241,232,.36)}

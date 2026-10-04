@@ -59,12 +59,6 @@ export const Route = createFileRoute("/igx-ai")({
       { property: "og:title", content: "IGX AI · Intelligence Console" },
       { property: "og:description", content: "Grounded IGX AI intelligence console." },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&display=swap",
-      },
-    ],
   }),
   // ?entity=mandela | ifeoma | group | foundation | atelier | media — opens the chat
   // with that person/entity already chosen as the scope.
@@ -1363,9 +1357,6 @@ function IgxAi() {
         @keyframes igxRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
         @keyframes igxBreathe { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: .95; transform: scale(1.06); } }
 
-        .igx-chat .igx-wordmark { font-family: "Cormorant Garamond", "Fraunces", Georgia, serif; font-weight: 600;
-          font-size: clamp(38px, 6vw, 52px); line-height: 1; letter-spacing: .5px; white-space: nowrap; margin: 0; }
-        .igx-chat .igx-wordmark span { color: #5E9BFF; }
 
         .igx-chat .igx-emblem { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
         .igx-chat .igx-emblem::before { content: ""; position: absolute; inset: -5px; border-radius: 50%;
@@ -1478,9 +1469,10 @@ function IgxAi() {
             <div className="igx-emblem">
               <Avatar src={igxAvatar} label="IGX" bare className="h-full w-full border-0 text-xl" />
             </div>
-            <h1 className="igx-wordmark">
-              IG<span>X</span> <em className="not-italic text-foreground">AI</em>
-            </h1>
+            {/* DESIGN.md §6: wordmarks are approved artwork, never typeset. The IGX AI
+                wordmark file is not in the repo yet, so only the emblem shows; the
+                heading stays for screen readers. */}
+            <h1 className="sr-only">IGX AI</h1>
           </div>
           <p
             className="igx-rise mt-2 text-center font-display text-2xl text-foreground sm:text-[28px]"
