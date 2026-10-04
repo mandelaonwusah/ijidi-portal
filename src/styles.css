@@ -17,6 +17,20 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
+  /* --- Type scale (DESIGN.md §3): 13 / 14 / 16 / 20 / 24 / 32 --- */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 2rem;
+  --text-2xl--line-height: 2.5rem;
+
   /* --- Semantic color variables --- */
   --color-background        : var(--background);
   --color-foreground        : var(--foreground);
@@ -44,11 +58,20 @@
   --color-slate             : var(--slate);
   --color-danger            : var(--danger);
   --color-gold              : var(--gold);
-  --color-teal              : var(--teal);
+  --color-blue-light        : var(--blue-light);
+  /* Deprecated alias: "teal" was always Electric Blue (light). Use blue-light. */
+  --color-teal              : var(--blue-light);
+  --color-teal-400          : var(--blue-light);
 
-  /* Portal theme: the "verified / connected" colour used across the pages as
-     teal-400 is our blue, not green. */
-  --color-teal-400          : #5E9BFF;
+  /* --- Borders (DESIGN.md §2): neutral by default, gold only when selected,
+         focused or governor-only --- */
+  --color-border-strong     : var(--border-strong);
+  --color-border-gold       : var(--border-gold);
+
+  /* --- Honest-state colours (DESIGN.md §2) --- */
+  --color-verified          : var(--verified);
+  --color-attention         : var(--attention);
+  --color-not-connected     : var(--not-connected);
 
   /* --- Chart / Sidebar --- */
   --color-chart-1           : var(--chart-1);
@@ -105,10 +128,14 @@
   --success: #5e9bff;
   --success-foreground: #06080d;
 
-  /* --- Borders & Inputs --- */
-  --border: rgba(198, 161, 91, 0.22);
-  --border-strong: rgba(198, 161, 91, 0.4);
+  /* --- Borders & Inputs (DESIGN.md §2) ---
+     Neutral translucent white by default; gold only for selected, focus and
+     governor-only surfaces; a top inset highlight on glass. */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-gold: rgba(198, 161, 91, 0.45);
   --border-accent: rgba(79, 134, 247, 0.35);
+  --highlight-top: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
   --input: #121826;
   --ring: #c6a15b;
@@ -116,27 +143,28 @@
   --panel: #0a0e16;
   --panel-elevated: #121826;
 
-  /* --- Hardware Tokens --- */
-  --navy: #06080d;
-  --navy-deep: #040509;
+  /* --- Identity colours --- */
   --line: rgba(198, 161, 91, 0.4);
-  --line-dim: rgba(198, 161, 91, 0.2);
-  --paper: #0b0f17;
-  --paper-dim: #080b12;
   --steel: #9aa3b5;
-  --charcoal: #121826;
-  --amber: #c6a15b;
-  --amber-bright: #e3c27a;
   --gold: #c6a15b;
-  --teal: #5e9bff;
+  --gold-glow: rgba(198, 161, 91, 0.25);
   --blue: #4f86f7;
+  --blue-light: #5e9bff;
+  --teal: var(--blue-light); /* deprecated alias, see --color-teal */
   --slate: #9aa3b5;
   --danger: #e5677a;
-  --blueprint-ok: #5e9bff;
-  --blue-glow: rgba(79, 134, 247, 0.14);
+
+  /* --- Honest-state colours (DESIGN.md §2) --- */
+  --verified: #4f86f7;
+  --verified-surface: rgba(79, 134, 247, 0.1);
+  --attention: #d97b3f;
+  --attention-surface: rgba(217, 123, 63, 0.1);
+  --error-surface: rgba(229, 103, 122, 0.1);
+  --not-connected: #9aa3b5;
+  --not-connected-dot: #5c6476;
+  --not-connected-surface: rgba(255, 255, 255, 0.04);
 
   /* --- Shadows --- */
-  --shadow-sheet: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
   --shadow-lift: 0 30px 60px -32px rgba(0, 0, 0, 0.75);
   --shadow-card: 0 4px 24px -12px rgba(0, 0, 0, 0.6);
 
@@ -153,7 +181,7 @@
   --sidebar-primary-foreground: #0b0b0c;
   --sidebar-accent: #4f86f7;
   --sidebar-accent-foreground: #f5f1e8;
-  --sidebar-border: rgba(198, 161, 91, 0.22);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: #c6a15b;
 
   /* --- Opacity RGB Triples --- */
@@ -174,6 +202,17 @@
 html {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Always-visible keyboard focus ring (DESIGN.md §6). In the base layer so a
+   component that draws its own ring (focus-visible:ring-* with outline-none)
+   keeps it; everything else gets this one. Keyboard focus only, not mouse. */
+@layer base {
+  :where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]),
+      [role="button"], [role="tab"], [role="option"], [role="menuitem"]):focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
 }
 
 body {

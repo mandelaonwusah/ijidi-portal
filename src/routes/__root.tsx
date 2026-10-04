@@ -122,7 +122,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+        // DESIGN.md §3: Inter for UI, IBM Plex Mono for machine values. Bold and
+        // semibold stay loaded until later groups stop using them (no faux bold).
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -1280,7 +1282,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 <span className="hidden sm:inline">
                   Session <SessionTimer since={session.user.last_sign_in_at} />
                 </span>
-                <span className="hidden md:inline">Build / 01</span>
                 <span className="hidden xl:inline">Data / honest-state protocol</span>
               </div>
               <LiveClock />
@@ -1378,7 +1379,16 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 })}
               </nav>
             </div>
-            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}><Fragment key={pictureLoadTick}>{children}</Fragment></main>
+            <main className={cn("p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28", isIgxAi && "p-0 pb-0 sm:p-0 lg:p-0")}>
+              <Fragment key={pictureLoadTick}>{children}</Fragment>
+              {/* Build tag (DESIGN.md §6): the real commit, read at build time.
+                  Left out when it could not be read; hidden on IGX AI. */}
+              {!isIgxAi && __BUILD_COMMIT__ && (
+                <footer className="mt-16 flex h-8 items-center font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                  Build {__BUILD_COMMIT__}
+                </footer>
+              )}
+            </main>
           </div>
         </div>
       </div>
