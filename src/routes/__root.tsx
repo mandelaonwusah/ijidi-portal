@@ -12,15 +12,8 @@ import {
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from "@/components/ui/command";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ShortcutsSheet } from "@/components/ShortcutsSheet";
 import { Button } from "@/components/ui/button";
 import { navItems, navGroupOrder, floatingSwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
@@ -461,7 +454,17 @@ function useRouteTrail() {
     ? Object.keys(trail.current).some((key) => Number(key) > index)
     : true;
 
+  // Pages visited this session, most recent first, without the current one
+  // (the command palette's Recent group).
+  const recent = Object.keys(trail.current)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map((key) => trail.current[key])
+    .filter((path, i, all): path is string => !!path && path !== location.pathname && all.indexOf(path) === i)
+    .slice(0, 5);
+
   return {
+    recent,
     hasBack,
     hasForward,
     previous: trail.current[index - 1],
@@ -503,11 +506,14 @@ function entityDotClass(row: Record<string, unknown>): string {
 }
 
 // Sign out is a danger action with a confirm step (DESIGN.md §6).
+const SIGN_OUT_TITLE = "Sign out of the IJIDI Portal?";
+const SIGN_OUT_DESCRIPTION = "You will need your Access ID and Passkey to sign in again.";
+
 function SignOutButton({ signingOut, onConfirm }: { signingOut: boolean; onConfirm: () => void }) {
   return (
     <ConfirmDialog
-      title="Sign out of the IJIDI Portal?"
-      description="You will need your Access ID and Passkey to sign in again."
+      title={SIGN_OUT_TITLE}
+      description={SIGN_OUT_DESCRIPTION}
       confirmLabel="Sign out"
       onConfirm={onConfirm}
       trigger={
@@ -805,6 +811,8 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
 
 function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [signOutAsk, setSignOutAsk] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
@@ -965,6 +973,17 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       }
       if (event.key === "Escape") {
         setRailOpen(false);
+      }
+      // "?" opens the shortcuts list, unless the governor is typing in a field.
+      if (event.key === "?" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        const target = event.target as HTMLElement | null;
+        const typing =
+          !!target &&
+          (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+        if (!typing) {
+          event.preventDefault();
+          setShortcutsOpen(true);
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -1223,11 +1242,6 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                               <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
                                 {item.label}
                               </span>
-                              <span
-                                className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
-                              >
-                                {item.key}
-                              </span>
                             </Link>
                           );
                         })}
@@ -1384,29 +1398,22 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/") || railOpen}
       />
 
-      <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
-        <CommandInput placeholder="Type a command or search modules..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          {navSections.map((section) => (
-            <CommandGroup key={section.label} heading={section.label}>
-              {section.items.map((item) => (
-                <CommandItem
-                  key={item.to}
-                  onSelect={() => {
-                    sounds.playClick();
-                    navigate({ to: item.to });
-                    setPaletteOpen(false);
-                  }}
-                >
-                  <span>{item.label}</span>
-                  <CommandShortcut>{item.key}</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
-        </CommandList>
-      </CommandDialog>
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        recentPaths={trail.recent}
+        pathLabel={pathLabel}
+        onSignOut={() => setSignOutAsk(true)}
+      />
+      <ShortcutsSheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <ConfirmDialog
+        open={signOutAsk}
+        onOpenChange={setSignOutAsk}
+        title={SIGN_OUT_TITLE}
+        description={SIGN_OUT_DESCRIPTION}
+        confirmLabel="Sign out"
+        onConfirm={handleSignOut}
+      />
     </div>
   );
 }

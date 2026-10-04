@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { buttonKind, proposalBadge } from "@/components/portal-ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { IGX_NEW_CHAT_EVENT } from "@/components/CommandPalette";
 import { GlassCard } from "@/components/GlassCard";
 import {
   AgentsPanel,
@@ -625,6 +626,16 @@ function IgxAi() {
     setSubmitError(false);
     requestAnimationFrame(growTextarea);
   };
+
+  // "New IGX AI chat" in the command palette opens this page and then asks for a
+  // new chat; the ref keeps the listener on the latest newChat.
+  const newChatRef = useRef(newChat);
+  newChatRef.current = newChat;
+  useEffect(() => {
+    const onNewChat = () => newChatRef.current();
+    window.addEventListener(IGX_NEW_CHAT_EVENT, onNewChat);
+    return () => window.removeEventListener(IGX_NEW_CHAT_EVENT, onNewChat);
+  }, []);
 
   // When a saved chat is opened, refresh its request statuses from the database.
   useEffect(() => {

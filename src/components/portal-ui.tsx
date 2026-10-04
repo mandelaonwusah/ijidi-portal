@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, Check, LockKeyhole, Minus, Radio, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlassCard } from "@/components/GlassCard";
@@ -39,6 +39,48 @@ export function SectionHeader({
       </div>
       {action}
     </div>
+  );
+}
+
+/**
+ * Keycap (DESIGN.md §6 "Kbd keycap"): 13 px Plex Mono, 20 px tall, radius 6,
+ * strong neutral border with a bottom edge. Combos are separate keycaps.
+ */
+export function Kbd({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <kbd
+      className={cn(
+        "inline-flex h-5 min-w-5 items-center justify-center rounded-[6px] border border-border-strong px-1",
+        "font-mono text-xs font-normal leading-none text-foreground/75 shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]",
+        className,
+      )}
+    >
+      {children}
+    </kbd>
+  );
+}
+
+/** "⌘" on macOS, "Ctrl" elsewhere. Reads the platform after mount so server and client match. */
+export function useModKeyLabel() {
+  const [label, setLabel] = useState("Ctrl");
+  useEffect(() => {
+    const platform =
+      (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
+      navigator.platform ??
+      "";
+    if (/mac|iphone|ipad/i.test(platform)) setLabel("⌘");
+  }, []);
+  return label;
+}
+
+/** A Ctrl/⌘ + key combo as keycaps. */
+export function ModCombo({ k }: { k: string }) {
+  const mod = useModKeyLabel();
+  return (
+    <span className="inline-flex items-center gap-1">
+      <Kbd>{mod}</Kbd>
+      <Kbd>{k}</Kbd>
+    </span>
   );
 }
 
