@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GlassCard } from "@/components/GlassCard";
 import { Gem, Ruler, Shirt } from "lucide-react";
 import {
   EmptyState,
@@ -48,7 +49,7 @@ function Atelier() {
         />
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="panel-bracket p-5 lg:col-span-2">
+        <GlassCard className="lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <Eyebrow className="text-teal">Production registry</Eyebrow>
@@ -74,7 +75,7 @@ function Atelier() {
               </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
         <EmptyState
           title="No production records"
           detail="The Atelier registry is ready for verified collections."

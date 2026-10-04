@@ -420,7 +420,7 @@ function BrandBadge({
     <span
       aria-hidden="true"
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border border-gold/40 text-[9px] font-semibold text-gold",
+        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-[9px] font-semibold text-gold",
         size
       )}
     >
@@ -569,7 +569,7 @@ function MemberShell({ session }: { session: Session }) {
       <CircuitBackground />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-background/10 px-4 backdrop-blur-xl [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
+        <header className="flex h-[76px] items-center justify-between gap-3 border-b border-border bg-[rgba(10,14,22,0.38)] shadow-[var(--highlight-top)] backdrop-blur-[10px] px-4 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <PortalEmblem />
             <div className="min-w-0">
@@ -591,7 +591,7 @@ function MemberShell({ session }: { session: Session }) {
               onClick={handleSignOut}
               onMouseEnter={() => sounds.playHover()}
               disabled={signingOut}
-              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-border-strong hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
               title="Sign out of the portal"
             >
               {signingOut ? "Signing out…" : "Sign out"}
@@ -601,7 +601,7 @@ function MemberShell({ session }: { session: Session }) {
 
         <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
           {/* Member Home — identity card */}
-          <section className="relative overflow-hidden rounded-lg border border-gold/30 bg-panel/90 p-6 backdrop-blur-md sm:p-8">
+          <section className="relative overflow-hidden rounded-lg border border-border bg-panel/90 p-6 backdrop-blur-md sm:p-8">
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
             <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
             <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
@@ -650,7 +650,7 @@ function MemberShell({ session }: { session: Session }) {
                   return (
                     <div
                       key={String(row.id ?? i)}
-                      className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-gold/40"
+                      className="rounded-lg border border-border bg-panel/90 p-4 backdrop-blur-md transition-colors hover:border-border-strong"
                     >
                       <div className="flex items-center gap-2">
                         <span className={entityDotClass(row)} />
@@ -1062,7 +1062,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   type="button"
                   onClick={() => setRailOpen(false)}
                   aria-label="Close navigation"
-                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-gold/30 text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                 >
                   ✕
                 </button>
@@ -1091,7 +1091,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   }}
                   aria-label="Back"
                   title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
@@ -1106,7 +1106,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-label="Forward"
                   title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-gold/30 bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
                     collapsed && "lg:hidden"
                   )}
                 >
@@ -1120,7 +1120,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-pressed={collapsed}
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-gold/40 bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                     !collapsed && "ml-auto"
                   )}
                 >
@@ -1194,7 +1194,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         className={cn(
                           "mt-1",
                           isOpen ? "block" : collapsed ? "hidden lg:block" : "hidden",
-                          !collapsed && "ml-4 border-l border-gold/15 pl-1"
+                          !collapsed && "ml-4 border-l border-border pl-1"
                         )}
                       >
                         {section.items.map((item) => {
@@ -1287,7 +1287,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               <LiveClock />
             </div>
             <header className={cn(
-                "flex h-[76px] items-center justify-between gap-3 border-b border-border/60 bg-black/[0.06] backdrop-blur-[3px] px-4 sm:px-6",
+                "flex h-[76px] items-center justify-between gap-3 border-b border-border bg-[rgba(10,14,22,0.38)] shadow-[var(--highlight-top)] backdrop-blur-[10px] px-4 sm:px-6",
                 SHELL_TEXT,
                 isIgxAi && "hidden"
               )}>
@@ -1340,7 +1340,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   onClick={handleSignOut}
                   onMouseEnter={() => sounds.playHover()}
                   disabled={signingOut}
-                  className="rounded-md border border-border bg-black/25 backdrop-blur-[3px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-gold hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
+                  className="rounded-md border border-border bg-black/25 backdrop-blur-[3px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-border-strong hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
                   title="Sign out of the portal"
                 >
                   {signingOut ? "Signing out…" : "Sign out"}
@@ -1353,7 +1353,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               <nav
                 aria-label="Sections"
                 className={cn(
-                  "flex gap-1 overflow-x-auto rounded-2xl border border-gold/20 bg-black/10 p-1 backdrop-blur-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                  "flex gap-1 overflow-x-auto rounded-2xl border border-border bg-black/10 p-1 backdrop-blur-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
                   SHELL_TEXT
                 )}
               >

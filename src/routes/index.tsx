@@ -235,7 +235,7 @@ function CommandCenterOverview() {
     <div className="space-y-8">
       {/* Home brief strip — real, honest-state summary, sits above the header banner
           (which carries the Governor identity block up in the shared shell). */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-black/20 px-5 py-3 backdrop-blur-[3px]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-black/20 px-5 py-3 backdrop-blur-[3px]">
         <div className="font-mono text-sm">
           <span className="font-semibold text-gold">{greeting}</span>
           {sessionEmail && <span className="text-muted-foreground">, {sessionEmail}</span>}
@@ -276,10 +276,9 @@ function CommandCenterOverview() {
       {/* Header banner */}
       <GlassCard
         index={0}
-        className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-card/30 to-accent/5 p-8"
+        variant="elevated"
+        className="relative overflow-hidden"
       >
-        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-accent/5 blur-3xl" />
 
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
@@ -353,9 +352,8 @@ function CommandCenterOverview() {
             <GlassCard
               key={item.label}
               index={idx + 1}
-              className="group relative overflow-hidden p-6"
+              className="group relative overflow-hidden"
             >
-              <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/5 blur-2xl" />
               <div className="relative">
                 <div className="flex items-center justify-between">
                   <Eyebrow className="text-[9px] text-muted-foreground">{item.label}</Eyebrow>
@@ -395,7 +393,7 @@ function CommandCenterOverview() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Audit stream */}
         <section className="lg:col-span-2">
-          <GlassCard index={5} className="h-full p-6">
+          <GlassCard index={5} className="h-full">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <Eyebrow className="text-primary">AUDIT TRAIL</Eyebrow>
@@ -426,7 +424,7 @@ function CommandCenterOverview() {
                 recentActivities.map((log, idx) => (
                   <div
                     key={log.id || idx}
-                    className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-primary/40 bg-background/40 p-3 transition-colors hover:border-primary/30 hover:border-l-primary hover:bg-background/60"
+                    className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-border-strong bg-background/40 p-3 transition-colors hover:border-primary/30 hover:border-l-primary hover:bg-background/60"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -475,7 +473,7 @@ function CommandCenterOverview() {
 
         {/* Navigation + entities */}
         <section>
-          <GlassCard index={6} className="h-full p-6">
+          <GlassCard index={6} className="h-full">
             <div className="flex items-center gap-3 border-b pb-4">
               <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Layers className="h-4 w-4 text-primary" />
@@ -491,7 +489,7 @@ function CommandCenterOverview() {
             <div className="mt-5 space-y-3">
               <Link
                 to="/vault"
-                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-border-strong hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -518,7 +516,7 @@ function CommandCenterOverview() {
 
               <Link
                 to="/ecosystem"
-                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="group block rounded-lg border bg-background/40 p-4 transition-colors hover:border-border-strong hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -676,7 +674,7 @@ function CommandCenterOverview() {
             <GlassCard
               key={stat.label}
               index={idx + 7}
-              className="flex items-center gap-3 rounded-lg p-3"
+              className="flex items-center gap-3 p-3"
             >
               <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
                 <Icon className="h-3.5 w-3.5 text-primary" />

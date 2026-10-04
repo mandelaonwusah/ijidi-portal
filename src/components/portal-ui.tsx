@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, Check, LockKeyhole, Minus, Radio, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GlassCard } from "@/components/GlassCard";
 import type { DataStatus } from "@/lib/portal-data";
 
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
@@ -115,10 +116,14 @@ export function MetricTile({
   detail: string;
   status: DataStatus;
 }) {
+  // DESIGN.md §6: label 13 mono · value 32 Inter 600 · detail 14 muted.
+  // A missing value is "—" in muted grey, never a number.
   return (
-    <div className="panel-bracket relative min-h-[152px] overflow-hidden p-6">
+    <GlassCard variant="metric" className="min-h-[152px] overflow-hidden">
       <div className="flex items-start justify-between gap-2">
-        <Eyebrow>{label}</Eyebrow>
+        <div className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          {label}
+        </div>
         <span
           className={cn(
             "font-mono text-[9px] uppercase",
@@ -130,18 +135,14 @@ export function MetricTile({
       </div>
       <div
         className={cn(
-          "mt-5 font-display text-4xl font-semibold tracking-tight",
-          value === "—" ? "text-muted-foreground/70" : "text-gold",
+          "mt-5 font-sans text-2xl font-semibold tracking-tight",
+          value === "—" ? "text-muted-foreground" : "text-foreground",
         )}
       >
         {value}
       </div>
-      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="h-1 w-1 rounded-full bg-border" />
-        {detail}
-      </div>
-      <div className="absolute bottom-0 left-4 h-px w-1/3 bg-gold/50" />
-    </div>
+      <div className="mt-2 text-sm text-muted-foreground">{detail}</div>
+    </GlassCard>
   );
 }
 

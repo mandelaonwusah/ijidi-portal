@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GlassCard } from "@/components/GlassCard";
 import { HeartHandshake, Leaf, Users } from "lucide-react";
 import {
   EmptyState,
@@ -48,7 +49,7 @@ function Foundation() {
         />
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="panel-bracket p-7 lg:col-span-2">
+        <GlassCard className="lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <Eyebrow className="text-teal">Programme registry</Eyebrow>
@@ -78,7 +79,7 @@ function Foundation() {
               </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
         <EmptyState
           title="No impact records"
           detail="The foundation registry is ready for verified programmes."

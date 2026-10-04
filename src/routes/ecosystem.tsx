@@ -139,7 +139,7 @@ function Tag({ children }: { children: string }) {
 // from the Ecosystem — not an entity itself, so no channels/structure/status.
 function EcosystemBridge() {
   return (
-    <div className="rounded-xl border border-dashed border-gold/30 bg-black/10 px-5 py-4 text-center">
+    <div className="rounded-xl border border-dashed border-border-strong bg-black/10 px-5 py-4 text-center">
       <Eyebrow className="text-center text-teal">unified architecture</Eyebrow>
       <h3 className="mt-1 font-display text-base font-semibold">IJIDI Ecosystem</h3>
       <p className="mx-auto mt-1 max-w-md text-[11.5px] text-muted-foreground">
@@ -158,13 +158,13 @@ function SubTree({ groups }: { groups: { heading: string | null; items: SubItem[
           {group.heading && (
             <p className="mb-1.5 font-mono text-[9.5px] uppercase tracking-[0.13em] text-teal">{group.heading}</p>
           )}
-          <ul className="ml-2 space-y-0.5 border-l border-gold/25">
+          <ul className="ml-2 space-y-0.5 border-l border-border-strong">
             {group.items.map((item) => {
               const { text, tag } = splitTag(item.label);
               return (
                 <li key={item.id} className="relative py-1.5 pl-5">
                   <span aria-hidden className="absolute left-0 top-[17px] h-px w-3.5 bg-gold/35" />
-                  <span aria-hidden className="absolute left-[11px] top-[14px] h-[7px] w-[7px] rounded-full border border-gold/70 bg-background" />
+                  <span aria-hidden className="absolute left-[11px] top-[14px] h-[7px] w-[7px] rounded-full border border-border-strong bg-background" />
                   <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-foreground">
                     <span>{text}</span>
                     {tag && <Tag>{tag}</Tag>}
@@ -206,7 +206,7 @@ type BranchProps = {
 function Branch(props: BranchProps) {
   const { open, onOpenChange } = props;
   return (
-    <GlassCard index={props.index} className={cn("p-5 sm:p-6", props.big && "border-gold/40")}>
+    <GlassCard index={props.index} variant={props.big ? "elevated" : "default"} selected={props.big === true}>
       <div className="flex flex-wrap items-start gap-4">
         <Portrait src={props.src} name={props.title} px={props.px ?? 56} />
         <div className="min-w-0 flex-1">
@@ -234,7 +234,7 @@ function Branch(props: BranchProps) {
       </div>
       {props.count > 0 && (
         <Collapsible open={open} onOpenChange={onOpenChange}>
-          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-gold/25 bg-black/25 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.13em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
+          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-border bg-black/25 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.13em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
             <span>
               {props.structureLabel} · {props.count}
             </span>
@@ -374,7 +374,7 @@ function HierarchyTab({
               key={label}
               type="button"
               onClick={() => setAll(label === "Expand all")}
-              className="rounded-full border border-gold/30 bg-black/25 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               {label}
             </button>
@@ -436,7 +436,7 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
       <p className="mb-3 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-teal">
         Cross-ecosystem — reasons across every branch above, owns none of them
       </p>
-      <GlassCard className="border-teal/35 p-5 sm:p-6 hover:border-teal/55">
+      <GlassCard>
         <div className="flex flex-wrap items-start gap-4">
           <Portrait src={brandSrc("igx")} name={igxModule.name} px={56} />
           <div className="min-w-0 flex-1">
@@ -486,7 +486,7 @@ function DirectoryTab() {
         const to = "to" in entry ? entry.to : undefined;
         const state = "state" in entry ? entry.state : undefined;
         return (
-          <GlassCard key={entry.code} className="p-5">
+          <GlassCard key={entry.code}>
             <div className="flex items-start gap-3.5">
               <Portrait src={asset ? brandSrc(asset.id) : null} name={entry.name} px={48} />
               <div className="min-w-0 flex-1">
@@ -541,7 +541,7 @@ function PeopleTab() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {people.map((person, i) => (
-        <GlassCard key={person.key} index={i + 1} className="p-6">
+        <GlassCard key={person.key} index={i + 1}>
           <div className="flex items-center gap-4">
             <Portrait src={person.src} name={person.name} px={72} />
             <div className="min-w-0">
@@ -564,7 +564,7 @@ function PeopleTab() {
               return (
                 <span
                   key={sub.id}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gold/25 bg-black/25 px-3 py-1 text-[12px] text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 text-[12px] text-foreground"
                 >
                   {text}
                   {tag && <Tag>{tag}</Tag>}

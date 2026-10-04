@@ -316,8 +316,8 @@ function Avatar({
     <span
       className={cn(
         "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display font-semibold text-gold",
-        !bare && "border border-gold/40 bg-gold/10",
-        bare && !showImage && "border border-gold/40 bg-gold/10",
+        !bare && "border border-border bg-gold/10",
+        bare && !showImage && "border border-border bg-gold/10",
         className
       )}
     >
@@ -344,7 +344,7 @@ function CloseX({ onClick, label }: { onClick: () => void; label: string }) {
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
     >
       <X className="h-3.5 w-3.5" />
     </button>
@@ -372,7 +372,7 @@ function PickerChip({
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
         selected
           ? "border-gold bg-gold/15 text-foreground"
-          : "border-gold/20 text-muted-foreground hover:border-gold/45 hover:text-foreground"
+          : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground"
       )}
     >
       <Avatar src={logo} label={label} bare className="h-6 w-6 text-[10px]" />
@@ -382,7 +382,7 @@ function PickerChip({
 }
 
 const pillButton =
-  "flex items-center gap-2 rounded-full border border-gold/25 bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
+  "flex items-center gap-2 rounded-full border border-border bg-black/25 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
 
 /* ------------------------------------------------------------------ */
 /* The page                                                            */
@@ -510,7 +510,7 @@ function IgxAi() {
         onClick={() => setIdx(idx - 1)}
         aria-label="Back"
         title={canBack ? `Back to: ${viewLabel(stack[idx - 1])}` : "Nothing to go back to"}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:border-border-strong hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -526,7 +526,7 @@ function IgxAi() {
         onClick={() => setIdx(idx + 1)}
         aria-label="Forward"
         title={canForward ? `Forward to: ${viewLabel(stack[idx + 1])}` : "Nothing to go forward to"}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/25 bg-black/25 text-gold transition-colors hover:border-gold/50 hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:border-border-strong hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -978,7 +978,7 @@ function IgxAi() {
             {attachOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-[60] w-60 rounded-xl border border-gold/25 bg-black/85 p-3 shadow-lg backdrop-blur-md",
+                  "absolute left-0 z-[60] w-60 rounded-xl border border-border-strong bg-black/85 p-3 shadow-lg backdrop-blur-md",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
@@ -1007,7 +1007,7 @@ function IgxAi() {
                 setAttachOpen(false);
               }}
               aria-expanded={pickerOpen}
-              className="flex max-w-full items-center gap-2 rounded-full border border-gold/25 bg-black/25 py-1 pl-1.5 pr-3 text-[12px] text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="flex max-w-full items-center gap-2 rounded-full border border-border bg-black/25 py-1 pl-1.5 pr-3 text-[12px] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               <Avatar src={scopeLogo} label={scopeLabel} bare className="h-6 w-6 text-[10px]" />
               <span className="truncate">{scopeLabel}</span>
@@ -1017,7 +1017,7 @@ function IgxAi() {
             {pickerOpen && (
               <div
                 className={cn(
-                  "absolute left-0 z-[60] w-[min(560px,88vw)] rounded-2xl border border-gold/25 bg-black/90 p-4 shadow-2xl backdrop-blur-xl",
+                  "absolute left-0 z-[60] w-[min(560px,88vw)] rounded-2xl border border-border-strong bg-black/90 p-4 shadow-2xl backdrop-blur-xl",
                   below ? "top-full mt-2" : "bottom-full mb-2"
                 )}
               >
@@ -1198,7 +1198,7 @@ function IgxAi() {
               if (e.key === "Enter") renameConversation(chat.id, renameValue);
               if (e.key === "Escape") setRenamingId(null);
             }}
-            className="h-8 w-full rounded-lg border border-gold/25 bg-black/40 px-2.5 text-[13px] text-foreground focus-visible:border-gold/60 focus-visible:outline-none"
+            className="h-8 w-full rounded-lg border border-border bg-black/40 px-2.5 text-[13px] text-foreground focus-visible:border-gold/60 focus-visible:outline-none"
           />
           <div className="mt-2 flex items-center justify-end gap-1.5">
             <button
@@ -1324,7 +1324,7 @@ function IgxAi() {
             onChange={(e) => setChatQuery(e.target.value)}
             placeholder="Search chats"
             aria-label="Search chats"
-            className="h-9 w-full rounded-full border border-gold/20 bg-black/30 pl-8 pr-3 text-[12.5px] text-foreground placeholder:text-muted-foreground focus-visible:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+            className="h-9 w-full rounded-full border border-border bg-black/30 pl-8 pr-3 text-[12.5px] text-foreground placeholder:text-muted-foreground focus-visible:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
           />
         </div>
       </div>
@@ -1393,7 +1393,7 @@ function IgxAi() {
       {/* Left panel: saved chats (wide screens). Phones use the History drawer. */}
       <aside
         aria-label="Chat history"
-        className="hidden h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-gold/20 bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,.35)] backdrop-blur-xl lg:flex"
+        className="hidden h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,.35)] backdrop-blur-xl lg:flex"
       >
         <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">Chats</p>
@@ -1406,7 +1406,7 @@ function IgxAi() {
           </button>
         </div>
         {chatList}
-        <p className="border-t border-gold/15 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
+        <p className="border-t border-border px-3 py-2 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
           Saved to your account · pins stay on this device
         </p>
       </aside>
@@ -1511,7 +1511,7 @@ function IgxAi() {
                     textareaRef.current?.focus({ preventScroll: true });
                   });
                 }}
-                className="igx-chip flex items-center gap-1.5 rounded-full border border-gold/20 bg-black/25 px-3.5 py-2 text-[12px] text-muted-foreground hover:border-gold/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="igx-chip flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-2 text-[12px] text-muted-foreground hover:border-border-strong hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 <Sparkles className="h-3.5 w-3.5 text-gold" />
                 {starter}
@@ -1592,7 +1592,7 @@ function IgxAi() {
                     )}
 
                     {msg.detailsOpen && (
-                      <div className="space-y-1 rounded-lg border border-gold/15 bg-black/25 p-3 font-mono text-xs text-muted-foreground">
+                      <div className="space-y-1 rounded-lg border border-border bg-black/25 p-3 font-mono text-xs text-muted-foreground">
                         <div>Proposal ID: {msg.proposalId || "Saving..."}</div>
                         <div>Status: {msg.status}</div>
                       </div>
@@ -1644,9 +1644,9 @@ function IgxAi() {
             onClick={() => setDrawer(null)}
             className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
           />
-          <aside className="absolute right-0 top-0 flex h-full w-[400px] max-w-[92vw] flex-col border-l border-gold/25 bg-[#080b12]/92 shadow-2xl backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-3 border-b border-gold/20 px-5 py-4">
-              <div className="flex items-center gap-1 rounded-full border border-gold/20 bg-black/25 p-1">
+          <aside className="absolute right-0 top-0 flex h-full w-[400px] max-w-[92vw] flex-col border-l border-border-strong bg-[#080b12]/92 shadow-2xl backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+              <div className="flex items-center gap-1 rounded-full border border-border bg-black/25 p-1">
                 {(["chats", "requests"] as const).map((kind) => (
                   <button
                     key={kind}
