@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GlassCard } from "@/components/GlassCard";
 import { FileLock2, KeyRound, LockKeyhole } from "lucide-react";
 import { vaultItems } from "@/lib/portal-data";
-import { Eyebrow, RestrictedMark, SectionHeader, StatusBadge } from "@/components/portal-ui";
+import {
+  Eyebrow,
+  RestrictedMark,
+  SectionHeader,
+  StatusBadge,
+  declaredLabel,
+} from "@/components/portal-ui";
 export const Route = createFileRoute("/vault")({
   head: () => ({
     meta: [ 
@@ -53,10 +59,11 @@ function Vault() {
             <h2 className="mt-2 font-display text-lg font-semibold">{item.title}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
             <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-              <StatusBadge
-                status={item.state === "Available" ? "active" : "not-tracked"}
-                label={item.state}
-              />
+              {item.state === "Available" ? (
+                <StatusBadge state="pending" label={declaredLabel(item.state)} />
+              ) : (
+                <StatusBadge state="not-connected" label={item.state} />
+              )}
               <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-gold">
                 {item.access} ACCESS
               </span>

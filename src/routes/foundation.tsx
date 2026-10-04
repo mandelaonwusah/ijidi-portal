@@ -26,7 +26,7 @@ function Foundation() {
         eyebrow="04 / FOUNDATION"
         title="Impact, made accountable."
         detail="A future-facing registry for programmes, beneficiaries, and measurable outcomes."
-        action={<StatusBadge status="forming" label="FORMATION STAGE" />}
+        action={<StatusBadge state="pending" label="FORMATION STAGE" />}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <MetricTile
@@ -65,7 +65,7 @@ function Foundation() {
                 Programme details not yet tracked.
               </p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
             <div className="border border-dashed border-border p-4">
@@ -75,7 +75,7 @@ function Foundation() {
                 Programme details not yet tracked.
               </p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
           </div>

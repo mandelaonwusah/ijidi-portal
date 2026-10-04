@@ -15,7 +15,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, Camera, ChevronRight, Loader2, RotateCcw } from "lucide-react";
-import { Eyebrow } from "@/components/portal-ui";
+import { Eyebrow, StatusBadge } from "@/components/portal-ui";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/lib/supabase";
 import {
@@ -785,8 +785,11 @@ export function DecisionsPanel() {
                 <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">{row.detail}</p>
               )}
               {row.state && (
-                <span className="mt-2.5 inline-block rounded-full border border-gold/35 bg-gold/10 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gold">
-                  {row.state}
+                <span className="mt-2.5 inline-block">
+                  <StatusBadge
+                    state={/^(frozen|passed)$/i.test(row.state) ? "verified" : "pending"}
+                    label={row.state.toUpperCase()}
+                  />
                 </span>
               )}
             </div>
@@ -977,7 +980,7 @@ function BrandPictureControls({ assetId, label }: { assetId: string; label: stri
   };
 
   const pill =
-    "inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
 
   return (
     <div className="mt-3">
@@ -1050,7 +1053,7 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
                       "mt-2 inline-block rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]",
                       status === "On a page"
                         ? "border-[#5E9BFF]/50 bg-[#5E9BFF]/10 text-[#8FB4FF]"
-                        : "border-gold/40 bg-gold/10 text-gold"
+                        : "border-border bg-white/[0.04] text-not-connected"
                     )}
                   >
                     {status}

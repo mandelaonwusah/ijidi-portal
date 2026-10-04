@@ -6,6 +6,7 @@ import { getEcosystemMetrics, getActivity } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { GlassCard } from "@/components/GlassCard";
+import { buttonKind, errorMessage } from "@/components/portal-ui";
 import {
   Shield,
   Globe,
@@ -96,9 +97,9 @@ const LINK_META: Record<
 > = {
   connecting: {
     label: "CONNECTING",
-    text: "text-amber-400",
-    dot: "bg-amber-400",
-    border: "border-l-amber-400",
+    text: "text-attention",
+    dot: "bg-attention",
+    border: "border-l-attention",
   },
   connected: {
     label: "CONNECTED",
@@ -135,11 +136,12 @@ const ENTITY_ICONS: Record<string, typeof Building> = {
   Personal: Crown,
 };
 
+// Entity states are typed into entity_status by hand and never checked, so any
+// recorded state (including "live") is declared: attention orange, not verified blue.
 function stateTone(state?: string | null): { dot: string; text: string } {
-  const s = (state ?? "").toLowerCase();
-  if (s === "live") return { dot: "bg-teal-400", text: "text-teal-400" };
+  const s = (state ?? "").trim();
   if (!s) return { dot: "bg-muted-foreground/40", text: "text-muted-foreground" };
-  return { dot: "bg-amber-400", text: "text-amber-400" };
+  return { dot: "bg-attention", text: "text-attention" };
 }
 
 /* ------------------------------------------------------------------ */
@@ -195,7 +197,13 @@ function CommandCenterOverview() {
     staleTime: 30000,
   });
 
-  const { data: activity, isLoading: activityLoading } = useQuery({
+  const {
+    data: activity,
+    isLoading: activityLoading,
+    isError: activityError,
+    error: activityErr,
+    refetch: refetchActivity,
+  } = useQuery({
     queryKey: ["activity-log-command-center"],
     queryFn: getActivity,
     refetchInterval: 5000,
@@ -246,7 +254,7 @@ function CommandCenterOverview() {
           ) : pendingReviewCount > 0 ? (
             <Link
               to="/governance"
-              className="flex items-center gap-1.5 text-amber-400 transition-colors hover:text-amber-300"
+              className="flex items-center gap-1.5 text-attention transition-colors hover:text-attention/80"
             >
               <Target className="h-3 w-3" /> {pendingReviewCount} pending review
               {pendingReviewCount === 1 ? "" : "s"}
@@ -263,9 +271,11 @@ function CommandCenterOverview() {
               ? "Entities: unavailable"
               : `${entityList.length} entities tracked`}
           </span>
-          <span className="text-muted-foreground">
+          <span className={activityError ? "text-destructive" : "text-muted-foreground"}>
             {activityLoading
               ? "Last activity: …"
+              : activityError
+              ? "Activity: could not load"
               : latestActivityAt
               ? `Last activity ${formatRelativeTime(latestActivityAt)}`
               : "No activity on record"}
@@ -341,7 +351,7 @@ function CommandCenterOverview() {
             ? "NO DATA"
             : "RECEIVED";
           const cardTone = metricsLoading
-            ? "text-amber-400"
+            ? "text-attention"
             : metricsError
             ? "text-destructive"
             : notTracked || missing
@@ -420,11 +430,22 @@ function CommandCenterOverview() {
                   <Loader2 className="h-8 w-8 text-primary/40 motion-safe:animate-spin" />
                   <p className="font-mono text-sm text-muted-foreground">Loading audit entries…</p>
                 </div>
+              ) : activityError ? (
+                // A failed query is an error, never "no activity" (DESIGN.md page states).
+                <GlassCard variant="danger" className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-mono text-xs text-destructive">
+                    Could not load activity:{" "}
+                    {errorMessage(activityErr)}.
+                  </p>
+                  <button type="button" onClick={() => refetchActivity()} className={buttonKind.secondary}>
+                    Retry
+                  </button>
+                </GlassCard>
               ) : recentActivities.length > 0 ? (
                 recentActivities.map((log, idx) => (
                   <div
                     key={log.id || idx}
-                    className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-border-strong bg-background/40 p-3 transition-colors hover:border-primary/30 hover:border-l-primary hover:bg-background/60"
+                    className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-border-strong bg-background/40 p-3 transition-colors hover:border-border-strong hover:bg-background/60"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -661,7 +682,11 @@ function CommandCenterOverview() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
           { label: "Signed in as", value: sessionEmail ?? "—", icon: Users },
-          { label: "Audit entries loaded", value: activityLoading ? "…" : String(totalActivities), icon: Activity },
+          {
+            label: "Audit entries loaded",
+            value: activityLoading ? "…" : activityError ? "ERR" : String(totalActivities),
+            icon: Activity,
+          },
           {
             label: "Entities on record",
             value: entitiesLoading ? "…" : entitiesError ? "ERR" : String(entityList.length),

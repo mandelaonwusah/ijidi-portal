@@ -26,7 +26,7 @@ function Media() {
         eyebrow="10 / MEDIA"
         title="Seven properties. One engine."
         detail="A future-facing registry for Wild, Orbit, Arena, Stage, Toons, Sound, and Restore."
-        action={<StatusBadge status="forming" label="OPEN"/>}
+        action={<StatusBadge state="pending" label="OPEN" />}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <MetricTile
@@ -63,7 +63,7 @@ function Media() {
               <h3 className="mt-5 font-display font-semibold">Wild</h3>
               <p className="mt-2 text-xs text-muted-foreground">First launch priority.</p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
             <div className="border border-dashed border-border p-4">
@@ -71,7 +71,7 @@ function Media() {
               <h3 className="mt-5 font-display font-semibold">Orbit</h3>
               <p className="mt-2 text-xs text-muted-foreground">Second launch priority.</p>
               <div className="mt-5">
-                <StatusBadge status="not-tracked" label="NOT CONFIGURED" />
+                <StatusBadge state="not-connected" label="NOT CONFIGURED" />
               </div>
             </div>
           </div>

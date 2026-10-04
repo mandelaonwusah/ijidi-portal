@@ -94,7 +94,8 @@ only its reserved meaning.
 | `active` (GOVERNOR, SINGLE GOVERNOR, GOVERNOR SESSION) | ecosystem, governance, settings | **Verified**: backed by `is_sovereign()` / a real session | As now |
 | `active` with `N SITES LISTED` | ecosystem | **Verified**: a count from the database | As now |
 | `active` from `entity_status = live` | ecosystem | **Pending**: typed in by hand, not checked | `DECLARED · LIVE` |
-| `ready` | ecosystem, settings | **Verified** | As now |
+| `ready` from a real session | settings | **Verified** | As now |
+| `ready` typed into the code (IGX AI card on Ecosystem; no model is connected) | ecosystem | **Pending** | `DECLARED · READY` |
 | `tracked` | MetricTile | **Verified** | `TRACKED` |
 | `frozen` | decisions | **Verified**: a recorded decision state | `FROZEN` |
 | `standby`, `forming`, `open`, `building` | foundation, atelier, media, ecosystem | **Pending** | `DECLARED · <STATE>` when read from `entity_status` |
@@ -102,6 +103,7 @@ only its reserved meaning.
 | `forming` used as CHECKING | ecosystem, settings | **Pending** (loading) | `CHECKING…` |
 | `restricted` (UNAVAILABLE) | ecosystem | **Error** | As now |
 | `error` (UNAVAILABLE) | settings: **not a valid status today, renders gold** | **Error** | As now |
+| No tier on the profile | settings | **NOT CONNECTED** | `NO TIER` |
 | `not-tracked` (NOT TRACKED, NOT CONFIGURED, NO FINANCIAL DATA) | capital, foundation, atelier, media, MetricTile | **NOT CONNECTED** | As now |
 | proposal `pending_review` | IGX AI: **renders gold today** | **Pending** | `PENDING REVIEW` |
 | proposal `approved` | IGX AI: **renders gold today** | **Verified** | `APPROVED` |

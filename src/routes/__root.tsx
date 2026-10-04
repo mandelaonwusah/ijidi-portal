@@ -28,10 +28,13 @@ import { supabase } from "@/lib/supabase";
 import { logActivity } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import appCss from "../styles.css?url";
-import { HexBadge, Eyebrow } from "@/components/portal-ui";
+import { HexBadge, Eyebrow, StatusBadge, buttonKind } from "@/components/portal-ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CircuitBackground } from "@/components/CircuitBackground";
 import { TickerBar } from "@/components/TickerBar";
 import { VisualStateProvider } from "@/lib/visual-state";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { usePortalRealtime } from "@/lib/use-portal-realtime";
 import { sounds } from "@/lib/sound-engine";
 import { brandFor, brandSrc, loadBrandOverrides, useBrandVersion } from "@/lib/brand-assets";
@@ -171,6 +174,7 @@ function RootComponent() {
         <ChromeGate>
           <Outlet />
         </ChromeGate>
+        <Toaster />
       </VisualStateProvider>
     </QueryClientProvider>
   );
@@ -490,21 +494,35 @@ function formatValue(value: unknown): string {
 const HIDDEN_ENTITY_KEYS = new Set(["id", "created_at", "updated_at"]);
 const ENTITY_TITLE_KEYS = ["name", "entity", "entity_name", "entity_id", "label", "title"];
 
-// Each entity's dot now reflects its real current_state instead of one
-// uniform colour for every card — teal for live, blue for open, gold for
-// building, amber for forming, and a still grey for standby (no pulse:
-// standby means nothing is actively happening).
-const ENTITY_STATE_TONE: Record<string, { dot: string; pulse: string }> = {
-  live: { dot: "bg-teal", pulse: "live-pulse-teal" },
-  open: { dot: "bg-blue", pulse: "live-pulse-blue" },
-  building: { dot: "bg-gold", pulse: "live-pulse-gold" },
-  forming: { dot: "bg-[#FBBF24]", pulse: "live-pulse-amber" },
-  standby: { dot: "bg-muted-foreground", pulse: "" },
-};
+// An entity's current_state is typed into entity_status by hand and never
+// checked, so it is a declared state: a solid attention-orange dot when a
+// state is recorded, a grey dot when none is. Never a pulse (DESIGN.md pulse rule).
 function entityDotClass(row: Record<string, unknown>): string {
-  const state = typeof row["current_state"] === "string" ? (row["current_state"] as string).toLowerCase() : "";
-  const tone = ENTITY_STATE_TONE[state] ?? { dot: "bg-muted-foreground", pulse: "" };
-  return cn("h-1.5 w-1.5 rounded-full", tone.dot, tone.pulse);
+  const state = typeof row["current_state"] === "string" ? (row["current_state"] as string).trim() : "";
+  return cn("h-1.5 w-1.5 rounded-full", state ? "bg-attention" : "bg-[var(--not-connected-dot)]");
+}
+
+// Sign out is a danger action with a confirm step (DESIGN.md §6).
+function SignOutButton({ signingOut, onConfirm }: { signingOut: boolean; onConfirm: () => void }) {
+  return (
+    <ConfirmDialog
+      title="Sign out of the IJIDI Portal?"
+      description="You will need your Access ID and Passkey to sign in again."
+      confirmLabel="Sign out"
+      onConfirm={onConfirm}
+      trigger={
+        <button
+          type="button"
+          onMouseEnter={() => sounds.playHover()}
+          disabled={signingOut}
+          className={cn(buttonKind.danger, "px-3 py-1.5")}
+          title="Sign out of the portal"
+        >
+          {signingOut ? "Signing out…" : "Sign out"}
+        </button>
+      }
+    />
+  );
 }
 
 function MemberShell({ session }: { session: Session }) {
@@ -551,7 +569,7 @@ function MemberShell({ session }: { session: Session }) {
     setSigningOut(false);
     if (error) {
       console.error("Sign-out failed:", error);
-      alert(`Sign-out failed: ${error.message}`);
+      toast.error("Could not sign out", { description: error.message });
     }
   };
 
@@ -576,18 +594,10 @@ function MemberShell({ session }: { session: Session }) {
               className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
               title={email}
             >
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal live-pulse-teal" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-verified" />
               <span className="truncate">{email}</span>
             </span>
-            <button
-              onClick={handleSignOut}
-              onMouseEnter={() => sounds.playHover()}
-              disabled={signingOut}
-              className="rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-border-strong hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
-              title="Sign out of the portal"
-            >
-              {signingOut ? "Signing out…" : "Sign out"}
-            </button>
+            <SignOutButton signingOut={signingOut} onConfirm={handleSignOut} />
           </div>
         </header>
 
@@ -603,9 +613,13 @@ function MemberShell({ session }: { session: Session }) {
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Access tier
               </span>
-              <span className="rounded-md border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">
-                {profileLoading ? "…" : tier ?? "Unavailable"}
-              </span>
+              {profileLoading ? (
+                <StatusBadge state="pending" label="CHECKING…" />
+              ) : tier ? (
+                <StatusBadge state="verified" label={tier} />
+              ) : (
+                <StatusBadge state="error" label="UNAVAILABLE" />
+              )}
             </div>
             <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
               Your account has a limited view of the portal. Operational modules are reserved for the
@@ -857,27 +871,15 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       : linkError
         ? "Data link unavailable"
         : "Checking data link…";
-  const linkText = linkSyncing
-    ? "text-blue"
-    : linkOk
-      ? "text-teal"
-      : linkError
-        ? "text-destructive"
-        : "text-muted-foreground";
-  const linkDot = linkSyncing
-    ? "bg-blue"
-    : linkOk
-      ? "bg-teal"
-      : linkError
-        ? "bg-destructive"
-        : "bg-muted-foreground";
-  const linkPulse = linkSyncing
-    ? "live-pulse-blue"
-    : linkOk
-      ? "live-pulse-teal"
-      : linkError
-        ? "live-pulse-red"
-        : "";
+  // Verified (and syncing, which is a verified link refreshing) is blue and the
+  // only state that pulses; failed is red; the first check is pending orange.
+  const linkText = linkOk
+    ? "text-blue-light"
+    : linkError
+      ? "text-destructive"
+      : "text-attention";
+  const linkDot = linkOk ? "bg-verified" : linkError ? "bg-destructive" : "bg-attention";
+  const linkPulse = linkOk ? "live-pulse-blue" : "";
 
   // Header label: which page and sidebar group the governor is on.
   const activeItem = navItems.find((item) => isNavActive(currentPath, item.to));
@@ -947,7 +949,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
     setSigningOut(false);
     if (error) {
       console.error("Sign-out failed:", error);
-      alert(`Sign-out failed: ${error.message}`);
+      toast.error("Could not sign out", { description: error.message });
     }
   };
 
@@ -1285,7 +1287,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               )}>
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
-                  className="flex shrink-0 items-center gap-2 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition-all hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-black/25 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground transition-all hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
@@ -1328,15 +1330,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  onMouseEnter={() => sounds.playHover()}
-                  disabled={signingOut}
-                  className="rounded-md border border-border bg-black/25 backdrop-blur-[3px] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-all hover:border-border-strong hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-50"
-                  title="Sign out of the portal"
-                >
-                  {signingOut ? "Signing out…" : "Sign out"}
-                </button>
+                <SignOutButton signingOut={signingOut} onConfirm={handleSignOut} />
               </div>
             </header>
             {/* Tab navigation above the command area (same pages as the sidebar).

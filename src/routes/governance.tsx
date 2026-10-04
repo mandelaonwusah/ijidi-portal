@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 import { getDecisions, getProposals } from "@/lib/portal-queries";
 import { supabase } from "@/lib/supabase";
-import { Eyebrow, SectionHeader, StatusBadge } from "@/components/portal-ui";
+import {
+  Eyebrow,
+  SectionHeader,
+  StatusBadge,
+  proposalBadge,
+} from "@/components/portal-ui";
 
 export const Route = createFileRoute("/governance")({
   head: () => ({
@@ -41,7 +46,7 @@ function ErrorState({ what, message }: { what: string; message: string }) {
   return (
     <div
       role="alert"
-      className="border border-red-400/30 bg-red-400/5 px-5 py-5 text-center font-mono text-[11px] text-red-400"
+      className="rounded-xl border border-destructive/35 bg-[var(--error-surface)] px-5 py-5 text-center font-mono text-[11px] text-destructive"
     >
       Could not load {what}: {message}
       <div className="mt-1 text-muted-foreground">Retrying automatically.</div>
@@ -125,7 +130,7 @@ function Governance() {
               <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin text-gold" : ""}`} />
               Sync
             </button>
-            <StatusBadge status="active" label="SINGLE GOVERNOR" />
+            <StatusBadge state="verified" label="SINGLE GOVERNOR" />
           </div>
         }
       />
@@ -148,7 +153,7 @@ function Governance() {
             <div className="mt-4 flex items-center gap-2">
               <span
                 className={`h-2 w-2 rounded-full ${
-                  sessionEmail ? "bg-teal live-pulse-teal" : "bg-muted-foreground/40"
+                  sessionEmail ? "bg-verified live-pulse-blue" : "bg-muted-foreground/40"
                 }`}
               />
               <span
@@ -227,10 +232,7 @@ function Governance() {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <Eyebrow>{new Date(p.created_at).toLocaleDateString()}</Eyebrow>
-                        <StatusBadge
-                          status={p.status === "pending_review" ? "open" : "frozen"}
-                          label={p.status.replace("_", " ").toUpperCase()}
-                        />
+                        {proposalBadge(p.status)}
                       </div>
                       <h3 className="mt-3 break-words font-display font-semibold">{p.intent}</h3>
                       <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
@@ -259,7 +261,7 @@ function Governance() {
                 </div>
               </div>
               <div className="flex items-center gap-2 font-mono text-[9px] uppercase text-muted-foreground">
-                {decisionsQ.isLoading && <span className="text-gold live-pulse-amber">FETCHING…</span>}
+                {decisionsQ.isLoading && <span className="text-attention">FETCHING…</span>}
                 {!decisionsQ.isLoading && !decisionsQ.isError && (
                   <span>{decisions.length} records</span>
                 )}
@@ -290,7 +292,7 @@ function Governance() {
                           <Eyebrow>{decision.date}</Eyebrow>
                         </div>
                         <StatusBadge
-                          status={state === "FROZEN" || state === "PASSED" ? "frozen" : "open"}
+                          state={state === "FROZEN" || state === "PASSED" ? "verified" : "pending"}
                           label={state}
                         />
                       </div>

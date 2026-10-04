@@ -29,7 +29,8 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/portal-ui";
+import { buttonKind, proposalBadge } from "@/components/portal-ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { GlassCard } from "@/components/GlassCard";
 import {
   AgentsPanel,
@@ -1400,7 +1401,7 @@ function IgxAi() {
           <button
             type="button"
             onClick={newChat}
-            className="flex h-8 items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            className="flex h-8 items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
           >
             <Plus className="h-3.5 w-3.5" /> New
           </button>
@@ -1554,7 +1555,7 @@ function IgxAi() {
                           ? "Rejected and recorded."
                           : "Saved as a proposal. It is waiting for your decision, and nothing runs until you approve."}
                       </p>
-                      {msg.proposalId || msg.status === "error" ? <StatusBadge status={msg.status} /> : null}
+                      {msg.proposalId || msg.status === "error" ? proposalBadge(msg.status) : null}
                     </div>
 
                     {msg.errorMessage && (
@@ -1705,7 +1706,7 @@ function IgxAi() {
                         key={item.id}
                         className={cn(
                           "rounded-xl border border-l-2 bg-black/25 p-3",
-                          pending ? "border-gold/25 border-l-primary" : "border-white/10 border-l-white/25"
+                          pending ? "border-border border-l-attention" : "border-border border-l-border-strong"
                         )}
                       >
                         <p className="text-[13px] leading-snug text-foreground">{item.intent}</p>
@@ -1728,20 +1729,24 @@ function IgxAi() {
                                 )}{" "}
                                 Approve
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={!!busyId}
-                                onClick={() => resolveProposal(item.id, "rejected")}
-                                className="h-8 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
-                              >
-                                <X className="h-4 w-4" /> Reject
-                              </Button>
+                              <ConfirmDialog
+                                title="Reject this proposal?"
+                                description="It will be recorded as rejected. Nothing runs either way."
+                                confirmLabel="Reject"
+                                onConfirm={() => resolveProposal(item.id, "rejected")}
+                                trigger={
+                                  <button
+                                    type="button"
+                                    disabled={!!busyId}
+                                    className={cn(buttonKind.danger, "h-8 px-3")}
+                                  >
+                                    <X className="h-4 w-4" /> Reject
+                                  </button>
+                                }
+                              />
                             </div>
                           ) : (
-                            <span className="rounded-full border border-white/15 px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">
-                              {item.status.replace("_", " ")}
-                            </span>
+                            proposalBadge(item.status)
                           )}
                         </div>
                       </div>

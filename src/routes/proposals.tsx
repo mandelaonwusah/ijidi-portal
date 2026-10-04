@@ -3,7 +3,11 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import { GlassCard } from "@/components/GlassCard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { buttonKind, errorMessage, proposalBadge } from "@/components/portal-ui";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/proposals")({
   component: ProposalsReview,
@@ -60,6 +64,8 @@ function ProposalsReview() {
     data: proposals,
     isLoading,
     isError,
+    error: loadError,
+    refetch,
   } = useQuery({
     queryKey: ["proposals"],
     queryFn: fetchProposals,
@@ -83,7 +89,7 @@ function ProposalsReview() {
     const reviewerId = sessionData.session?.user.id;
     if (!reviewerId) {
       setSubmittingId(null);
-      alert("Update failed: you are not signed in.");
+      toast.error("Could not update the proposal", { description: "You are not signed in." });
       return;
     }
     const { error } = await supabase
@@ -100,9 +106,12 @@ function ProposalsReview() {
     setSubmittingId(null);
     if (error) {
       // Honest-state: surface the real error, don't pretend it worked.
-      alert(`Update failed: ${error.message}`);
+      toast.error("Could not update the proposal", { description: error.message });
       return;
     }
+    toast.success(decision === "approved" ? "Proposal approved" : "Proposal rejected", {
+      description: "Recorded. Nothing runs either way.",
+    });
     queryClient.invalidateQueries({ queryKey: ["proposals"] });
     queryClient.invalidateQueries({ queryKey: ["ecosystem-metrics"] });
   }
@@ -111,7 +120,7 @@ function ProposalsReview() {
     <div className="space-y-8">
       {/* Header */}
       <GlassCard variant="elevated">
-        <Eyebrow className="text-amber-400">MODULE / PROPOSAL REVIEW</Eyebrow>
+        <Eyebrow className="text-teal">MODULE / PROPOSAL REVIEW</Eyebrow>
         <h1 className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Proposal Queue
         </h1>
@@ -126,11 +135,13 @@ function ProposalsReview() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`rounded border px-4 py-2 transition-colors ${
+            aria-pressed={activeTab === tab.key}
+            className={cn(
+              "rounded-lg border px-4 py-2 transition-colors",
               activeTab === tab.key
-                ? "border-amber-400/60 bg-amber-400/10 text-amber-400"
-                : "border-border bg-card/30 text-muted-foreground hover:border-amber-400/30"
-            }`}
+                ? "border-border-gold bg-gold/10 text-gold"
+                : "border-border bg-black/25 text-muted-foreground hover:border-border-strong hover:text-foreground",
+            )}
           >
             {tab.label} ({counts[tab.key]})
           </button>
@@ -140,16 +151,21 @@ function ProposalsReview() {
       {/* List */}
       <section className="space-y-4">
         {isLoading ? (
-          <div className="py-8 text-center font-mono text-xs text-muted-foreground animate-pulse">
-            Loading proposal queue...
+          <div className="py-8 text-center font-mono text-xs text-attention">
+            Loading proposals…
           </div>
         ) : isError ? (
-          <div className="py-8 text-center font-mono text-xs text-red-400">
-            Failed to load proposals. Check connection.
-          </div>
+          <GlassCard variant="danger" className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-mono text-xs text-destructive">
+              Could not load proposals: {errorMessage(loadError)}.
+            </p>
+            <button type="button" onClick={() => refetch()} className={buttonKind.secondary}>
+              Retry
+            </button>
+          </GlassCard>
         ) : filtered.length === 0 ? (
           <div className="py-8 text-center font-mono text-xs text-muted-foreground">
-            No {activeTab.replace("_", " ")} proposals.
+            No {activeTab.replace("_", " ")} proposals recorded yet.
           </div>
         ) : (
           filtered.map((proposal, i) => (
@@ -158,7 +174,10 @@ function ProposalsReview() {
                 <span>
                   {proposal.actor_type} · {proposal.source ?? "unknown source"}
                 </span>
-                <span>{new Date(proposal.created_at).toLocaleString()}</span>
+                <span className="flex items-center gap-3">
+                  {new Date(proposal.created_at).toLocaleString()}
+                  {proposalBadge(proposal.status)}
+                </span>
               </div>
 
               <div>
@@ -204,23 +223,32 @@ function ProposalsReview() {
                     onChange={(e) =>
                       setNoteDraft((prev) => ({ ...prev, [proposal.id]: e.target.value }))
                     }
-                    className="w-full rounded border border-border bg-background/60 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-amber-400/50 focus:outline-none"
+                    className="w-full rounded border border-border bg-background/60 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-border-gold focus:outline-none"
                   />
                   <div className="flex gap-3">
                     <button
+                      type="button"
                       disabled={submittingId === proposal.id}
                       onClick={() => handleReview(proposal, "approved")}
-                      className="rounded border border-emerald-400/50 bg-emerald-400/10 px-4 py-2 font-mono text-xs font-bold text-emerald-400 transition-colors hover:bg-emerald-400/20 disabled:opacity-50"
+                      className={buttonKind.primary}
                     >
-                      {submittingId === proposal.id ? "..." : "APPROVE"}
+                      {submittingId === proposal.id ? "Saving…" : "Approve"}
                     </button>
-                    <button
-                      disabled={submittingId === proposal.id}
-                      onClick={() => handleReview(proposal, "rejected")}
-                      className="rounded border border-red-400/50 bg-red-400/10 px-4 py-2 font-mono text-xs font-bold text-red-400 transition-colors hover:bg-red-400/20 disabled:opacity-50"
-                    >
-                      {submittingId === proposal.id ? "..." : "REJECT"}
-                    </button>
+                    <ConfirmDialog
+                      title="Reject this proposal?"
+                      description="It will be recorded as rejected. Nothing runs either way."
+                      confirmLabel="Reject"
+                      onConfirm={() => handleReview(proposal, "rejected")}
+                      trigger={
+                        <button
+                          type="button"
+                          disabled={submittingId === proposal.id}
+                          className={buttonKind.danger}
+                        >
+                          {submittingId === proposal.id ? "Saving…" : "Reject"}
+                        </button>
+                      }
+                    />
                   </div>
                 </div>
               )}
