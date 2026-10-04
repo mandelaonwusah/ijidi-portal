@@ -65,9 +65,10 @@ arcs). It is **never** used to mean "pending" or "warning".
 - **Top inset highlight** on glass surfaces: `inset 0 1px 0 rgba(255,255,255,0.06)`.
 - **Gold border only for:** the selected item, keyboard focus, and governor-only surfaces
   (e.g. the governor identity card, the proposal decision bar).
-- **Today:** `--border`, `--border-strong` and `--sidebar-border` are gold
-  (`rgba(198,161,91,…)`), and the code uses about 300 `gold` utilities, most of them borders.
-  The tokens group switches the variables; the cards group replaces the per-component gold borders.
+- **Done:** the tokens group made `--border`, `--border-strong` and `--sidebar-border` neutral;
+  the cards group replaced the ordinary per-component gold borders. Gold borders left in the
+  code are selected / active / open states, focus, governor-only surfaces and the corner arcs,
+  plus status pills and gold buttons, which the States group handles.
 
 ### Honest-state colours
 
@@ -293,7 +294,7 @@ Logos and wordmarks are **approved artwork shown as images**, never typeset in a
   and height so nothing shifts while it loads. If the file fails to load, show nothing: never
   fall back to typed text in a font.
 - **IGX AI wordmark** (the "IGX AI" title on the IGX AI screen):
-  - **Today:** typeset in Cormorant Garamond with a blue "X".
+  - **Before Group 1:** typeset in Cormorant Garamond with a blue "X" (removed).
   - **Target:** the approved wordmark artwork as an image.
   - **Asset status: not in the repo.** `public/brand/igx-ai-button.webp` is the round emblem,
     not the wordmark. The approved wordmark file (SVG or PNG) has to be supplied.
@@ -312,9 +313,35 @@ chrome surface with the highlight**; sidebar and tabs stay flat.
 - **Shows:** `BUILD 5b78a60` in 13 px Plex Mono, muted.
 - **Source:** the first 7 characters of the real commit, read **at build time** from Vercel's
   `VERCEL_GIT_COMMIT_SHA` and passed into the app by `vite.config.ts`.
-- **Not yet verified:** that this project exposes the variable. The first build PR checks it on its preview.
-- **If it isn't available:** the tag is **left out**, not faked, and this section is updated to say so.
+- **Verified:** Vercel exposes the variable; the Group 1 preview and production builds logged the real commit.
+- **If it isn't available** (e.g. a build with no git): the tag is **left out**, not faked.
 - It replaces the hard-coded `Build / 01` label in the status bar.
+
+### Sign-in page top bar (planned: Group 5, the last group)
+
+Not built yet. A bar across the top of the sign-in page (`src/routes/login.tsx`).
+
+| Position | Content |
+|---|---|
+| Left | The **IJIDI wordmark image** (artwork, per "Logos and wordmarks"). Until it's uploaded, the current emblem and "IJIDI PORTAL" text stay exactly as they are. |
+| Centre / right | An **"Ecosystem"** menu linking out to the public sites (below). |
+| Right | **"Sign in"**: scrolls to the form and focuses the Access ID field. |
+| Mobile (< 640) | Collapses to a single menu button; the same items open from it. |
+
+**Ecosystem menu items:**
+
+| Item | Link |
+|---|---|
+| IJIDI Group | `https://ijidigroup.com` |
+| IJIDI Foundation | `https://ijidi.org` |
+| Mandela Onwusah | `https://mandelaonwusah.com` |
+
+- **Atelier, Ifeoma, Real Estate and Datalink** are added only once their sites exist.
+  No dead links, no "coming soon" items, no disabled placeholders.
+- **No "apps we use"** and no mention of the tech stack anywhere on the page (KB-LGL-003).
+- **No marketing copy** duplicated from the Group site: item names and links only.
+- Follows the rest of this file: neutral borders, gold only for focus, the focus ring,
+  44 px touch targets on mobile.
 
 ### Loading, empty and error states (every page)
 
@@ -382,6 +409,18 @@ rest of the screen without page scroll (checked at 390×844, 1280×720, 1440×90
 7. **Before handing over code:** full-file replacements, esbuild syntax check, full
    `npx vite build`, and a Vercel preview per PR. No secrets in chat or code.
 8. **Update this file** in the same PR when a rule changes.
+
+### Build order
+
+The design work ships in five groups, one PR each, in this order:
+
+| Group | Scope |
+|---|---|
+| 1 Tokens | Colour, border, type-scale and shadow tokens; fonts; focus ring; footer build tag |
+| 2 Cards | GlassCard variants; old card classes removed; neutral borders; header glass; portal uses the sign-in background |
+| 3 States | StatusBadge four states; pulse rule; loading / empty / error states; toasts instead of `alert()`; danger button and confirm dialogs |
+| 4 Palette | Kbd keycap; palette groups (Navigate, Actions, Entities, Recent); "?" shortcuts sheet |
+| 5 Motion (last) | Press and arrow nudge; ticker pause on hover; reduced motion; **sign-in page top bar** (section 6) |
 
 ---
 

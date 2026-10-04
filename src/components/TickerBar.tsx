@@ -39,7 +39,7 @@ export function TickerBar() {
   );
 
   return (
-    <div className="sticky top-0 z-50 h-6 overflow-hidden border-b border-gold/20 bg-black/25 backdrop-blur-[3px]">
+    <div className="sticky top-0 z-50 h-6 overflow-hidden border-b border-border bg-black/25 backdrop-blur-[3px]">
       <div
         className="ticker-track flex h-6 items-center hover:[animation-play-state:paused]"
         style={{ animationDuration: `${durationSeconds}s` }}

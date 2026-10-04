@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GlassCard } from "@/components/GlassCard";
 import { FileLock2, KeyRound, LockKeyhole } from "lucide-react";
 import { vaultItems } from "@/lib/portal-data";
 import { Eyebrow, RestrictedMark, SectionHeader, StatusBadge } from "@/components/portal-ui";
@@ -38,9 +39,9 @@ function Vault() {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {vaultItems.map((item) => (
-          <div
+          <GlassCard
             key={item.title}
-            className="panel-bracket group relative overflow-hidden p-7 transition-colors hover:border-gold/50"
+            className="group relative overflow-hidden"
           >
             <div className="absolute right-4 top-4 text-muted-foreground/50">
               <LockKeyhole className="h-4 w-4" />
@@ -60,7 +61,7 @@ function Vault() {
                 {item.access} ACCESS
               </span>
             </div>
-          </div>
+          </GlassCard>
         ))}
       </div>
     </div>

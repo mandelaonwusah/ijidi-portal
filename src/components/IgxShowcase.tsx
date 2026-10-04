@@ -54,7 +54,7 @@ export function IgxTabBar({
     <div
       role="tablist"
       aria-label="IGX AI sections"
-      className="mx-auto flex max-w-3xl flex-wrap justify-center gap-1 rounded-2xl border border-gold/20 bg-black/15 p-1 backdrop-blur-[4px]"
+      className="mx-auto flex max-w-3xl flex-wrap justify-center gap-1 rounded-2xl border border-border bg-black/15 p-1 backdrop-blur-[4px]"
     >
       {IGX_TABS.map((tab) => {
         const on = tab.key === active;
@@ -480,12 +480,12 @@ function StatCard({
       {note && <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{note}</p>}
     </>
   );
-  const cls = "rounded-xl border border-gold/20 bg-black/20 p-3 text-left";
+  const cls = "rounded-xl border border-border bg-black/20 p-3 text-left";
   return onClick ? (
     <button
       type="button"
       onClick={onClick}
-      className={cn(cls, "transition-colors hover:border-gold/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60")}
+      className={cn(cls, "transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60")}
     >
       {body}
     </button>
@@ -550,7 +550,7 @@ export function EcosystemPanel({
   const decidedValue = (n?: number) => (decidedLoading ? "…" : decidedError ? "ERR" : String(n ?? 0));
 
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <div className="flex flex-wrap items-center justify-center gap-7">
         <IgxOrb state={orbState} activeNodes={activeNodes} />
 
@@ -594,7 +594,7 @@ export function EcosystemPanel({
                 "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                 preview === null
                   ? "border-gold bg-gold font-medium text-primary-foreground"
-                  : "border-gold/25 text-muted-foreground hover:text-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
               )}
             >
               Live
@@ -609,7 +609,7 @@ export function EcosystemPanel({
                   "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                   preview === s.key
                     ? "border-[#8FB4FF] bg-[#8FB4FF] font-medium text-[#0a0c18]"
-                    : "border-gold/25 text-muted-foreground hover:text-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground"
                 )}
               >
                 {s.label}
@@ -626,7 +626,7 @@ export function EcosystemPanel({
                 setAuto(true);
               }
             }}
-            className="mt-3 rounded-lg border border-gold/25 bg-black/20 px-3.5 py-2 font-mono text-[11px] tracking-wide text-foreground transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            className="mt-3 rounded-lg border border-border bg-black/20 px-3.5 py-2 font-mono text-[11px] tracking-wide text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
           >
             {auto ? "‖ Pause auto-cycle" : "▶ Auto-cycle the preview"}
           </button>
@@ -634,14 +634,14 @@ export function EcosystemPanel({
       </div>
 
       {/* Real counts only */}
-      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-gold/20 pt-5 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-5 lg:grid-cols-4">
         <StatCard label="Pending review" value={pendingValue} note="Open the queue" onClick={onOpenQueue} />
         <StatCard label="Approved" value={decidedValue(decided?.approved)} note="Proposals" />
         <StatCard label="Rejected" value={decidedValue(decided?.rejected)} note="Proposals" />
         <StatCard label="Model calls" value="Not tracked" note="No model is wired yet" />
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-gold/20 pt-4 text-[11.5px] text-muted-foreground">
+      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-[11.5px] text-muted-foreground">
         {LEGEND.map((item) => (
           <span key={item.label} className="flex items-center gap-1.5">
             <LegendSwatch type={item.type} color={item.color} />
@@ -674,7 +674,7 @@ const LAYERS = [
 export function ArchitecturePanel() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <PanelHead
         eyebrow="System architecture · design reference"
         title="Nine Governing Layers"
@@ -688,7 +688,7 @@ export function ArchitecturePanel() {
               key={layer.title}
               className={cn(
                 "overflow-hidden rounded-xl border bg-black/20 transition-colors",
-                isOpen ? "border-gold/40" : "border-gold/15"
+                isOpen ? "border-gold/40" : "border-border"
               )}
             >
               <button
@@ -751,7 +751,7 @@ export function DecisionsPanel() {
   });
 
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <PanelHead
         eyebrow="Learning layer"
         title="Decision Registry"
@@ -773,7 +773,7 @@ export function DecisionsPanel() {
       ) : (
         <div className="space-y-2.5">
           {data.map((row) => (
-            <div key={String(row.id)} className="rounded-xl border border-gold/20 bg-black/20 p-4">
+            <div key={String(row.id)} className="rounded-xl border border-border bg-black/20 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-mono text-[10.5px] tracking-[0.1em] text-[#8FB4FF]">
                   REF {String(row.id).slice(0, 8).toUpperCase()}
@@ -816,7 +816,7 @@ const AGENTS: { name: string; role: string; status: "Not connected" | "Deferred"
 
 export function AgentsPanel() {
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <PanelHead
         eyebrow="Internal observability"
         title="Agent Roster"
@@ -829,7 +829,7 @@ export function AgentsPanel() {
               {["Agent", "Role / unlock condition", "Status", "Runs"].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-gold/20 px-2.5 pb-2.5 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
+                  className="border-b border-border-strong px-2.5 pb-2.5 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
                 >
                   {h}
                 </th>
@@ -838,7 +838,7 @@ export function AgentsPanel() {
           </thead>
           <tbody>
             {AGENTS.map((agent) => (
-              <tr key={agent.name} className="border-b border-gold/10 last:border-0">
+              <tr key={agent.name} className="border-b border-border last:border-0">
                 <td className="px-2.5 py-3 font-medium text-foreground">
                   <span className="flex items-center gap-2">
                     <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-muted-foreground/50" />
@@ -884,7 +884,7 @@ const MODELS: { name: string; role: string; primary?: boolean }[] = [
 
 export function ModelsPanel() {
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <PanelHead
         eyebrow="Capability layer"
         title="Model Pipeline"
@@ -896,7 +896,7 @@ export function ModelsPanel() {
             key={model.name}
             className={cn(
               "rounded-xl border bg-black/20 p-4",
-              model.primary ? "border-gold/40" : "border-gold/20"
+              model.primary ? "border-border-strong" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
@@ -924,7 +924,7 @@ function BrandThumb({ src, label }: { src: string | null; label: string }) {
   const [failed, setFailed] = useState(false);
   if (!src) {
     return (
-      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gold/40 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-muted-foreground">
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-muted-foreground">
         No art
       </span>
     );
@@ -1027,7 +1027,7 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
   }));
   const placed = rows.filter((row) => row.used.length > 0).length;
   return (
-    <GlassCard index={1} className="p-5 sm:p-7">
+    <GlassCard index={1}>
       <PanelHead
         eyebrow="Brand library"
         title="Logos, portraits and leads"
@@ -1037,7 +1037,7 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
         {rows.map(({ asset, src, used }) => {
           const status = !src ? "Artwork needed" : used.length > 0 ? "On a page" : "Not placed yet";
           return (
-            <div key={asset.id} className="rounded-xl border border-gold/20 bg-black/20 p-4">
+            <div key={asset.id} className="rounded-xl border border-border bg-black/20 p-4">
               <div className="flex items-center gap-3">
                 <BrandThumb key={src ?? "none"} src={src} label={asset.label} />
                 <div className="min-w-0">

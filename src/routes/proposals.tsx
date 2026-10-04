@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { GlassCard } from "@/components/GlassCard";
 
 export const Route = createFileRoute("/proposals")({
   component: ProposalsReview,
@@ -109,7 +110,7 @@ function ProposalsReview() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <section className="relative p-6 border border-border bg-card/40 rounded-lg">
+      <GlassCard variant="elevated">
         <Eyebrow className="text-amber-400">MODULE / PROPOSAL REVIEW</Eyebrow>
         <h1 className="mt-1 font-sans text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Proposal Queue
@@ -117,7 +118,7 @@ function ProposalsReview() {
         <p className="mt-1 font-mono text-xs text-muted-foreground">
           IGX AI proposes, never executes. Reviewing here only flips status — no action is triggered.
         </p>
-      </section>
+      </GlassCard>
 
       {/* Tabs */}
       <section className="flex flex-wrap gap-2 font-mono text-xs">
@@ -151,11 +152,8 @@ function ProposalsReview() {
             No {activeTab.replace("_", " ")} proposals.
           </div>
         ) : (
-          filtered.map((proposal) => (
-            <div
-              key={proposal.id}
-              className="p-5 border border-border bg-card/30 rounded-lg space-y-3"
-            >
+          filtered.map((proposal, i) => (
+            <GlassCard key={proposal.id} index={i} className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-muted-foreground">
                 <span>
                   {proposal.actor_type} · {proposal.source ?? "unknown source"}
@@ -226,7 +224,7 @@ function ProposalsReview() {
                   </div>
                 </div>
               )}
-            </div>
+            </GlassCard>
           ))
         )}
       </section>

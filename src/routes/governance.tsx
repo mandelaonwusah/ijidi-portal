@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { GlassCard } from "@/components/GlassCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -131,7 +132,7 @@ function Governance() {
 
       <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
         {/* Governor record */}
-        <section className="panel-bracket p-5">
+        <GlassCard>
           <div className="flex items-center gap-3">
             <Scale className="h-5 w-5 text-gold" />
             <div>
@@ -174,11 +175,11 @@ function Governance() {
               Build the infrastructure before making the claims.
             </p>
           </div>
-        </section>
+        </GlassCard>
 
         <div className="space-y-6">
           {/* Proposals */}
-          <section className="panel-bracket p-5">
+          <GlassCard>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <ListChecks className="h-5 w-5 text-gold" />
@@ -222,7 +223,7 @@ function Governance() {
                   {proposals.slice(0, 5).map((p) => (
                     <div
                       key={p.id}
-                      className="border border-border bg-background/50 p-4 transition-all hover:border-gold/30"
+                      className="border border-border bg-background/50 p-4 transition-all hover:border-border-strong"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <Eyebrow>{new Date(p.created_at).toLocaleDateString()}</Eyebrow>
@@ -245,10 +246,10 @@ function Governance() {
                 )}
               </>
             )}
-          </section>
+          </GlassCard>
 
           {/* Decision log */}
-          <section className="panel-bracket p-5">
+          <GlassCard>
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <BookOpenCheck className="h-5 w-5 text-teal" />
@@ -281,7 +282,7 @@ function Governance() {
                   return (
                     <div
                       key={decision.id}
-                      className="border border-border bg-background/50 p-4 transition-all hover:border-gold/30"
+                      className="border border-border bg-background/50 p-4 transition-all hover:border-border-strong"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
@@ -304,7 +305,7 @@ function Governance() {
                 })}
               </div>
             )}
-          </section>
+          </GlassCard>
         </div>
       </div>
     </div>

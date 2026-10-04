@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { GlassCard } from "@/components/GlassCard";
 import { Film, Music2, Radio as RadioIcon } from "lucide-react";
 import {
   EmptyState,
@@ -48,7 +49,7 @@ function Media() {
         />
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="panel-bracket p-5 lg:col-span-2">
+        <GlassCard className="lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <Eyebrow className="text-teal">Property registry</Eyebrow>
@@ -74,7 +75,7 @@ function Media() {
               </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
         <EmptyState
           title="No content records"
           detail="The Media registry is ready for verified properties."

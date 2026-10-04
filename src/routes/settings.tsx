@@ -180,7 +180,7 @@ function CircuitStudioCard() {
     );
 
   return (
-    <GlassCard index={4} className="p-5">
+    <GlassCard index={4}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Palette className="h-4 w-4 text-gold" />
@@ -291,7 +291,7 @@ function CircuitStudioCard() {
             How dense and fast the pulses run — eases in smoothly either way
           </div>
         </div>
-        <div role="group" aria-label="Circuit motion" className="inline-flex rounded-lg border border-gold/25 bg-black/25 p-1">
+        <div role="group" aria-label="Circuit motion" className="inline-flex rounded-lg border border-border bg-black/25 p-1">
           {MOTION_OPTIONS.map((key) => (
             <button
               key={key}
@@ -399,7 +399,7 @@ function Settings() {
 
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         {/* Identity */}
-        <GlassCard index={1} className="p-6">
+        <GlassCard index={1}>
           <div className="flex flex-col items-center text-center">
             <IdentityPicture name={name} canEdit={isGovernor} />
             <div className="mt-5 min-w-0">
@@ -414,13 +414,13 @@ function Settings() {
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-gold/20 bg-black/20 p-3">
+            <div className="rounded-lg border border-border bg-black/20 p-3">
               <Eyebrow>Access tier</Eyebrow>
               <div className="mt-3 font-mono text-sm text-gold">
                 {isLoading ? "…" : tier ?? "—"}
               </div>
             </div>
-            <div className="rounded-lg border border-gold/20 bg-black/20 p-3">
+            <div className="rounded-lg border border-border bg-black/20 p-3">
               <Eyebrow>Session</Eyebrow>
               <div className="mt-3 font-mono text-sm text-teal">
                 {isLoading ? "…" : isError ? "Unavailable" : "Signed in"}
@@ -428,7 +428,7 @@ function Settings() {
             </div>
           </div>
 
-          <dl className="mt-6 space-y-2 border-t border-gold/20 pt-5 font-mono text-[10px] uppercase tracking-widest">
+          <dl className="mt-6 space-y-2 border-t border-border pt-5 font-mono text-[10px] uppercase tracking-widest">
             <div className="flex justify-between gap-3">
               <dt className="text-muted-foreground">Email</dt>
               <dd className="break-all text-right normal-case tracking-normal text-foreground">
@@ -443,7 +443,7 @@ function Settings() {
         </GlassCard>
 
         <section className="space-y-6">
-          <GlassCard index={2} className="p-5">
+          <GlassCard index={2}>
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-4 w-4 text-gold" />
               <Eyebrow>Access</Eyebrow>
@@ -462,7 +462,7 @@ function Settings() {
             </p>
           </GlassCard>
 
-          <GlassCard index={3} className="p-5">
+          <GlassCard index={3}>
             <div className="flex items-center gap-3">
               <Gauge className="h-4 w-4 text-teal" />
               <Eyebrow>Interface controls</Eyebrow>
@@ -478,7 +478,7 @@ function Settings() {
               <div
                 role="group"
                 aria-label="Ticker speed"
-                className="inline-flex rounded-lg border border-gold/25 bg-black/25 p-1"
+                className="inline-flex rounded-lg border border-border bg-black/25 p-1"
               >
                 {SPEED_OPTIONS.map((option) => {
                   const active = tickerSpeed === option.value;

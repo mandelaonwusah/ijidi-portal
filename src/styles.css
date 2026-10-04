@@ -344,164 +344,6 @@ a {
 }
 
 /* ============================================================
-   PANEL BRACKET
-   ============================================================ */
-.panel-bracket {
-  position: relative;
-  background: var(--panel);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
-}
-
-.panel-bracket::before,
-.panel-bracket::after {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: var(--primary);
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.panel-bracket::before {
-  top: 10px;
-  left: 10px;
-  border-top: 1.5px solid;
-  border-left: 1.5px solid;
-  border-top-left-radius: 8px;
-}
-
-.panel-bracket::after {
-  right: 10px;
-  bottom: 10px;
-  border-right: 1.5px solid;
-  border-bottom: 1.5px solid;
-  border-bottom-right-radius: 8px;
-}
-
-.panel-bracket-elevated {
-  background: var(--panel-elevated);
-  box-shadow: var(--shadow-lift);
-  border-color: var(--border-accent);
-}
-
-/* ============================================================
-   PREMIUM CARD
-   ============================================================ */
-.premium-card {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-card);
-  padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.premium-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lift);
-  border-color: var(--border-accent);
-}
-
-.premium-card-accent {
-  border-top: 2.5px solid var(--primary);
-}
-
-.premium-card-success {
-  border-top: 2.5px solid var(--success);
-}
-
-.premium-card-warning {
-  border-top: 2.5px solid var(--gold);
-}
-
-.premium-card-primary {
-  border-top: 2.5px solid var(--accent);
-}
-
-.premium-card .card-divider {
-  border-top: 1px solid var(--border-strong);
-  margin: 1.25rem 0;
-}
-
-/* ============================================================
-   METRIC TILE
-   ============================================================ */
-.metric-tile {
-  background: var(--card);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-strong);
-  padding: 1.25rem 1.5rem;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  position: relative;
-}
-
-.metric-tile::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 20%;
-  right: 20%;
-  height: 1px;
-  background: var(--border-accent);
-  opacity: 0.3;
-  transition: opacity 0.2s ease;
-}
-
-.metric-tile:hover::after {
-  opacity: 1;
-}
-
-.metric-tile:hover {
-  border-color: var(--border-accent);
-  background: var(--panel-elevated);
-}
-
-.metric-tile .label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted-foreground);
-  font-weight: 600;
-}
-
-.metric-tile .value {
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
-  margin-top: 0.25rem;
-}
-
-.metric-tile .value.not-tracked {
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--muted-foreground);
-  letter-spacing: 0.02em;
-}
-
-.metric-tile .status-indicator {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.metric-tile .status-indicator.online {
-  background: var(--success);
-  box-shadow: 0 0 8px rgba(94, 155, 255, 0.4);
-}
-
-.metric-tile .status-indicator.offline {
-  background: var(--destructive);
-  box-shadow: 0 0 8px rgba(196, 90, 60, 0.3);
-}
-
-/* ============================================================
    NODE STATUS BADGE
    ============================================================ */
 .node-badge {
@@ -863,43 +705,21 @@ a {
 .border-destructive\/30 { border-color: rgba(var(--destructive-rgb), 0.30); }
 
 /* ============================================================
-   PORTAL HUD OVERLAYS
-   The circuit background is now the portal's atmosphere, so the old full-screen
-   grid, scanlines and vignette are switched off (the circuit adds its own soft
-   edge shading). Only the quiet gold corner frame remains.
+   PORTAL VEIL
+   The same veil the sign-in page lays over the circuit board (login.tsx):
+   a dark layer with a soft gold light at the top and blue light at the
+   bottom, so every portal page shares the sign-in background.
+   Sits above the circuit board (z 0) and below the shell (z 10).
    ============================================================ */
-.portal-hud-grid,
-.portal-hud-scanlines,
-.portal-hud-vignette {
-  display: none;
-}
-
-.portal-hud-frame {
+.portal-veil {
   position: fixed;
-  inset: 10px;
-  z-index: 2;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-}
-.portal-hud-frame .c {
-  position: absolute;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(198, 161, 91, 0.4);
-  filter: drop-shadow(0 0 6px rgba(198, 161, 91, 0.3));
-  animation: portalCornerPulse 4s ease-in-out infinite;
-  opacity: 0.5;
-}
-@keyframes portalCornerPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
-.portal-hud-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
-.portal-hud-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 12px; animation-delay: .6s; }
-.portal-hud-frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 12px; animation-delay: 1.2s; }
-.portal-hud-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; animation-delay: 1.8s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .portal-hud-frame .c {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 28%, rgba(198, 161, 91, 0.1), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 108%, rgba(79, 134, 247, 0.1), transparent 70%),
+    rgba(3, 5, 10, 0.62);
 }
 
 /* ============================================================
@@ -920,9 +740,6 @@ a {
   --glass-blur: 10px;
 }
 
-.panel-bracket,
-.premium-card,
-.metric-tile,
 .node-badge,
 .entity-switcher-bar,
 .entity-chip {
@@ -930,23 +747,15 @@ a {
   backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
 
-.panel-bracket,
 .node-badge,
 .entity-switcher-bar {
   background: rgba(var(--panel-rgb), var(--glass-panel));
 }
 
-.panel-bracket-elevated {
-  background: rgba(var(--elevated-rgb), var(--glass-elevated));
-}
-
-.premium-card,
-.metric-tile,
 .entity-chip {
   background: rgba(var(--card-rgb), var(--glass-card));
 }
 
-.metric-tile:hover,
 .entity-chip:hover {
   background: rgba(var(--elevated-rgb), var(--glass-elevated));
 }
