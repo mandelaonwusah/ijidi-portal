@@ -129,6 +129,10 @@ red, gold or orange pulse.
 | **Inter** | All UI text: headings, body, buttons, labels | 400, 500, 600 |
 | **IBM Plex Mono** | Machine values only: IDs, times, dates, codes, counts in tables, keycaps, the build tag | 400, 500 |
 
+Those are the target weights. **Loaded for now:** Inter 400–700 and Plex Mono 400–600,
+because existing text still uses bold and semibold, and a missing weight makes the browser
+fake it. The extra weights are dropped once the Cards and States groups stop using them.
+
 - **Load exactly these two** from Google Fonts in `__root.tsx`.
 - **Drop:**
   - **Fraunces** and **Karla**: loaded globally today but used only on `/login`.
@@ -275,6 +279,8 @@ Groups, in this order:
 
 - Press: `scale(0.98)` on `:active` for buttons, tabs and palette rows (80 ms).
 - Arrow nudge: icons in "Open review →"-style links move 3 px right on hover (150 ms).
+- Ticker pause: the scrolling ticker pauses while the pointer is over it, so an entry can
+  be read (`animation-play-state: paused` on hover). Built in the Motion group.
 - **Off** when `prefers-reduced-motion` is set (already tracked by `visual-state.tsx`).
 - No new looping animations; the pulse rule in section 2 governs the existing ones.
 
