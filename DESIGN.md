@@ -322,41 +322,49 @@ chrome surface with the highlight**; sidebar and tabs stay flat.
 - **If it isn't available** (e.g. a build with no git): the tag is **left out**, not faked.
 - It replaces the hard-coded `Build / 01` label in the status bar.
 
-### Sign-in page top bar (planned: Group 5, the last group)
+### Sign-in page (planned: Group 5, the last group)
 
-Not built yet. A bar across the top of the sign-in page (`src/routes/login.tsx`).
+Not built yet. Changes to `src/routes/login.tsx`. **The sign-in card stays exactly as it is**
+(form, wording, Authenticate button, layout).
 
-| Position | Content |
-|---|---|
-| Order | Item |
-|---|---|
-| 1 (left) | **"IJIDI" wordmark image** + **"PORTAL"** in Inter text (see "Logos and wordmarks"). Until the image is uploaded, the current emblem and "IJIDI PORTAL" text stay exactly as they are. |
-| 2 | **Home** |
-| 3 | **What we do** |
-| 4 | **Ecosystem** menu linking out to the public sites (below) |
-| 5 (right) | **Sign in**: scrolls to the form and focuses the Access ID field |
-| Mobile (< 640) | Collapses to a single menu button; the same items open from it. |
+**Top bar**, left to right:
 
-- **Link targets for Home and What we do are not decided yet;** they are confirmed with the
-  Governor before Group 5 is built. No placeholder links.
-- **Not on the page:** no Sign up, no apps list, and **no OAuth buttons until the providers
-  are enabled** (and sign-ups restricted) in Supabase. Today `OAUTH_ENABLED = false` in
-  `login.tsx` keeps them hidden.
+| Order | Item | Behaviour |
+|---|---|---|
+| 1 | **"IJIDI" wordmark image** + **"PORTAL"** in Inter text | Until the image is uploaded, the current emblem and "IJIDI PORTAL" text stay as they are (see "Logos and wordmarks"). |
+| 2 | **Home** | Link target to be confirmed before Group 5 is built. |
+| 3 | **What we do** | Link target to be confirmed before Group 5 is built. |
+| 4 | **Ecosystem** dropdown | Group, Foundation, Atelier, Media, Mandela: same links and "Coming soon" rules as the tiles below. |
+| 5 | **Sign in** | Scrolls to the card and focuses the Access ID field. |
+| 6 | **Request access** | A `mailto:` link. **The address is to be confirmed** before Group 5 is built. |
 
-**Ecosystem menu items:**
+Mobile (< 640): the top bar collapses to a single menu button; the same items open from it.
 
-| Item | Link |
-|---|---|
-| IJIDI Group | `https://ijidigroup.com` |
-| IJIDI Foundation | `https://ijidi.org` |
-| Mandela Onwusah | `https://mandelaonwusah.com` |
+**"The IJIDI Ecosystem" grid**: six tiles to the right of the card; on mobile they stack
+below the card.
 
-- **Atelier, Ifeoma, Real Estate and Datalink** are added only once their sites exist.
-  No dead links, no "coming soon" items, no disabled placeholders.
-- **No "apps we use"** and no mention of the tech stack anywhere on the page (KB-LGL-003).
-- **No marketing copy** duplicated from the Group site: item names and links only.
-- Follows the rest of this file: neutral borders, gold only for focus, the focus ring,
-  44 px touch targets on mobile.
+| Tile | Link | One-line description (approved source) |
+|---|---|---|
+| IJIDI Group | `https://ijidigroup.com` | "Converging Capital \| Building legacy" (`brand-assets.ts`) |
+| IJIDI Foundation | `https://ijidi.org` | "Empowering Communities \| Restoring Hope" (`brand-assets.ts`) |
+| IJIDI Atelier | **No link.** Grey, labelled "Coming soon" | "Designed for Distinction." (`brand-assets.ts`) |
+| IJIDI Media | **No link.** Grey, labelled "Coming soon" | **To be supplied from the KB / brand guide** |
+| IGX AI | **No link.** Labelled "Governor access" | **To be supplied from the KB / brand guide** |
+| Mandela Onwusah | `https://mandelaonwusah.com` | **To be supplied from the KB / brand guide** |
+
+Rules:
+- **Live links only** for ijidigroup.com, ijidi.org and mandelaonwusah.com. Every other item is
+  plain text, never a dead or placeholder link.
+- **Descriptions come from the KB / brand guide only.** Where none is supplied, the tile shows
+  its name alone; nothing is invented.
+- **Not on the page:** no status badges, no Sign up, no apps list or tech-stack mention
+  (KB-LGL-003), no marketing copy duplicated from the Group site, and **no OAuth buttons**
+  (`OAUTH_ENABLED = false` in `login.tsx` stays until the providers are enabled and sign-ups
+  restricted in Supabase).
+- Tiles are `GlassCard` (default variant); "Coming soon" and "Governor access" use the muted
+  grey, not a status colour. Neutral borders, gold only for focus, 44 px touch targets on mobile.
+- **Changed from the earlier plan:** Atelier and Media now appear as grey "Coming soon" items
+  (earlier: hidden until their sites exist), at the Governor's request.
 
 ### Loading, empty and error states (every page)
 
@@ -435,7 +443,7 @@ The design work ships in five groups, one PR each, in this order:
 | 2 Cards | GlassCard variants; old card classes removed; neutral borders; header glass; portal uses the sign-in background |
 | 3 States | StatusBadge four states; pulse rule; loading / empty / error states; toasts instead of `alert()`; danger button and confirm dialogs |
 | 4 Palette | Kbd keycap; palette groups (Navigate, Actions, Entities, Recent); "?" shortcuts sheet; **13 px minimum text** (section 3); **font-weight trim** to Inter 400–600 and Plex Mono 400–500; **gold decoration removed** from headings, icons and text (gold stays only for selected, focus, governor-only and the corner arcs) |
-| 5 Motion (last) | Press and arrow nudge; ticker pause on hover; reduced motion; **sign-in page top bar** (section 6) |
+| 5 Motion (last) | Press and arrow nudge; ticker pause on hover; reduced motion; **sign-in page top bar and Ecosystem grid** (section 6) |
 
 ---
 

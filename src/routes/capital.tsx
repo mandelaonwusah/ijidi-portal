@@ -54,17 +54,17 @@ function Capital() {
       <GlassCard className="mt-6 overflow-hidden p-0">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5">
           <div className="flex items-center gap-3">
-            <Table2 className="h-4 w-4 text-gold" />
+            <Table2 className="h-4 w-4 text-muted-foreground" />
             <div>
               <Eyebrow>Deal book / registry</Eyebrow>
               <h2 className="mt-1 font-display font-semibold">Capital pipeline</h2>
             </div>
           </div>
-          <span className="font-mono text-[9px] uppercase text-muted-foreground">
+          <span className="font-mono text-xs uppercase text-muted-foreground">
             Schema ready · rows 0
           </span>
         </div>
-        <div className="hidden grid-cols-5 gap-4 border-b border-border px-5 py-3 font-mono text-[9px] uppercase tracking-widest text-muted-foreground md:grid">
+        <div className="hidden grid-cols-5 gap-4 border-b border-border px-5 py-3 font-mono text-xs uppercase tracking-widest text-muted-foreground md:grid">
           <span>Opportunity</span>
           <span>Vehicle</span>
           <span>Stage</span>
@@ -88,9 +88,9 @@ function Capital() {
             number never implies another.
           </p>
         </div>
-        <div className="border border-border bg-gold/5 p-5">
-          <Eyebrow className="text-gold">Truth protocol</Eyebrow>
-          <p className="mt-4 font-mono text-sm leading-6 text-gold/90">
+        <div className="border border-border bg-white/[0.03] p-5">
+          <Eyebrow className="text-muted-foreground">Truth protocol</Eyebrow>
+          <p className="mt-4 font-mono text-sm leading-6 text-foreground">
             No invented deal size. No implied yield. No fake treasury balance.
           </p>
         </div>

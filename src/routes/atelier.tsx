@@ -55,7 +55,7 @@ function Atelier() {
               <Eyebrow className="text-teal">Production registry</Eyebrow>
               <h2 className="mt-2 font-display text-lg font-semibold">Collections</h2>
             </div>
-            <Shirt className="h-5 w-5 text-gold" />
+            <Shirt className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="border border-dashed border-border p-4">

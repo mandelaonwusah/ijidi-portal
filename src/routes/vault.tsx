@@ -35,7 +35,7 @@ function Vault() {
       <div className="mb-6 flex items-center gap-3 border border-teal/20 bg-teal/5 p-4">
         <KeyRound className="h-5 w-5 shrink-0 text-teal" />
         <div>
-          <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-teal">
+          <div className="font-mono text-xs font-medium uppercase tracking-widest text-teal">
             Vault encryption / nominal
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -52,7 +52,7 @@ function Vault() {
             <div className="absolute right-4 top-4 text-muted-foreground/50">
               <LockKeyhole className="h-4 w-4" />
             </div>
-            <div className="flex h-10 w-10 items-center justify-center border border-gold/30 bg-gold/10 text-gold">
+            <div className="flex h-10 w-10 items-center justify-center border border-border bg-white/[0.04] text-muted-foreground">
               <FileLock2 className="h-4 w-4" />
             </div>
             <Eyebrow className="mt-6 text-teal">{item.type}</Eyebrow>
@@ -64,7 +64,7 @@ function Vault() {
               ) : (
                 <StatusBadge state="not-connected" label={item.state} />
               )}
-              <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-gold">
+              <span className="font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 {item.access} ACCESS
               </span>
             </div>

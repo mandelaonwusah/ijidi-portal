@@ -4,6 +4,17 @@ import { supabase } from "@/lib/supabase";
 import { CircuitBackground } from "@/components/CircuitBackground";
 
 export const Route = createFileRoute("/login")({
+  // The portal loads Plex Mono 400–500 only (DESIGN.md §3). The sign-in card is
+  // kept exactly as it was, and it uses Plex Mono 600, so that weight is loaded
+  // here for this page alone.
+  head: () => ({
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600&display=swap",
+      },
+    ],
+  }),
   component: LoginPage,
 });
 

@@ -79,7 +79,7 @@ function displayValue(value: unknown): string {
 
 function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${className}`}>
+    <span className={`font-mono text-xs font-medium uppercase tracking-widest ${className}`}>
       {children}
     </span>
   );
@@ -245,10 +245,10 @@ function CommandCenterOverview() {
           (which carries the Governor identity block up in the shared shell). */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-black/20 px-5 py-3 backdrop-blur-[3px]">
         <div className="font-mono text-sm">
-          <span className="font-semibold text-gold">{greeting}</span>
+          <span className="font-semibold text-foreground">{greeting}</span>
           {sessionEmail && <span className="text-muted-foreground">, {sessionEmail}</span>}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px]">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
           {pendingReviewCount === null ? (
             <span className="text-muted-foreground">Pending review: …</span>
           ) : pendingReviewCount > 0 ? (
@@ -292,12 +292,12 @@ function CommandCenterOverview() {
 
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-lg shadow-primary/10 ring-1 ring-primary/20">
-              <Crown className="h-7 w-7 text-primary" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ring-1 ring-border">
+              <Crown className="h-7 w-7 text-muted-foreground" />
             </div>
             <div>
-              <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
-              <h1 className="mt-2 font-sans text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              <Eyebrow className="text-muted-foreground">COMMAND MODULE / 01</Eyebrow>
+              <h1 className="mt-2 font-sans text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
                 Ecosystem Command
               </h1>
               <p className="mt-1 max-w-xl font-mono text-sm text-muted-foreground">
@@ -314,8 +314,8 @@ function CommandCenterOverview() {
                 link.border
               )}
             >
-              <Eyebrow className="text-[8px] text-muted-foreground">DATA LINK</Eyebrow>
-              <div className={cn("mt-0.5 flex items-center gap-2 font-mono text-sm font-bold", link.text)}>
+              <Eyebrow className="text-xs text-muted-foreground">DATA LINK</Eyebrow>
+              <div className={cn("mt-0.5 flex items-center gap-2 font-mono text-sm font-medium", link.text)}>
                 <span className="relative flex h-2 w-2">
                   {linkState === "connected" && (
                     <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60 motion-safe:animate-ping" />
@@ -326,8 +326,8 @@ function CommandCenterOverview() {
               </div>
             </div>
             <div className="hidden rounded-lg border bg-card px-5 py-3 shadow-sm md:block">
-              <Eyebrow className="text-[8px] text-muted-foreground">LAST SYNC</Eyebrow>
-              <div className="mt-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
+              <Eyebrow className="text-xs text-muted-foreground">LAST SYNC</Eyebrow>
+              <div className="mt-0.5 font-mono text-sm font-medium tabular-nums text-foreground">
                 {lastSync}
               </div>
             </div>
@@ -366,14 +366,14 @@ function CommandCenterOverview() {
             >
               <div className="relative">
                 <div className="flex items-center justify-between">
-                  <Eyebrow className="text-[9px] text-muted-foreground">{item.label}</Eyebrow>
-                  <div className="rounded-lg bg-primary/10 p-1.5 ring-1 ring-primary/10">
-                    <Icon className="h-3.5 w-3.5 text-primary" />
+                  <Eyebrow className="text-xs text-muted-foreground">{item.label}</Eyebrow>
+                  <div className="rounded-lg bg-white/[0.04] p-1.5 ring-1 ring-border">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                 </div>
                 <div
                   className={cn(
-                    "mt-4 truncate font-sans font-bold tabular-nums",
+                    "mt-4 truncate font-sans font-semibold tabular-nums",
                     notTracked && !metricsLoading && !metricsError
                       ? "text-xl text-muted-foreground/60"
                       : "text-3xl text-foreground"
@@ -387,7 +387,7 @@ function CommandCenterOverview() {
                     ? "Not tracked"
                     : displayValue(item.raw)}
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px]">
+                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-xs">
                   <span className={cardTone}>{cardState}</span>
                   <span className="tabular-nums text-muted-foreground/50">
                     {notTracked ? "" : lastSync}
@@ -406,19 +406,19 @@ function CommandCenterOverview() {
           <GlassCard index={5} className="h-full">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
-                <Eyebrow className="text-primary">AUDIT TRAIL</Eyebrow>
+                <Eyebrow className="text-muted-foreground">AUDIT TRAIL</Eyebrow>
                 <div className="mt-1 flex items-center gap-3">
                   <span className="font-sans text-base font-semibold text-foreground">
                     Activity log
                   </span>
                   {hasRealData && (
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[9px] text-primary">
+                    <span className="rounded-full bg-white/[0.04] px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
                       {totalActivities} LOADED
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 <span>Newest first</span>
               </div>
@@ -427,7 +427,7 @@ function CommandCenterOverview() {
             <div className="custom-scrollbar mt-4 max-h-[440px] space-y-2 overflow-y-auto pr-1">
               {activityLoading ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-12">
-                  <Loader2 className="h-8 w-8 text-primary/40 motion-safe:animate-spin" />
+                  <Loader2 className="h-8 w-8 text-muted-foreground motion-safe:animate-spin" />
                   <p className="font-mono text-sm text-muted-foreground">Loading audit entries…</p>
                 </div>
               ) : activityError ? (
@@ -448,11 +448,11 @@ function CommandCenterOverview() {
                     className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-border-strong bg-background/40 p-3 transition-colors hover:border-border-strong hover:bg-background/60"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Activity className="h-3.5 w-3.5 text-primary" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate font-mono text-xs font-bold text-foreground">
+                        <div className="truncate font-mono text-xs font-medium text-foreground">
                           {log.actor ?? "unknown actor"}
                         </div>
                         <div className="truncate font-mono text-xs text-muted-foreground">
@@ -460,7 +460,7 @@ function CommandCenterOverview() {
                         </div>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right font-mono text-[10px] tabular-nums">
+                    <div className="shrink-0 text-right font-mono text-xs tabular-nums">
                       <div className="text-muted-foreground">{formatRelativeTime(log.timestamp)}</div>
                       <div className="text-muted-foreground/50">{formatTacticalTime(log.timestamp)}</div>
                     </div>
@@ -482,7 +482,7 @@ function CommandCenterOverview() {
             </div>
 
             {hasRealData && (
-              <div className="mt-4 flex items-center justify-between border-t pt-4 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+              <div className="mt-4 flex items-center justify-between border-t pt-4 font-mono text-xs tabular-nums text-muted-foreground/60">
                 <span>LATEST EVENT {formatTacticalTime(recentActivities[0]?.timestamp)}</span>
                 <span>
                   SHOWING {recentActivities.length} OF {totalActivities}
@@ -496,11 +496,11 @@ function CommandCenterOverview() {
         <section>
           <GlassCard index={6} className="h-full">
             <div className="flex items-center gap-3 border-b pb-4">
-              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
-                <Layers className="h-4 w-4 text-primary" />
+              <div className="rounded-lg bg-white/[0.04] p-2 ring-1 ring-border">
+                <Layers className="h-4 w-4 text-muted-foreground" />
               </div>
               <div>
-                <Eyebrow className="text-primary">NAVIGATION</Eyebrow>
+                <Eyebrow className="text-muted-foreground">NAVIGATION</Eyebrow>
                 <div className="mt-0.5 font-sans text-sm font-semibold text-foreground">
                   Primary modules
                 </div>
@@ -514,24 +514,24 @@ function CommandCenterOverview() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20">
-                      <Shield className="h-4 w-4 text-primary" />
+                    <div className="rounded-lg bg-white/[0.04] p-2 group-hover:bg-white/[0.08]">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-foreground">
                           [07] GOVERNANCE
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[8px] text-primary">
+                        <span className="rounded-full bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-muted-foreground">
                           VAULT
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         Proposals, votes, recovery
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
                 </div>
               </Link>
 
@@ -541,24 +541,24 @@ function CommandCenterOverview() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20">
-                      <Globe className="h-4 w-4 text-primary" />
+                    <div className="rounded-lg bg-white/[0.04] p-2 group-hover:bg-white/[0.08]">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-foreground">
                           [02] ECOSYSTEM
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[8px] text-primary">
+                        <span className="rounded-full bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-muted-foreground">
                           MAP
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         Entities, relations, status
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
                 </div>
               </Link>
 
@@ -576,10 +576,10 @@ function CommandCenterOverview() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-foreground group-hover:text-accent">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-accent">
                           [ENTITIES]
                         </span>
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[8px] text-accent">
+                        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-xs text-accent">
                           {entitiesLoading
                             ? "LOADING"
                             : entitiesError
@@ -587,7 +587,7 @@ function CommandCenterOverview() {
                             : `${entityList.length} ON RECORD`}
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         State as recorded per entity
                       </p>
                     </div>
@@ -603,16 +603,16 @@ function CommandCenterOverview() {
                 {isEntitiesOpen && (
                   <div className="border-t border-border/50">
                     {entitiesLoading ? (
-                      <div className="flex items-center gap-2 px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-2 px-4 py-3 font-mono text-xs text-muted-foreground">
                         <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
                         Loading entity status…
                       </div>
                     ) : entitiesError ? (
-                      <div className="px-4 py-3 font-mono text-[10px] text-destructive">
+                      <div className="px-4 py-3 font-mono text-xs text-destructive">
                         Entity status could not be loaded.
                       </div>
                     ) : entityList.length === 0 ? (
-                      <div className="px-4 py-3 font-mono text-[10px] text-muted-foreground">
+                      <div className="px-4 py-3 font-mono text-xs text-muted-foreground">
                         No entities on record.
                       </div>
                     ) : (
@@ -632,7 +632,7 @@ function CommandCenterOverview() {
                               <div className="mt-0.5 flex items-center gap-1.5">
                                 <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
                                 <span
-                                  className={cn("font-mono text-[9px] uppercase", tone.text)}
+                                  className={cn("font-mono text-xs uppercase", tone.text)}
                                 >
                                   {item.current_state ?? "no state"}
                                 </span>
@@ -650,7 +650,7 @@ function CommandCenterOverview() {
                             to={route}
                             className={cn(
                               rowClass,
-                              "transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
+                              "transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
                             )}
                           >
                             {rowInner}
@@ -667,7 +667,7 @@ function CommandCenterOverview() {
               </div>
             </div>
 
-            <div className="mt-6 border-t pt-4 font-mono text-[10px] text-muted-foreground/60">
+            <div className="mt-6 border-t pt-4 font-mono text-xs text-muted-foreground/60">
               {latestEntityUpdate > 0
                 ? `Entity records last changed ${formatRelativeTime(
                     new Date(latestEntityUpdate).toISOString()
@@ -701,14 +701,14 @@ function CommandCenterOverview() {
               index={idx + 7}
               className="flex items-center gap-3 p-3"
             >
-              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
-                <Icon className="h-3.5 w-3.5 text-primary" />
+              <div className="rounded-lg bg-white/[0.04] p-2 ring-1 ring-border">
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div className="min-w-0">
-                <div className="font-mono text-[8px] uppercase tracking-wider text-muted-foreground/60">
+                <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground/60">
                   {stat.label}
                 </div>
-                <div className="truncate font-mono text-sm font-bold tabular-nums text-foreground">
+                <div className="truncate font-mono text-sm font-medium tabular-nums text-foreground">
                   {stat.value}
                 </div>
               </div>

@@ -12,15 +12,8 @@ import {
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from "@/components/ui/command";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ShortcutsSheet } from "@/components/ShortcutsSheet";
 import { Button } from "@/components/ui/button";
 import { navItems, navGroupOrder, floatingSwitcherItems } from "@/lib/portal-data";
 import { getActivity } from "@/lib/portal-queries";
@@ -61,12 +54,12 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
       <div>
         <Eyebrow>ROUTE NOT FOUND</Eyebrow>
-        <h1 className="mt-3 font-display text-5xl text-gold">404</h1>
+        <h1 className="mt-3 font-display text-5xl text-foreground">404</h1>
         <p className="mt-3 text-sm text-muted-foreground">This command path does not exist.</p>
         <Link to="/"
           onMouseEnter={() => sounds.playHover()}
           onClick={() => sounds.playClick()}
-          className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-gold"
+          className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-foreground"
         >
           Return to command center
         </Link>
@@ -127,7 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         // DESIGN.md §3: Inter for UI, IBM Plex Mono for machine values. Bold and
         // semibold stay loaded until later groups stop using them (no faux bold).
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -240,10 +233,10 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" })
     >
       <div className="text-center">
         <div className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border border-[#C6A15B]/25 border-t-[#C6A15B]" />
-        <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#C6A15B]">
+        <div className="font-mono text-xs uppercase tracking-[0.28em] text-[#C6A15B]">
           IJIDI Portal
         </div>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#F5F1E8]/60">
+        <p className="mt-3 font-mono text-xs uppercase tracking-[0.18em] text-[#F5F1E8]/60">
           {label}
         </p>
       </div>
@@ -416,7 +409,7 @@ function BrandBadge({
     <span
       aria-hidden="true"
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-[9px] font-semibold text-gold",
+        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-xs font-semibold text-foreground/80",
         size
       )}
     >
@@ -461,7 +454,17 @@ function useRouteTrail() {
     ? Object.keys(trail.current).some((key) => Number(key) > index)
     : true;
 
+  // Pages visited this session, most recent first, without the current one
+  // (the command palette's Recent group).
+  const recent = Object.keys(trail.current)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map((key) => trail.current[key])
+    .filter((path, i, all): path is string => !!path && path !== location.pathname && all.indexOf(path) === i)
+    .slice(0, 5);
+
   return {
+    recent,
     hasBack,
     hasForward,
     previous: trail.current[index - 1],
@@ -503,11 +506,14 @@ function entityDotClass(row: Record<string, unknown>): string {
 }
 
 // Sign out is a danger action with a confirm step (DESIGN.md §6).
+const SIGN_OUT_TITLE = "Sign out of the IJIDI Portal?";
+const SIGN_OUT_DESCRIPTION = "You will need your Access ID and Passkey to sign in again.";
+
 function SignOutButton({ signingOut, onConfirm }: { signingOut: boolean; onConfirm: () => void }) {
   return (
     <ConfirmDialog
-      title="Sign out of the IJIDI Portal?"
-      description="You will need your Access ID and Passkey to sign in again."
+      title={SIGN_OUT_TITLE}
+      description={SIGN_OUT_DESCRIPTION}
       confirmLabel="Sign out"
       onConfirm={onConfirm}
       trigger={
@@ -586,12 +592,12 @@ function MemberShell({ session }: { session: Session }) {
               <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                 IJIDI <span className="text-gold">PORTAL</span>
               </div>
-              <Eyebrow className="mt-1 text-[8px]">Member Access</Eyebrow>
+              <Eyebrow className="mt-1 text-xs">Member Access</Eyebrow>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <span
-              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-[10px] tracking-wider text-muted-foreground md:flex"
+              className="hidden max-w-[220px] items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 font-mono text-xs tracking-wider text-muted-foreground md:flex"
               title={email}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-verified" />
@@ -604,13 +610,12 @@ function MemberShell({ session }: { session: Session }) {
         <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
           {/* Member Home — identity card */}
           <section className="relative overflow-hidden rounded-lg border border-border bg-panel/90 p-6 backdrop-blur-md sm:p-8">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
-            <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
+            <Eyebrow className="text-muted-foreground">MEMBER HOME</Eyebrow>
             <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
-              Welcome, <span className="text-gold">{displayName}</span>
+              Welcome, <span className="text-foreground">{displayName}</span>
             </h1>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 Access tier
               </span>
               {profileLoading ? (
@@ -631,15 +636,15 @@ function MemberShell({ session }: { session: Session }) {
           <section className="mt-8">
             <Eyebrow className="pb-3">ENTITY STATUS</Eyebrow>
             {entitiesLoading ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 Loading entity status…
               </p>
             ) : entitiesError ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 Entity status unavailable
               </p>
             ) : !entities || entities.length === 0 ? (
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                 No entities reported
               </p>
             ) : (
@@ -665,7 +670,7 @@ function MemberShell({ session }: { session: Session }) {
                       <dl className="mt-3 space-y-1.5">
                         {fields.map(([k, v]) => (
                           <div key={k} className="flex items-baseline justify-between gap-3">
-                            <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               {humanize(k)}
                             </dt>
                             <dd className="break-words text-right text-xs text-foreground">
@@ -682,7 +687,7 @@ function MemberShell({ session }: { session: Session }) {
           </section>
         </main>
 
-        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
+        <footer className="border-t border-border bg-panel/70 px-4 py-3 text-center font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:px-6">
           <LiveClock />
         </footer>
       </div>
@@ -709,7 +714,7 @@ function EntityDock({ hidden }: { hidden: boolean }) {
       {floatingSwitcherItems.map((item) => {
         const active = item.kind === "route" && isNavActive(currentPath, item.to);
         const chipClass = cn(
-          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-all sm:px-3.5",
+          "flex items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 font-mono text-xs uppercase tracking-[0.14em] transition-all sm:px-3.5",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
           active
             ? "border-gold/40 bg-gold/15 text-gold"
@@ -794,7 +799,7 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
       {pending !== undefined && pending > 0 && (
         <span
           style={{ backgroundColor: "#D97B3F", color: "#FFFFFF" }}
-          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-[10px] font-bold ring-2 ring-background"
+          className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 font-mono text-xs font-medium ring-2 ring-background"
         >
           {pending > 99 ? "99+" : pending}
         </span>
@@ -805,6 +810,8 @@ function IgxFloatingButton({ hidden }: { hidden: boolean }) {
 
 function PortalShell({ children, session }: { children: ReactNode; session: Session }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [signOutAsk, setSignOutAsk] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
@@ -966,6 +973,17 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
       if (event.key === "Escape") {
         setRailOpen(false);
       }
+      // "?" opens the shortcuts list, unless the governor is typing in a field.
+      if (event.key === "?" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        const target = event.target as HTMLElement | null;
+        const typing =
+          !!target &&
+          (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+        if (!typing) {
+          event.preventDefault();
+          setShortcutsOpen(true);
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -1050,13 +1068,13 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   <div className="font-display text-sm font-semibold tracking-wide text-foreground">
                     IJIDI <span className="text-gold">PORTAL</span>
                   </div>
-                  <Eyebrow className="mt-1 text-[8px]">Command Center</Eyebrow>
+                  <Eyebrow className="mt-1 text-xs">Command Center</Eyebrow>
                 </Link>
                 <button
                   type="button"
                   onClick={() => setRailOpen(false)}
                   aria-label="Close navigation"
-                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                 >
                   ✕
                 </button>
@@ -1085,7 +1103,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   }}
                   aria-label="Back"
                   title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
@@ -1100,7 +1118,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-label="Forward"
                   title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
                     collapsed && "lg:hidden"
                   )}
                 >
@@ -1114,7 +1132,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-pressed={collapsed}
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-[11px] leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-xs leading-none text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                     !collapsed && "ml-auto"
                   )}
                 >
@@ -1124,7 +1142,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
 
               {/* NAVIGATION label card */}
               <div className={cn("flex items-center justify-center border-b border-border px-4 py-2.5", collapsed && "lg:hidden")}>
-                <span className="font-mono text-sm font-extrabold uppercase tracking-[0.18em] text-blue">
+                <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-blue">
                   Navigation
                 </span>
               </div>
@@ -1151,7 +1169,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         aria-expanded={isOpen}
                         aria-controls={groupId}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-3 text-left font-mono text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                          "flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-3 text-left font-mono text-xs font-medium uppercase tracking-[0.16em] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                           isOpen || hasActive
                             ? "border-gold bg-gold text-primary-foreground shadow-[0_10px_26px_rgba(198,161,91,.3)] hover:bg-gold"
                             : "text-foreground/80 hover:text-foreground",
@@ -1161,9 +1179,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         <span
                           aria-hidden="true"
                           className={cn(
-                            "inline-block text-[9px] transition-transform duration-150",
+                            "inline-block text-xs transition-transform duration-150",
                             isOpen ? "rotate-90" : "",
-                            isOpen || hasActive ? "text-primary-foreground" : "text-gold/70"
+                            isOpen || hasActive ? "text-primary-foreground" : "text-muted-foreground"
                           )}
                         >
                           ▶
@@ -1174,7 +1192,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                         )}
                         <span
                           className={cn(
-                            "text-[9px] font-normal tracking-normal",
+                            "text-xs font-normal tracking-normal",
                             isOpen || hasActive ? "text-primary-foreground/70" : "text-muted-foreground/60"
                           )}
                         >
@@ -1204,10 +1222,10 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                                 setRailOpen(false);
                               }}
                               className={cn(
-                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
+                                "group relative mb-1 flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground transition-all hover:border-border hover:bg-muted hover:text-foreground",
                                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                                 collapsed && "lg:justify-center lg:gap-0 lg:px-0",
-                                active && "border-gold/30 bg-gold/10 font-bold text-gold"
+                                active && "border-gold/30 bg-gold/10 font-semibold text-gold"
                               )}
                             >
                               <span
@@ -1217,16 +1235,11 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                                   active && "opacity-100"
                                 )}
                               />
-                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-current opacity-80">
                                 {item.icon}
                               </span>
                               <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
                                 {item.label}
-                              </span>
-                              <span
-                                className={cn("text-[9px] text-muted-foreground/60", collapsed && "lg:hidden")}
-                              >
-                                {item.key}
                               </span>
                             </Link>
                           );
@@ -1251,11 +1264,11 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                     collapsed && "lg:justify-center lg:gap-0"
                   )}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-gold">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-muted-foreground">
                     ⚙
                   </div>
                   <div className={cn(collapsed && "lg:hidden")}>
-                    <Eyebrow className="text-[8px]">Account</Eyebrow>
+                    <Eyebrow className="text-xs">Account</Eyebrow>
                     <span className="text-xs text-muted-foreground">Settings</span>
                   </div>
                 </Link>
@@ -1264,7 +1277,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           </aside>
           <div className="min-w-0 flex-1">
             <div className={cn(
-                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-[9px] uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
+                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-xs uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
                 SHELL_TEXT,
                 isIgxAi && "hidden"
               )}>
@@ -1287,7 +1300,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
               )}>
               <div className="flex min-w-0 items-center gap-3">
                 <button type="button"
-                  className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-black/25 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground transition-all hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="flex shrink-0 items-center gap-2 rounded-md border border-border bg-black/25 px-3 py-2 font-mono text-xs font-medium uppercase tracking-[0.14em] text-foreground transition-all hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                   onMouseEnter={() => sounds.playHover()}
                   onClick={() => {
                     sounds.playClick();
@@ -1306,7 +1319,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   >
                     {pageLabel}
                   </div>
-                  {activeItem && <Eyebrow className="mt-1 text-[8px]">{activeItem.group}</Eyebrow>}
+                  {activeItem && <Eyebrow className="mt-1 text-xs">{activeItem.group}</Eyebrow>}
                 </div>
               </div>
 
@@ -1319,13 +1332,13 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                 >
                   <BrandBadge label={governorName} size="h-12 w-12" letterFallback={false} />
                   <div className="min-w-0 leading-tight">
-                    <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-gold">
+                    <div className="font-mono text-xs font-medium uppercase tracking-[0.16em] text-gold">
                       Governor
                     </div>
                     <div className="max-w-[170px] truncate text-xs font-medium text-foreground">
                       {governorName}
                     </div>
-                    <div className="max-w-[170px] truncate font-mono text-[9px] tracking-wider text-muted-foreground">
+                    <div className="max-w-[170px] truncate font-mono text-xs tracking-wider text-muted-foreground">
                       {governorHandle ?? signedInEmail}
                     </div>
                   </div>
@@ -1352,7 +1365,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                       onMouseEnter={() => sounds.playHover()}
                       onClick={() => sounds.playClick()}
                       className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+                        "shrink-0 whitespace-nowrap rounded-xl px-2.5 py-2 font-mono text-xs uppercase tracking-[0.04em] transition-colors",
                         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                         active
                           ? "bg-gold font-semibold text-primary-foreground"
@@ -1384,29 +1397,22 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
         hidden={currentPath === "/igx-ai" || currentPath.startsWith("/igx-ai/") || railOpen}
       />
 
-      <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
-        <CommandInput placeholder="Type a command or search modules..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          {navSections.map((section) => (
-            <CommandGroup key={section.label} heading={section.label}>
-              {section.items.map((item) => (
-                <CommandItem
-                  key={item.to}
-                  onSelect={() => {
-                    sounds.playClick();
-                    navigate({ to: item.to });
-                    setPaletteOpen(false);
-                  }}
-                >
-                  <span>{item.label}</span>
-                  <CommandShortcut>{item.key}</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
-        </CommandList>
-      </CommandDialog>
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        recentPaths={trail.recent}
+        pathLabel={pathLabel}
+        onSignOut={() => setSignOutAsk(true)}
+      />
+      <ShortcutsSheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <ConfirmDialog
+        open={signOutAsk}
+        onOpenChange={setSignOutAsk}
+        title={SIGN_OUT_TITLE}
+        description={SIGN_OUT_DESCRIPTION}
+        confirmLabel="Sign out"
+        onConfirm={handleSignOut}
+      />
     </div>
   );
 }

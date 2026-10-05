@@ -66,7 +66,7 @@ export function IgxTabBar({
             aria-selected={on}
             onClick={() => onChange(tab.key)}
             className={cn(
-              "flex-1 whitespace-nowrap rounded-xl px-3 py-2 font-mono text-[10.5px] uppercase tracking-[0.12em] transition-colors",
+              "flex-1 whitespace-nowrap rounded-xl px-3 py-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
               "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
               on
                 ? "bg-gold font-semibold text-primary-foreground"
@@ -84,7 +84,7 @@ export function IgxTabBar({
 function PanelHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
   return (
     <div className="mb-6 text-center">
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.25em] text-muted-foreground">
+      <p className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
         {eyebrow}
       </p>
       <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">{title}</h2>
@@ -472,12 +472,12 @@ function StatCard({
 }) {
   const body = (
     <>
-      <p className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
-        <span className="h-1.5 w-1.5 rounded-full bg-gold/60" />
+      <p className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
         {label}
       </p>
       <div className="mt-2 font-mono text-xl text-foreground">{value}</div>
-      {note && <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{note}</p>}
+      {note && <p className="mt-1 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">{note}</p>}
     </>
   );
   const cls = "rounded-xl border border-border bg-black/20 p-3 text-left";
@@ -555,7 +555,7 @@ export function EcosystemPanel({
         <IgxOrb state={orbState} activeNodes={activeNodes} />
 
         <div className="min-w-[240px] flex-1 basis-64">
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.25em] text-muted-foreground">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
             {preview ? "Animation preview" : "Console state"}
           </p>
           <h2 className="mt-1.5 flex items-center gap-2 font-display text-2xl font-semibold text-foreground">
@@ -565,7 +565,7 @@ export function EcosystemPanel({
           <p className="mt-2 min-h-[44px] text-sm leading-relaxed text-muted-foreground">
             {previewMeta ? previewMeta.desc : live.detail}
           </p>
-          <p className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-gold">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
             {preview ? "Preview only — not a live status" : "Live — read from your proposals"}
           </p>
 
@@ -582,7 +582,7 @@ export function EcosystemPanel({
             ))}
           </div>
 
-          <p className="mt-5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="mt-5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
             Preview the animation
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -591,7 +591,7 @@ export function EcosystemPanel({
               onClick={() => pickState(null)}
               aria-pressed={preview === null}
               className={cn(
-                "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                "rounded-full border px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                 preview === null
                   ? "border-gold bg-gold font-medium text-primary-foreground"
                   : "border-border text-muted-foreground hover:text-foreground"
@@ -606,7 +606,7 @@ export function EcosystemPanel({
                 onClick={() => pickState(s.key)}
                 aria-pressed={preview === s.key}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-[11.5px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                  "rounded-full border px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                   preview === s.key
                     ? "border-[#8FB4FF] bg-[#8FB4FF] font-medium text-[#0a0c18]"
                     : "border-border text-muted-foreground hover:text-foreground"
@@ -626,7 +626,7 @@ export function EcosystemPanel({
                 setAuto(true);
               }
             }}
-            className="mt-3 rounded-lg border border-border bg-black/20 px-3.5 py-2 font-mono text-[11px] tracking-wide text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+            className="mt-3 rounded-lg border border-border bg-black/20 px-3.5 py-2 font-mono text-xs tracking-wide text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
           >
             {auto ? "‖ Pause auto-cycle" : "▶ Auto-cycle the preview"}
           </button>
@@ -641,7 +641,7 @@ export function EcosystemPanel({
         <StatCard label="Model calls" value="Not tracked" note="No model is wired yet" />
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-[11.5px] text-muted-foreground">
+      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
         {LEGEND.map((item) => (
           <span key={item.label} className="flex items-center gap-1.5">
             <LegendSwatch type={item.type} color={item.color} />
@@ -649,7 +649,7 @@ export function EcosystemPanel({
           </span>
         ))}
       </div>
-      <p className="mt-3 text-[11px] text-muted-foreground">
+      <p className="mt-3 text-xs text-muted-foreground">
         The map shows the intended design of the ecosystem. Nothing on it is a live connection.
       </p>
     </GlassCard>
@@ -698,13 +698,13 @@ export function ArchitecturePanel() {
                 className="flex w-full items-center gap-3 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-semibold text-[#0a0c18]"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-xs font-medium text-[#0a0c18]"
                   style={{ background: layer.color }}
                 >
                   {i + 1}
                 </span>
                 <span className="flex-1 text-[14.5px] font-semibold text-foreground">{layer.title}</span>
-                <span className="hidden font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground sm:inline">
+                <span className="hidden font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground sm:inline">
                   {layer.tag}
                 </span>
                 <ChevronRight
@@ -759,7 +759,7 @@ export function DecisionsPanel() {
       />
       {isLoading ? (
         <div className="flex items-center justify-center gap-3 py-6">
-          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           <span className="font-mono text-xs text-muted-foreground">Loading decisions...</span>
         </div>
       ) : isError ? (
@@ -775,14 +775,14 @@ export function DecisionsPanel() {
           {data.map((row) => (
             <div key={String(row.id)} className="rounded-xl border border-border bg-black/20 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-mono text-[10.5px] tracking-[0.1em] text-[#8FB4FF]">
+                <span className="font-mono text-xs tracking-[0.1em] text-[#8FB4FF]">
                   REF {String(row.id).slice(0, 8).toUpperCase()}
                 </span>
-                <span className="font-mono text-[10.5px] text-muted-foreground">{row.date ?? "—"}</span>
+                <span className="font-mono text-xs text-muted-foreground">{row.date ?? "—"}</span>
               </div>
               <div className="mt-1.5 text-sm font-semibold text-foreground">{row.label ?? "Untitled decision"}</div>
               {row.detail && (
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">{row.detail}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{row.detail}</p>
               )}
               {row.state && (
                 <span className="mt-2.5 inline-block">
@@ -826,13 +826,13 @@ export function AgentsPanel() {
         desc="The ten agents recorded in the IGX AI knowledge base, with what unlocks each deferred one. No agent is connected to a model yet, and no run, success or cost data is collected, so those columns say so."
       />
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] border-collapse text-[12.5px]">
+        <table className="w-full min-w-[520px] border-collapse text-xs">
           <thead>
             <tr>
               {["Agent", "Role / unlock condition", "Status", "Runs"].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-border-strong px-2.5 pb-2.5 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
+                  className="border-b border-border-strong px-2.5 pb-2.5 text-left font-mono text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground"
                 >
                   {h}
                 </th>
@@ -852,7 +852,7 @@ export function AgentsPanel() {
                 <td className="px-2.5 py-3">
                   <span
                     className={cn(
-                      "whitespace-nowrap rounded-full border px-2.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.1em]",
+                      "whitespace-nowrap rounded-full border px-2.5 py-0.5 font-mono text-xs uppercase tracking-[0.1em]",
                       agent.status === "Not connected"
                         ? "border-destructive/40 text-destructive"
                         : "border-white/15 text-muted-foreground"
@@ -861,7 +861,7 @@ export function AgentsPanel() {
                     {agent.status}
                   </span>
                 </td>
-                <td className="px-2.5 py-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+                <td className="px-2.5 py-3 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
                   Not tracked
                 </td>
               </tr>
@@ -906,14 +906,14 @@ export function ModelsPanel() {
               <span className="text-[13.5px] font-semibold text-foreground">{model.name}</span>
               <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
             </div>
-            <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-destructive">
+            <div className="mt-2 font-mono text-xs uppercase tracking-[0.1em] text-destructive">
               Not connected
             </div>
-            <div className="mt-3 font-mono text-[11px] text-muted-foreground">{model.role}</div>
+            <div className="mt-3 font-mono text-xs text-muted-foreground">{model.role}</div>
           </div>
         ))}
       </div>
-      <p className="mt-4 text-center text-[11px] text-muted-foreground">
+      <p className="mt-4 text-center text-xs text-muted-foreground">
         The pipeline is expandable: more models can be added as they are needed.
       </p>
     </GlassCard>
@@ -927,7 +927,7 @@ function BrandThumb({ src, label }: { src: string | null; label: string }) {
   const [failed, setFailed] = useState(false);
   if (!src) {
     return (
-      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-muted-foreground">
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong text-center font-mono text-xs uppercase leading-tight tracking-wider text-muted-foreground">
         No art
       </span>
     );
@@ -936,7 +936,7 @@ function BrandThumb({ src, label }: { src: string | null; label: string }) {
     return (
       <span
         title="The file is not in public/brand yet"
-        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-destructive/50 text-center font-mono text-[8px] uppercase leading-tight tracking-wider text-destructive"
+        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-destructive/50 text-center font-mono text-xs uppercase leading-tight tracking-wider text-destructive"
       >
         Upload me
       </span>
@@ -980,7 +980,7 @@ function BrandPictureControls({ assetId, label }: { assetId: string; label: stri
   };
 
   const pill =
-    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3 py-1 font-mono text-xs uppercase tracking-[0.1em] text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50";
 
   return (
     <div className="mt-3">
@@ -1007,8 +1007,8 @@ function BrandPictureControls({ assetId, label }: { assetId: string; label: stri
         <p
           role="status"
           className={cn(
-            "mt-1.5 font-mono text-[10px]",
-            message.tone === "ok" ? "text-gold" : "text-destructive"
+            "mt-1.5 font-mono text-xs",
+            message.tone === "ok" ? "text-blue-light" : "text-destructive"
           )}
         >
           {message.text}
@@ -1046,11 +1046,11 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
                 <div className="min-w-0">
                   <div className="truncate text-[13.5px] font-semibold text-foreground">{asset.label}</div>
                   {asset.tagline && (
-                    <div className="mt-0.5 text-[11px] italic text-muted-foreground">{asset.tagline}</div>
+                    <div className="mt-0.5 text-xs italic text-muted-foreground">{asset.tagline}</div>
                   )}
                   <span
                     className={cn(
-                      "mt-2 inline-block rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em]",
+                      "mt-2 inline-block rounded-full border px-2.5 py-0.5 font-mono text-xs uppercase tracking-[0.1em]",
                       status === "On a page"
                         ? "border-[#5E9BFF]/50 bg-[#5E9BFF]/10 text-[#8FB4FF]"
                         : "border-border bg-white/[0.04] text-not-connected"
@@ -1062,15 +1062,15 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
               </div>
               <BrandPictureControls assetId={asset.id} label={asset.label} />
               {used.length > 0 && (
-                <p className="mt-3 font-mono text-[10px] leading-relaxed text-muted-foreground">
+                <p className="mt-3 font-mono text-xs leading-relaxed text-muted-foreground">
                   Shown in: {used.join(" · ")}
                 </p>
               )}
               {asset.leads.length > 0 && (
-                <ul className="mt-2 space-y-1 text-[11.5px] text-muted-foreground">
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                   {asset.leads.map((lead) => (
                     <li key={lead} className="flex gap-2">
-                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
                       <span>{lead}</span>
                     </li>
                   ))}

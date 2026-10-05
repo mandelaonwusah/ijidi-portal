@@ -202,6 +202,14 @@
 html {
   background: var(--background);
   color: var(--foreground);
+  /* Only Inter 400–600 and Plex Mono 400–500 are loaded (DESIGN.md §3). A heavier
+     weight renders at the nearest loaded one instead of a faked bold. */
+  font-synthesis-weight: none;
+}
+
+/* The sign-in card is kept exactly as it was, including the browser's bold. */
+.ijidi-login {
+  font-synthesis-weight: auto;
 }
 
 /* Always-visible keyboard focus ring (DESIGN.md §6). In the base layer so a
@@ -350,8 +358,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.8125rem; /* 13 px minimum (DESIGN.md §3) */
+  font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted-foreground);
@@ -385,7 +393,7 @@ a {
 
 .table-demarcated th {
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 0.8125rem; /* 13 px minimum (DESIGN.md §3) */
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted-foreground);
@@ -490,7 +498,7 @@ a {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.04em;
   font-family: var(--font-mono);
   background: var(--primary);
@@ -533,8 +541,8 @@ a {
   border: 1px solid var(--border-strong);
   background: var(--card);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.8125rem; /* 13 px minimum (DESIGN.md §3) */
+  font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--muted-foreground);
   white-space: nowrap;
