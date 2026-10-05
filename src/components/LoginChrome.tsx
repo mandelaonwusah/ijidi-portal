@@ -3,9 +3,8 @@
 //
 // Rules: live links only for the three public sites; Atelier and Media read
 // "Coming soon" with no link; IGX AI reads "Governor access" with no link. No
-// status badges, no Sign up, no apps list, no OAuth. Descriptions come only from
-// approved brand wording (the taglines in brand-assets.ts); a tile without one
-// shows its name alone.
+// status badges and no apps list. Descriptions come only from approved wording:
+// the taglines in brand-assets.ts, or the lines the Governor supplied below.
 import { ChevronDown, ExternalLink, Menu } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
 import {
@@ -19,12 +18,19 @@ import {
 import { brandById, brandSrc } from "@/lib/brand-assets";
 import { cn } from "@/lib/utils";
 
-// ---------------------------------------------------------------------------
-// Not decided yet (DESIGN.md: "to be confirmed before Group 5 is built").
-// Each item stays hidden until its value is filled in: no placeholder links.
-// ---------------------------------------------------------------------------
-const HOME_URL: string | null = null;
-const WHAT_WE_DO_URL: string | null = null;
+// Top bar: Home goes to the Group site; "What we do" scrolls to the Ecosystem
+// tiles on this page.
+const HOME_URL = "https://www.ijidigroup.com";
+
+/** Scroll to whichever Ecosystem block is visible at this width. */
+function scrollToEcosystem() {
+  const target = [...document.querySelectorAll<HTMLElement>("[data-ecosystem]")].find(
+    (el) => el.offsetParent !== null,
+  );
+  if (!target) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+}
 
 // There is no public sign-up: "Sign up" opens an email to this address to ask
 // for an account, and the Governor creates accounts.
@@ -39,15 +45,29 @@ type EcosystemEntry = {
   href: string | null;
   /** Shown instead of a link. */
   note: "Coming soon" | "Governor access" | null;
+  /** One-line description supplied by the Governor; else the brand tagline. */
+  description?: string;
 };
 
 const ECOSYSTEM: EcosystemEntry[] = [
-  { brandId: "group", name: "IJIDI Group", href: "https://ijidigroup.com", note: null },
+  { brandId: "group", name: "IJIDI Group", href: "https://www.ijidigroup.com", note: null },
   { brandId: "foundation", name: "IJIDI Foundation", href: "https://ijidi.org", note: null },
   { brandId: "atelier", name: "IJIDI Atelier", href: null, note: "Coming soon" },
-  { brandId: "media", name: "IJIDI Media", href: null, note: "Coming soon" },
-  { brandId: "igx", name: "IGX AI", href: null, note: "Governor access" },
-  { brandId: "mandela", name: "Mandela Onwusah", href: "https://mandelaonwusah.com", note: null },
+  { brandId: "media", name: "IJIDI Media", href: null, note: "Coming soon", description: "Original by Design." },
+  {
+    brandId: "igx",
+    name: "IGX AI",
+    href: null,
+    note: "Governor access",
+    description: "The executive intelligence layer of the IJIDI ecosystem.",
+  },
+  {
+    brandId: "mandela",
+    name: "Mandela Onwusah",
+    href: "https://mandelaonwusah.com",
+    note: null,
+    description: "Founder and governor of the IJIDI ecosystem.",
+  },
 ];
 
 // The top-bar dropdown lists the entities and Mandela; IGX AI is a tile only.
@@ -98,16 +118,12 @@ export function LoginTopBar({ onSignIn }: { onSignIn: () => void }) {
     >
       {/* Desktop: the full bar */}
       <div className="hidden items-center gap-1 lg:flex">
-        {HOME_URL && (
-          <a href={HOME_URL} className={NAV_LINK}>
-            Home
-          </a>
-        )}
-        {WHAT_WE_DO_URL && (
-          <a href={WHAT_WE_DO_URL} className={NAV_LINK}>
-            What we do
-          </a>
-        )}
+        <a href={HOME_URL} className={NAV_LINK}>
+          Home
+        </a>
+        <button type="button" onClick={scrollToEcosystem} className={NAV_LINK}>
+          What we do
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(NAV_LINK, "gap-1.5")}>
             Ecosystem <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
@@ -138,16 +154,10 @@ export function LoginTopBar({ onSignIn }: { onSignIn: () => void }) {
             <Menu aria-hidden="true" className="h-5 w-5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={MENU_SURFACE}>
-            {HOME_URL && (
-              <DropdownMenuItem asChild>
-                <a href={HOME_URL}>Home</a>
-              </DropdownMenuItem>
-            )}
-            {WHAT_WE_DO_URL && (
-              <DropdownMenuItem asChild>
-                <a href={WHAT_WE_DO_URL}>What we do</a>
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem asChild>
+              <a href={HOME_URL}>Home</a>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={scrollToEcosystem}>What we do</DropdownMenuItem>
             <DropdownMenuItem onSelect={onSignIn}>Sign in</DropdownMenuItem>
             <DropdownMenuItem asChild>
               <a href={SIGN_UP_HREF}>Sign up (by email)</a>
@@ -166,7 +176,7 @@ export function LoginTopBar({ onSignIn }: { onSignIn: () => void }) {
 
 function TileBody({ entry }: { entry: EcosystemEntry }) {
   const src = brandSrc(entry.brandId);
-  const tagline = taglineOf(entry.brandId);
+  const tagline = entry.description ?? taglineOf(entry.brandId);
   const muted = entry.note === "Coming soon";
   return (
     <div className={cn("flex items-start gap-3", muted && "opacity-60")}>
@@ -224,7 +234,11 @@ export function EcosystemColumn({ side, className }: { side: "left" | "right"; c
   const ids = side === "left" ? LEFT : RIGHT;
   const entries = ids.map((id) => ECOSYSTEM.find((e) => e.brandId === id)).filter((e): e is EcosystemEntry => !!e);
   return (
-    <ul aria-label={side === "left" ? "The IJIDI Ecosystem" : undefined} className={cn("flex w-full flex-col gap-3", className)}>
+    <ul
+      aria-label={side === "left" ? "The IJIDI Ecosystem" : undefined}
+      data-ecosystem={side === "left" ? "" : undefined}
+      className={cn("flex w-full flex-col gap-3", className)}
+    >
       {entries.map((entry, i) => (
         <li key={entry.brandId}>
           <Tile entry={entry} index={i + (side === "right" ? 3 : 0)} />
@@ -236,7 +250,7 @@ export function EcosystemColumn({ side, className }: { side: "left" | "right"; c
 
 export function EcosystemGrid({ className }: { className?: string }) {
   return (
-    <section aria-labelledby="ijidi-ecosystem-heading" className={cn("w-full max-w-[520px]", className)}>
+    <section aria-labelledby="ijidi-ecosystem-heading" data-ecosystem="" className={cn("w-full max-w-[520px]", className)}>
       <h2
         id="ijidi-ecosystem-heading"
         className="mb-4 font-mono text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground"

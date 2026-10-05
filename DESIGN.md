@@ -178,7 +178,7 @@ fake it. The extra weights are dropped once the Cards and States groups stop usi
 | Ticker | 32 | Always on top |
 | Status bar (data link, session, clock) | 32 | Hidden on IGX AI |
 | Header (page title, governor card, sign out) | 76 | Glass + top highlight (section 5). Hidden on IGX AI |
-| Page tabs | 48 | Under the header; directly under the ticker on IGX AI |
+| Page tabs | 48 | Under the header; directly under the ticker on IGX AI. Inter 13 px in normal case (not mono uppercase), so all 11 fit from 1280 px wide |
 | Sidebar | 244 / 76 collapsed | Desktop; drawer on mobile |
 | Footer | 32 | Build tag (section 6) |
 
@@ -347,29 +347,27 @@ Governor creates accounts. "Contact the Governor" uses the same address.
 | Order | Item | Behaviour |
 |---|---|---|
 | 1 | **"IJIDI" wordmark image** + **"PORTAL"** in Inter text | Until the image is uploaded, the current emblem and "IJIDI PORTAL" text stay as they are (see "Logos and wordmarks"). |
-| 2 | **Home** | Link target to be confirmed before Group 5 is built. |
-| 3 | **What we do** | Link target to be confirmed before Group 5 is built. |
+| 2 | **Home** | `https://www.ijidigroup.com` |
+| 3 | **What we do** | Scrolls to the IJIDI Ecosystem tiles on the same page. |
 | 4 | **Ecosystem** dropdown | Group, Foundation, Atelier, Media, Mandela: same links and "Coming soon" rules as the tiles below. |
 | 5 | **Sign in** | Scrolls to the card and focuses the Access ID field. |
 | 6 | **Sign up** | Opens an email to ijidigroup@gmail.com (no public sign-up). |
 
 Below 1024 px the top bar collapses to a single menu button; the same items open from it.
 
-**Hidden until confirmed:** Home and What we do are built but stay hidden until
-`HOME_URL` and `WHAT_WE_DO_URL` are set at the top of `LoginChrome.tsx`.
-Each appears as soon as its value is filled in; there are no placeholder links.
+Request access is not shown; "Sign up" (email) covers it.
 
 **"The IJIDI Ecosystem" grid**: six tiles to the right of the card; on mobile they stack
 below the card.
 
 | Tile | Link | One-line description (approved source) |
 |---|---|---|
-| IJIDI Group | `https://ijidigroup.com` | "Converging Capital \| Building legacy" (`brand-assets.ts`) |
+| IJIDI Group | `https://www.ijidigroup.com` | "Converging Capital \| Building legacy" (`brand-assets.ts`) |
 | IJIDI Foundation | `https://ijidi.org` | "Empowering Communities \| Restoring Hope" (`brand-assets.ts`) |
 | IJIDI Atelier | **No link.** Grey, labelled "Coming soon" | "Designed for Distinction." (`brand-assets.ts`) |
-| IJIDI Media | **No link.** Grey, labelled "Coming soon" | **To be supplied from the KB / brand guide** |
-| IGX AI | **No link.** Labelled "Governor access" | **To be supplied from the KB / brand guide** |
-| Mandela Onwusah | `https://mandelaonwusah.com` | **To be supplied from the KB / brand guide** |
+| IJIDI Media | **No link.** Grey, labelled "Coming soon" | "Original by Design." (Governor) |
+| IGX AI | **No link.** Labelled "Governor access" | "The executive intelligence layer of the IJIDI ecosystem." (Governor) |
+| Mandela Onwusah | `https://mandelaonwusah.com` | "Founder and governor of the IJIDI ecosystem." (Governor) |
 
 Rules:
 - **Live links only** for ijidigroup.com, ijidi.org and mandelaonwusah.com. Every other item is
