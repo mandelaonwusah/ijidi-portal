@@ -232,9 +232,9 @@ function Branch(props: BranchProps) {
           {props.link && (
             <Link
               to={props.link.to}
-              className="font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
+              className="group font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
             >
-              {props.link.label} →
+              {props.link.label} <span aria-hidden="true" className="inline-block transition-transform duration-150 motion-safe:group-hover:translate-x-[3px]">→</span>
             </Link>
           )}
         </div>
@@ -462,9 +462,9 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
             <StatusBadge state="pending" label={declaredLabel("ready")} />
             <Link
               to={igxModule.to}
-              className="font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
+              className="group font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
             >
-              Open IGX AI →
+              Open IGX AI <span aria-hidden="true" className="inline-block transition-transform duration-150 motion-safe:group-hover:translate-x-[3px]">→</span>
             </Link>
           </div>
         </div>
@@ -510,9 +510,9 @@ function DirectoryTab() {
             {to && (
               <Link
                 to={to}
-                className="mt-4 inline-block font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
+                className="group mt-4 inline-block font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
               >
-                Open page →
+                Open page <span aria-hidden="true" className="inline-block transition-transform duration-150 motion-safe:group-hover:translate-x-[3px]">→</span>
               </Link>
             )}
           </GlassCard>

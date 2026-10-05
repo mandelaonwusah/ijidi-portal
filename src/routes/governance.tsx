@@ -195,10 +195,10 @@ function Governance() {
               </div>
               <Link
                 to="/proposals"
-                className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="group flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 Open review
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3 w-3 transition-transform duration-150 motion-safe:group-hover:translate-x-[3px]" />
               </Link>
             </div>
 

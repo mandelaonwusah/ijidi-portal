@@ -1365,7 +1365,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                       onMouseEnter={() => sounds.playHover()}
                       onClick={() => sounds.playClick()}
                       className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-2.5 py-2 font-mono text-xs uppercase tracking-[0.04em] transition-colors",
+                        "press shrink-0 whitespace-nowrap rounded-xl px-2.5 py-2 font-mono text-xs uppercase tracking-[0.04em] transition-colors",
                         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                         active
                           ? "bg-gold font-semibold text-primary-foreground"
