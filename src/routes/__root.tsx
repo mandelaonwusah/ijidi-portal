@@ -54,12 +54,12 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background p-6 text-center">
       <div>
         <Eyebrow>ROUTE NOT FOUND</Eyebrow>
-        <h1 className="mt-3 font-display text-5xl text-gold">404</h1>
+        <h1 className="mt-3 font-display text-5xl text-foreground">404</h1>
         <p className="mt-3 text-sm text-muted-foreground">This command path does not exist.</p>
         <Link to="/"
           onMouseEnter={() => sounds.playHover()}
           onClick={() => sounds.playClick()}
-          className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-gold"
+          className="mt-6 inline-block font-mono text-xs uppercase tracking-widest text-teal transition-colors hover:text-foreground"
         >
           Return to command center
         </Link>
@@ -409,7 +409,7 @@ function BrandBadge({
     <span
       aria-hidden="true"
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-xs font-semibold text-gold",
+        "flex shrink-0 items-center justify-center rounded-full border border-border-strong text-xs font-semibold text-foreground/80",
         size
       )}
     >
@@ -610,10 +610,9 @@ function MemberShell({ session }: { session: Session }) {
         <main className="mx-auto w-full max-w-3xl flex-1 p-4 sm:p-6 lg:p-8">
           {/* Member Home — identity card */}
           <section className="relative overflow-hidden rounded-lg border border-border bg-panel/90 p-6 backdrop-blur-md sm:p-8">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
-            <Eyebrow className="text-gold">MEMBER HOME</Eyebrow>
+            <Eyebrow className="text-muted-foreground">MEMBER HOME</Eyebrow>
             <h1 className="mt-3 break-words font-display text-3xl text-foreground sm:text-4xl">
-              Welcome, <span className="text-gold">{displayName}</span>
+              Welcome, <span className="text-foreground">{displayName}</span>
             </h1>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
@@ -1075,7 +1074,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   type="button"
                   onClick={() => setRailOpen(false)}
                   aria-label="Close navigation"
-                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
+                  className="ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border text-sm text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 lg:hidden"
                 >
                   ✕
                 </button>
@@ -1104,7 +1103,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   }}
                   aria-label="Back"
                   title={trail.previous ? `Back to: ${pathLabel(trail.previous)}` : "Back"}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
@@ -1119,7 +1118,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-label="Forward"
                   title={trail.next ? `Forward to: ${pathLabel(trail.next)}` : "Forward"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25",
                     collapsed && "lg:hidden"
                   )}
                 >
@@ -1133,7 +1132,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                   aria-pressed={collapsed}
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-xs leading-none text-gold transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
+                    "flex h-7 w-7 items-center justify-center rounded-full border border-border bg-black/60 text-xs leading-none text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                     !collapsed && "ml-auto"
                   )}
                 >
@@ -1182,7 +1181,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                           className={cn(
                             "inline-block text-xs transition-transform duration-150",
                             isOpen ? "rotate-90" : "",
-                            isOpen || hasActive ? "text-primary-foreground" : "text-gold/70"
+                            isOpen || hasActive ? "text-primary-foreground" : "text-muted-foreground"
                           )}
                         >
                           ▶
@@ -1236,7 +1235,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                                   active && "opacity-100"
                                 )}
                               />
-                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-gold/80">
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs text-current opacity-80">
                                 {item.icon}
                               </span>
                               <span className={cn("flex-1 truncate", collapsed && "lg:hidden")}>
@@ -1265,7 +1264,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                     collapsed && "lg:justify-center lg:gap-0"
                   )}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-gold">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border text-sm text-muted-foreground">
                     ⚙
                   </div>
                   <div className={cn(collapsed && "lg:hidden")}>
@@ -1366,7 +1365,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
                       onMouseEnter={() => sounds.playHover()}
                       onClick={() => sounds.playClick()}
                       className={cn(
-                        "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
+                        "shrink-0 whitespace-nowrap rounded-xl px-2.5 py-2 font-mono text-xs uppercase tracking-[0.04em] transition-colors",
                         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60",
                         active
                           ? "bg-gold font-semibold text-primary-foreground"

@@ -280,7 +280,7 @@ export function Signal({ children }: { children: ReactNode }) {
 
 export function ActionLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-xs font-medium uppercase tracking-[0.14em] text-gold transition-colors group-hover:text-teal">
+    <span className="inline-flex items-center gap-1 font-mono text-xs font-medium uppercase tracking-[0.14em] text-blue-light transition-colors group-hover:text-foreground">
       {children}
       <ArrowUpRight className="h-3 w-3" />
     </span>

@@ -125,9 +125,9 @@ function Governance() {
           <div className="flex items-center gap-3">
             <button
               onClick={sync}
-              className="flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
-              <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin text-gold" : ""}`} />
+              <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin text-attention" : ""}`} />
               Sync
             </button>
             <StatusBadge state="verified" label="SINGLE GOVERNOR" />
@@ -139,7 +139,7 @@ function Governance() {
         {/* Governor record */}
         <GlassCard>
           <div className="flex items-center gap-3">
-            <Scale className="h-5 w-5 text-gold" />
+            <Scale className="h-5 w-5 text-muted-foreground" />
             <div>
               <Eyebrow>Governor record</Eyebrow>
               <h2 className="mt-1 font-display text-lg font-semibold">Mandela Onwusah</h2>
@@ -187,15 +187,15 @@ function Governance() {
           <GlassCard>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <ListChecks className="h-5 w-5 text-gold" />
+                <ListChecks className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <Eyebrow className="text-gold">IGX AI proposals</Eyebrow>
+                  <Eyebrow className="text-muted-foreground">IGX AI proposals</Eyebrow>
                   <h2 className="mt-1 font-display text-lg font-semibold">Proposal queue</h2>
                 </div>
               </div>
               <Link
                 to="/proposals"
-                className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
                 Open review
                 <ArrowRight className="h-3 w-3" />
@@ -215,7 +215,7 @@ function Governance() {
               <>
                 <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   <span>
-                    <span className="text-gold">{counts.pending}</span> pending
+                    <span className="text-attention">{counts.pending}</span> pending
                   </span>
                   <span>
                     <span className="text-teal">{counts.approved}</span> approved
@@ -288,7 +288,7 @@ function Governance() {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <FileCheck2 className="h-3.5 w-3.5 text-gold" />
+                          <FileCheck2 className="h-3.5 w-3.5 text-muted-foreground" />
                           <Eyebrow>{decision.date}</Eyebrow>
                         </div>
                         <StatusBadge

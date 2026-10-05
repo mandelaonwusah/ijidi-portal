@@ -473,7 +473,7 @@ function StatCard({
   const body = (
     <>
       <p className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-        <span className="h-1.5 w-1.5 rounded-full bg-gold/60" />
+        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
         {label}
       </p>
       <div className="mt-2 font-mono text-xl text-foreground">{value}</div>
@@ -565,7 +565,7 @@ export function EcosystemPanel({
           <p className="mt-2 min-h-[44px] text-sm leading-relaxed text-muted-foreground">
             {previewMeta ? previewMeta.desc : live.detail}
           </p>
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-gold">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
             {preview ? "Preview only — not a live status" : "Live — read from your proposals"}
           </p>
 
@@ -759,7 +759,7 @@ export function DecisionsPanel() {
       />
       {isLoading ? (
         <div className="flex items-center justify-center gap-3 py-6">
-          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           <span className="font-mono text-xs text-muted-foreground">Loading decisions...</span>
         </div>
       ) : isError ? (
@@ -1008,7 +1008,7 @@ function BrandPictureControls({ assetId, label }: { assetId: string; label: stri
           role="status"
           className={cn(
             "mt-1.5 font-mono text-xs",
-            message.tone === "ok" ? "text-gold" : "text-destructive"
+            message.tone === "ok" ? "text-blue-light" : "text-destructive"
           )}
         >
           {message.text}
@@ -1070,7 +1070,7 @@ export function BrandLibraryPanel({ usage }: { usage: Record<string, string[]> }
                 <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                   {asset.leads.map((lead) => (
                     <li key={lead} className="flex gap-2">
-                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-muted-foreground/60" />
                       <span>{lead}</span>
                     </li>
                   ))}

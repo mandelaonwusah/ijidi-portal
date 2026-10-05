@@ -245,7 +245,7 @@ function CommandCenterOverview() {
           (which carries the Governor identity block up in the shared shell). */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-black/20 px-5 py-3 backdrop-blur-[3px]">
         <div className="font-mono text-sm">
-          <span className="font-semibold text-gold">{greeting}</span>
+          <span className="font-semibold text-foreground">{greeting}</span>
           {sessionEmail && <span className="text-muted-foreground">, {sessionEmail}</span>}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
@@ -292,11 +292,11 @@ function CommandCenterOverview() {
 
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 shadow-lg shadow-primary/10 ring-1 ring-primary/20">
-              <Crown className="h-7 w-7 text-primary" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ring-1 ring-border">
+              <Crown className="h-7 w-7 text-muted-foreground" />
             </div>
             <div>
-              <Eyebrow className="text-primary">COMMAND MODULE / 01</Eyebrow>
+              <Eyebrow className="text-muted-foreground">COMMAND MODULE / 01</Eyebrow>
               <h1 className="mt-2 font-sans text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
                 Ecosystem Command
               </h1>
@@ -367,8 +367,8 @@ function CommandCenterOverview() {
               <div className="relative">
                 <div className="flex items-center justify-between">
                   <Eyebrow className="text-xs text-muted-foreground">{item.label}</Eyebrow>
-                  <div className="rounded-lg bg-primary/10 p-1.5 ring-1 ring-primary/10">
-                    <Icon className="h-3.5 w-3.5 text-primary" />
+                  <div className="rounded-lg bg-white/[0.04] p-1.5 ring-1 ring-border">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
                 </div>
                 <div
@@ -406,13 +406,13 @@ function CommandCenterOverview() {
           <GlassCard index={5} className="h-full">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
-                <Eyebrow className="text-primary">AUDIT TRAIL</Eyebrow>
+                <Eyebrow className="text-muted-foreground">AUDIT TRAIL</Eyebrow>
                 <div className="mt-1 flex items-center gap-3">
                   <span className="font-sans text-base font-semibold text-foreground">
                     Activity log
                   </span>
                   {hasRealData && (
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-xs text-primary">
+                    <span className="rounded-full bg-white/[0.04] px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
                       {totalActivities} LOADED
                     </span>
                   )}
@@ -427,7 +427,7 @@ function CommandCenterOverview() {
             <div className="custom-scrollbar mt-4 max-h-[440px] space-y-2 overflow-y-auto pr-1">
               {activityLoading ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-12">
-                  <Loader2 className="h-8 w-8 text-primary/40 motion-safe:animate-spin" />
+                  <Loader2 className="h-8 w-8 text-muted-foreground motion-safe:animate-spin" />
                   <p className="font-mono text-sm text-muted-foreground">Loading audit entries…</p>
                 </div>
               ) : activityError ? (
@@ -448,8 +448,8 @@ function CommandCenterOverview() {
                     className="group flex items-center justify-between gap-4 rounded-lg border border-l-2 border-border/60 border-l-border-strong bg-background/40 p-3 transition-colors hover:border-border-strong hover:bg-background/60"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Activity className="h-3.5 w-3.5 text-primary" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
                       </div>
                       <div className="min-w-0">
                         <div className="truncate font-mono text-xs font-medium text-foreground">
@@ -496,11 +496,11 @@ function CommandCenterOverview() {
         <section>
           <GlassCard index={6} className="h-full">
             <div className="flex items-center gap-3 border-b pb-4">
-              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
-                <Layers className="h-4 w-4 text-primary" />
+              <div className="rounded-lg bg-white/[0.04] p-2 ring-1 ring-border">
+                <Layers className="h-4 w-4 text-muted-foreground" />
               </div>
               <div>
-                <Eyebrow className="text-primary">NAVIGATION</Eyebrow>
+                <Eyebrow className="text-muted-foreground">NAVIGATION</Eyebrow>
                 <div className="mt-0.5 font-sans text-sm font-semibold text-foreground">
                   Primary modules
                 </div>
@@ -514,15 +514,15 @@ function CommandCenterOverview() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20">
-                      <Shield className="h-4 w-4 text-primary" />
+                    <div className="rounded-lg bg-white/[0.04] p-2 group-hover:bg-white/[0.08]">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-foreground">
                           [07] GOVERNANCE
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary">
+                        <span className="rounded-full bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-muted-foreground">
                           VAULT
                         </span>
                       </div>
@@ -531,7 +531,7 @@ function CommandCenterOverview() {
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
                 </div>
               </Link>
 
@@ -541,15 +541,15 @@ function CommandCenterOverview() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20">
-                      <Globe className="h-4 w-4 text-primary" />
+                    <div className="rounded-lg bg-white/[0.04] p-2 group-hover:bg-white/[0.08]">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-primary">
+                        <span className="font-mono text-xs font-medium text-foreground group-hover:text-foreground">
                           [02] ECOSYSTEM
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary">
+                        <span className="rounded-full bg-white/[0.04] px-2 py-0.5 font-mono text-xs text-muted-foreground">
                           MAP
                         </span>
                       </div>
@@ -558,7 +558,7 @@ function CommandCenterOverview() {
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
                 </div>
               </Link>
 
@@ -650,7 +650,7 @@ function CommandCenterOverview() {
                             to={route}
                             className={cn(
                               rowClass,
-                              "transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
+                              "transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
                             )}
                           >
                             {rowInner}
@@ -701,8 +701,8 @@ function CommandCenterOverview() {
               index={idx + 7}
               className="flex items-center gap-3 p-3"
             >
-              <div className="rounded-lg bg-primary/10 p-2 ring-1 ring-primary/10">
-                <Icon className="h-3.5 w-3.5 text-primary" />
+              <div className="rounded-lg bg-white/[0.04] p-2 ring-1 ring-border">
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div className="min-w-0">
                 <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground/60">

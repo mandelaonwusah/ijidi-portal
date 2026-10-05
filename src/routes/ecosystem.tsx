@@ -96,7 +96,7 @@ function Portrait({ src, name, px }: { src?: string | null | undefined; name: st
       className="inline-flex shrink-0 rounded-full bg-gradient-to-br from-[#E3C27A] via-[#C6A15B] to-[#5E9BFF] p-[2px] shadow-[0_0_26px_rgba(198,161,91,0.22)]"
       style={{ width: px + 4, height: px + 4 }}
     >
-      <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#0a0d14] font-display font-semibold text-gold" style={{ fontSize: px / 2.4 }}>
+      <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#0a0d14] font-display font-semibold text-foreground/80" style={{ fontSize: px / 2.4 }}>
         {src && !failed ? (
           <img src={src} alt={name} loading="lazy" onError={() => setFailed(true)} className="h-full w-full object-cover" />
         ) : (
@@ -115,13 +115,13 @@ function Channels({ handle, siteUrl }: { handle?: string | undefined; siteUrl?: 
         {handle ? <span className="text-foreground">{handle}</span> : <span className="text-muted-foreground">Not tracked</span>}
       </span>
       <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-2.5 py-1">
-        <Globe2 className="h-3 w-3 text-gold" />
+        <Globe2 className="h-3 w-3 text-muted-foreground" />
         {siteUrl ? (
           <a
             href={siteUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 text-gold underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1 text-blue-light underline-offset-4 hover:underline"
           >
             {siteUrl.replace("https://", "")}
             <ExternalLink className="h-3 w-3" />
@@ -170,7 +170,7 @@ function SubTree({ groups }: { groups: { heading: string | null; items: SubItem[
               const { text, tag } = splitTag(item.label);
               return (
                 <li key={item.id} className="relative py-1.5 pl-5">
-                  <span aria-hidden className="absolute left-0 top-[17px] h-px w-3.5 bg-gold/35" />
+                  <span aria-hidden className="absolute left-0 top-[17px] h-px w-3.5 bg-white/20" />
                   <span aria-hidden className="absolute left-[11px] top-[14px] h-[7px] w-[7px] rounded-full border border-border-strong bg-background" />
                   <div className="flex flex-wrap items-center gap-2 text-xs text-foreground">
                     <span>{text}</span>
@@ -232,7 +232,7 @@ function Branch(props: BranchProps) {
           {props.link && (
             <Link
               to={props.link.to}
-              className="font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+              className="font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
             >
               {props.link.label} →
             </Link>
@@ -241,7 +241,7 @@ function Branch(props: BranchProps) {
       </div>
       {props.count > 0 && (
         <Collapsible open={open} onOpenChange={onOpenChange}>
-          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-border bg-black/25 px-3.5 py-2 font-mono text-xs uppercase tracking-[0.13em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
+          <CollapsibleTrigger className="mt-4 flex w-full items-center justify-between rounded-lg border border-border bg-black/25 px-3.5 py-2 font-mono text-xs uppercase tracking-[0.13em] text-foreground transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60">
             <span>
               {props.structureLabel} · {props.count}
             </span>
@@ -311,7 +311,7 @@ function HierarchyTab({
     return <StatusBadge state="not-connected" label="NOT TRACKED" />;
   };
 
-  const trunk = "absolute bottom-6 left-3 top-2 w-px bg-gradient-to-b from-gold via-teal/50 to-transparent sm:left-5";
+  const trunk = "absolute bottom-6 left-3 top-2 w-px bg-gradient-to-b from-white/30 via-white/15 to-transparent sm:left-5";
 
   // The branches under the governor, in order: ecosystem connector, vice
   // governor, the four entities, IGX AI.
@@ -382,7 +382,7 @@ function HierarchyTab({
               key={label}
               type="button"
               onClick={() => setAll(label === "Expand all")}
-              className="rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              className="rounded-full border border-border bg-black/25 px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
             >
               {label}
             </button>
@@ -416,7 +416,7 @@ function HierarchyTab({
 
         {branches.map((entry) => (
           <div key={entry.key} className="relative mb-5 last:mb-0">
-            <span aria-hidden className="absolute -left-4 top-9 h-px w-4 bg-gold/50 sm:-left-7 sm:w-7" />
+            <span aria-hidden className="absolute -left-4 top-9 h-px w-4 bg-white/25 sm:-left-7 sm:w-7" />
             <span
               aria-hidden
               className="absolute -left-5 top-[33px] h-2 w-2 rounded-full border border-gold bg-background shadow-[0_0_10px_var(--gold-glow)] sm:-left-8"
@@ -462,7 +462,7 @@ function IgxCrossLayer({ igxModule }: { igxModule: (typeof modules)[number] | un
             <StatusBadge state="pending" label={declaredLabel("ready")} />
             <Link
               to={igxModule.to}
-              className="font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+              className="font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
             >
               Open IGX AI →
             </Link>
@@ -510,7 +510,7 @@ function DirectoryTab() {
             {to && (
               <Link
                 to={to}
-                className="mt-4 inline-block font-mono text-xs uppercase tracking-[0.12em] text-gold underline-offset-4 hover:underline"
+                className="mt-4 inline-block font-mono text-xs uppercase tracking-[0.12em] text-blue-light underline-offset-4 hover:underline"
               >
                 Open page →
               </Link>

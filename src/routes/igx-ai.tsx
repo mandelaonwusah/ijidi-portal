@@ -317,9 +317,9 @@ function Avatar({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display font-semibold text-gold",
-        !bare && "border border-border bg-gold/10",
-        bare && !showImage && "border border-border bg-gold/10",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display font-semibold text-foreground/80",
+        !bare && "border border-border bg-white/[0.04]",
+        bare && !showImage && "border border-border bg-white/[0.04]",
         className
       )}
     >
@@ -346,7 +346,7 @@ function CloseX({ onClick, label }: { onClick: () => void; label: string }) {
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border text-gold transition-colors hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
     >
       <X className="h-3.5 w-3.5" />
     </button>
@@ -512,7 +512,7 @@ function IgxAi() {
         onClick={() => setIdx(idx - 1)}
         aria-label="Back"
         title={canBack ? `Back to: ${viewLabel(stack[idx - 1])}` : "Nothing to go back to"}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:border-border-strong hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:border-border-strong hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -528,7 +528,7 @@ function IgxAi() {
         onClick={() => setIdx(idx + 1)}
         aria-label="Forward"
         title={canForward ? `Forward to: ${viewLabel(stack[idx + 1])}` : "Nothing to go forward to"}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-gold transition-colors hover:border-border-strong hover:bg-gold/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-black/25 text-foreground transition-colors hover:border-border-strong hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-black/25"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
@@ -1128,7 +1128,7 @@ function IgxAi() {
           <div className="flex items-center gap-4">
             <Avatar src={igxAvatar} label="IGX" className="h-12 w-12 text-lg" />
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold">IGX AI</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">IGX AI</p>
               <h1 className="font-display text-xl font-semibold text-foreground">Settings</h1>
             </div>
           </div>
@@ -1139,7 +1139,7 @@ function IgxAi() {
               onClick={() => go({ mode: "chat", tab: view.tab, chatId: view.chatId })}
               className={pillButton}
             >
-              <ArrowLeft className="h-3.5 w-3.5 text-gold" /> Back to chat
+              <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" /> Back to chat
             </button>
           </div>
         </GlassCard>
@@ -1191,7 +1191,7 @@ function IgxAi() {
     });
 
   const rowIcon =
-    "flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-gold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
+    "flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60";
 
   const renderChatRow = (chat: Conversation) => {
     const active = chat.id === activeId;
@@ -1408,7 +1408,7 @@ function IgxAi() {
         className="hidden h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,.35)] backdrop-blur-xl lg:flex"
       >
         <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-gold">Chats</p>
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Chats</p>
           <button
             type="button"
             onClick={newChat}
@@ -1438,15 +1438,15 @@ function IgxAi() {
         </div>
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={newChat} className={cn(pillButton, "lg:hidden")} aria-label="New chat">
-            <Plus className="h-3.5 w-3.5 text-gold" /> <span>New</span>
+            <Plus className="h-3.5 w-3.5 text-muted-foreground" /> <span>New</span>
           </button>
           <button type="button" onClick={() => setDrawer("chats")} className={cn(pillButton, "lg:hidden")} aria-label="Chat history">
-            <History className="h-3.5 w-3.5 text-gold" /> <span>History</span>
+            <History className="h-3.5 w-3.5 text-muted-foreground" /> <span>History</span>
           </button>
           <button type="button" onClick={() => setDrawer("requests")} className={pillButton} aria-label="Requests">
-            <Clock className="h-3.5 w-3.5 text-gold" /> <span>Requests</span>
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" /> <span>Requests</span>
             {!queueLoading && !queueError && (pendingCount ?? 0) > 0 && (
-              <span className="rounded-full bg-gold px-1.5 py-px text-xs font-semibold text-primary-foreground">
+              <span className="rounded-full bg-attention px-1.5 py-px text-xs font-semibold text-[#0b0b0c]">
                 {pendingCount}
               </span>
             )}
@@ -1458,7 +1458,7 @@ function IgxAi() {
             title="IGX AI settings"
             className={pillButton}
           >
-            <Settings2 className="h-4 w-4 text-gold" /> <span>IGX AI</span>
+            <Settings2 className="h-4 w-4 text-muted-foreground" /> <span>IGX AI</span>
           </button>
         </div>
       </div>
@@ -1525,7 +1525,7 @@ function IgxAi() {
                 }}
                 className="igx-chip flex items-center gap-1.5 rounded-full border border-border bg-black/25 px-3.5 py-2 text-xs text-muted-foreground hover:border-border-strong hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
               >
-                <Sparkles className="h-3.5 w-3.5 text-gold" />
+                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
                 {starter}
               </button>
             ))}
@@ -1544,7 +1544,7 @@ function IgxAi() {
                     <p className="mb-1 text-right font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {msg.scopeLabel}
                     </p>
-                    <div className="rounded-2xl rounded-tr-md border border-gold/25 bg-gold/10 px-4 py-3 text-[14.5px] leading-relaxed text-gold backdrop-blur-md backdrop-saturate-150">
+                    <div className="rounded-2xl rounded-tr-md border border-border-strong bg-white/[0.06] px-4 py-3 text-[14.5px] leading-relaxed text-foreground backdrop-blur-md backdrop-saturate-150">
                       {msg.text}
                     </div>
                   </div>

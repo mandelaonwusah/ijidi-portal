@@ -142,7 +142,7 @@ function IdentityPicture({ name, canEdit }: { name: string; canEdit: boolean }) 
           role="status"
           className={cn(
             "mt-2 text-center font-mono text-xs",
-            message.tone === "ok" ? "text-gold" : "text-destructive"
+            message.tone === "ok" ? "text-blue-light" : "text-destructive"
           )}
         >
           {message.text}
@@ -183,7 +183,7 @@ function CircuitStudioCard() {
     <GlassCard index={4}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Palette className="h-4 w-4 text-gold" />
+          <Palette className="h-4 w-4 text-muted-foreground" />
           <Eyebrow>Circuit background studio</Eyebrow>
         </div>
         <button
@@ -445,7 +445,7 @@ function Settings() {
         <section className="space-y-6">
           <GlassCard index={2}>
             <div className="flex items-center gap-3">
-              <ShieldCheck className="h-4 w-4 text-gold" />
+              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
               <Eyebrow>Access</Eyebrow>
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
