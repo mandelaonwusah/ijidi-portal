@@ -624,6 +624,25 @@ a {
 }
 
 /* ============================================================
+   PRESS (DESIGN.md §6 Motion)
+   Buttons, page tabs and palette rows shrink to 0.98 while pressed (80 ms).
+   Only when the visitor has not asked for reduced motion. The sign-in card
+   keeps its own behaviour, unchanged. In the base layer so a component's own
+   transform utilities still win.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  @layer base {
+    :where(button:not(:disabled), [role="tab"], [cmdk-item], .press):not(.login-main *) {
+      transition-property: transform, color, background-color, border-color, opacity, box-shadow;
+      transition-duration: 80ms;
+    }
+    :where(button:not(:disabled), [role="tab"], [cmdk-item]:not([data-disabled="true"]), .press):not(.login-main *):active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+/* ============================================================
    REDUCED MOTION
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {

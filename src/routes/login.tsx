@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { CircuitBackground } from "@/components/CircuitBackground";
+import { EcosystemGrid, LoginTopBar } from "@/components/LoginChrome";
 
 export const Route = createFileRoute("/login")({
   // The portal loads Plex Mono 400–500 only (DESIGN.md §3). The sign-in card is
@@ -34,6 +35,15 @@ function LoginPage() {
   const [oauthBusy, setOauthBusy] = useState<"google" | "github" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [emblemOk, setEmblemOk] = useState(true);
+
+  // Top bar "Sign in": bring the card into view and put the cursor in Access ID.
+  const goToSignIn = () => {
+    const field = document.getElementById("ijidi-access-id");
+    if (!field) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    field.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    field.focus({ preventScroll: true });
+  };
 
   // Already signed in? Skip the login screen.
   useEffect(() => {
@@ -113,6 +123,9 @@ function LoginPage() {
           </div>
         </div>
 
+        <LoginTopBar onSignIn={goToSignIn} />
+
+        <div className="login-layout">
         <main className="login-main">
           <h1 className="form-title">Sign in</h1>
           <p className="form-sub">Enter your Access ID and Passkey to continue.</p>
@@ -172,6 +185,9 @@ function LoginPage() {
             </span>
           </div>
         </main>
+
+        <EcosystemGrid />
+        </div>
       </div>
 
       <style>{`
@@ -201,6 +217,11 @@ function LoginPage() {
         .login-main{width:100%;max-width:420px;
           text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.55);
           animation:ijidiRise .7s var(--ease) both}
+        /* Card and "The IJIDI Ecosystem" grid: side by side on wide screens, the
+           grid below the card on narrower ones. The card itself is unchanged. */
+        .login-layout{width:100%;display:flex;flex-direction:column;align-items:center;gap:48px}
+        .login-layout>.login-main{flex:0 1 420px}
+        @media (min-width:1024px){.login-layout{flex-direction:row;justify-content:center;gap:72px}}
         @keyframes ijidiRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
         /* Logo and portal name pinned to the top-left corner of the page */

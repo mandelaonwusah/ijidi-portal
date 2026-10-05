@@ -531,7 +531,7 @@ function CommandCenterOverview() {
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform duration-150 motion-safe:group-hover:translate-x-[3px] group-hover:text-foreground" />
                 </div>
               </Link>
 
@@ -558,7 +558,7 @@ function CommandCenterOverview() {
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 transition-transform duration-150 motion-safe:group-hover:translate-x-[3px] group-hover:text-foreground" />
                 </div>
               </Link>
 

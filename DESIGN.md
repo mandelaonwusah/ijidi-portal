@@ -283,7 +283,7 @@ Groups, in this order:
 - Press: `scale(0.98)` on `:active` for buttons, tabs and palette rows (80 ms).
 - Arrow nudge: icons in "Open review →"-style links move 3 px right on hover (150 ms).
 - Ticker pause: the scrolling ticker pauses while the pointer is over it, so an entry can
-  be read (`animation-play-state: paused` on hover). Built in the Motion group.
+  be read (`animation-play-state: paused` on hover). Already in place before Group 5 (`.ticker-track:hover`).
 - **Off** when `prefers-reduced-motion` is set (already tracked by `visual-state.tsx`).
 - No new looping animations; the pulse rule in section 2 governs the existing ones.
 
@@ -322,9 +322,9 @@ chrome surface with the highlight**; sidebar and tabs stay flat.
 - **If it isn't available** (e.g. a build with no git): the tag is **left out**, not faked.
 - It replaces the hard-coded `Build / 01` label in the status bar.
 
-### Sign-in page (planned: Group 5, the last group)
+### Sign-in page (built in Group 5)
 
-Not built yet. Changes to `src/routes/login.tsx`. **The sign-in card stays exactly as it is**
+Built in `src/components/LoginChrome.tsx`, placed by `src/routes/login.tsx`. **The sign-in card stays exactly as it is**
 (form, wording, Authenticate button, layout).
 
 **Top bar**, left to right:
@@ -338,7 +338,11 @@ Not built yet. Changes to `src/routes/login.tsx`. **The sign-in card stays exact
 | 5 | **Sign in** | Scrolls to the card and focuses the Access ID field. |
 | 6 | **Request access** | A `mailto:` link. **The address is to be confirmed** before Group 5 is built. |
 
-Mobile (< 640): the top bar collapses to a single menu button; the same items open from it.
+Below 1024 px the top bar collapses to a single menu button; the same items open from it.
+
+**Hidden until confirmed:** Home, What we do and Request access are built but stay hidden until
+`HOME_URL`, `WHAT_WE_DO_URL` and `REQUEST_ACCESS_EMAIL` are set at the top of `LoginChrome.tsx`.
+Each appears as soon as its value is filled in; there are no placeholder links.
 
 **"The IJIDI Ecosystem" grid**: six tiles to the right of the card; on mobile they stack
 below the card.
