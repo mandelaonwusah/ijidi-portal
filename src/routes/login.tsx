@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { CircuitBackground } from "@/components/CircuitBackground";
-import { EcosystemGrid, LoginTopBar } from "@/components/LoginChrome";
+import { EcosystemColumn, EcosystemGrid, LoginTopBar, SIGN_UP_HREF } from "@/components/LoginChrome";
 
 export const Route = createFileRoute("/login")({
   // The portal loads Plex Mono 400–500 only (DESIGN.md §3). The sign-in card is
@@ -19,9 +19,26 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-// Keep false until Google/GitHub are enabled in Supabase AND new sign-ups are
-// restricted there. Otherwise any Google/GitHub account could create a session.
-const OAUTH_ENABLED = false;
+type Provider = "google" | "github";
+
+// Google / GitHub buttons appear only when Supabase itself confirms, on page
+// load, that the provider is on AND new sign-ups are disabled. Otherwise any
+// Google or GitHub account could create a session, so the button stays hidden.
+async function readEnabledProviders(): Promise<Record<Provider, boolean>> {
+  const none = { google: false, github: false };
+  const url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined;
+  const key = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined;
+  if (!url || !key) return none;
+  try {
+    const res = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } });
+    if (!res.ok) return none;
+    const settings = (await res.json()) as { disable_signup?: boolean; external?: Partial<Record<Provider, boolean>> };
+    const closed = settings.disable_signup === true;
+    return { google: closed && settings.external?.google === true, github: closed && settings.external?.github === true };
+  } catch {
+    return none;
+  }
+}
 
 const REMEMBER_KEY = "ijidi_remember_email";
 
@@ -32,7 +49,10 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [oauthBusy, setOauthBusy] = useState<"google" | "github" | null>(null);
+  const [oauthBusy, setOauthBusy] = useState<Provider | null>(null);
+  const [providers, setProviders] = useState<Record<Provider, boolean>>({ google: false, github: false });
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [emblemOk, setEmblemOk] = useState(true);
 
@@ -57,6 +77,14 @@ function LoginPage() {
       active = false;
     };
   }, [navigate]);
+
+  useEffect(() => {
+    let alive = true;
+    void readEnabledProviders().then((found) => alive && setProviders(found));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -92,7 +120,32 @@ function LoginPage() {
     navigate({ to: "/", replace: true });
   }
 
-  async function handleSocialAuth(provider: "google" | "github") {
+  // One-time sign-in link by email. shouldCreateUser: false, so it only ever
+  // works for an existing account and never creates one.
+  async function handleEmailLink() {
+    setError(null);
+    setNotice(null);
+    if (!email.trim()) {
+      setError("Enter your Access ID first, then ask for a link.");
+      document.getElementById("ijidi-access-id")?.focus();
+      return;
+    }
+    setLinkBusy(true);
+    const { error: linkError } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/` },
+    });
+    setLinkBusy(false);
+    // Same message whether or not the account exists, so the page does not
+    // reveal which Access IDs are real. Real failures (e.g. rate limits) show.
+    if (linkError && !/signups? not allowed|user not found/i.test(linkError.message)) {
+      setError(linkError.message);
+      return;
+    }
+    setNotice("If that Access ID has an account, a sign-in link is on its way. Check your email.");
+  }
+
+  async function handleSocialAuth(provider: Provider) {
     setError(null);
     setOauthBusy(provider);
     const { error: authError } = await supabase.auth.signInWithOAuth({
@@ -106,7 +159,7 @@ function LoginPage() {
     }
   }
 
-  const anyBusy = busy || oauthBusy !== null;
+  const anyBusy = busy || linkBusy || oauthBusy !== null;
 
   return (
     <div className="ijidi-login">
@@ -126,6 +179,7 @@ function LoginPage() {
         <LoginTopBar onSignIn={goToSignIn} />
 
         <div className="login-layout">
+        <EcosystemColumn side="left" className="eco-side" />
         <main className="login-main">
           <h1 className="form-title">Sign in</h1>
           <p className="form-sub">Enter your Access ID and Passkey to continue.</p>
@@ -161,32 +215,45 @@ function LoginPage() {
               {busy ? "Verifying…" : "Authenticate"}
             </button>
 
-            {OAUTH_ENABLED && (
-              <>
-                <div className="oauth-divider">
-                  <span>OR CONTINUE WITH</span>
-                </div>
-                <div className="oauth-buttons">
-                  <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("google")}>
-                    {oauthBusy === "google" ? "Opening…" : "Google"}
-                  </button>
-                  <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("github")}>
-                    {oauthBusy === "github" ? "Opening…" : "GitHub"}
-                  </button>
-                </div>
-              </>
+            {notice && (
+              <div className="auth-note" role="status">
+                {notice}
+              </div>
             )}
+
+            <div className="oauth-divider">
+              <span>OR</span>
+            </div>
+            <div className="oauth-buttons">
+              <button type="button" className="btn-oauth" disabled={anyBusy} onClick={handleEmailLink}>
+                {linkBusy ? "Sending…" : "Email link"}
+              </button>
+              {providers.google && (
+                <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("google")}>
+                  {oauthBusy === "google" ? "Opening…" : "Google"}
+                </button>
+              )}
+              {providers.github && (
+                <button type="button" className="btn-oauth" disabled={anyBusy} onClick={() => handleSocialAuth("github")}>
+                  {oauthBusy === "github" ? "Opening…" : "GitHub"}
+                </button>
+              )}
+            </div>
           </form>
 
           <div className="card-foot">
             <span>Authorised access only</span>
             <span>
-              Trouble signing in? <b>Contact the Governor</b>
+              No account? <a href={SIGN_UP_HREF}>Sign up</a> by email
+            </span>
+            <span>
+              Trouble signing in? <a href={SIGN_UP_HREF}>Contact the Governor</a>
             </span>
           </div>
         </main>
+        <EcosystemColumn side="right" className="eco-side" />
 
-        <EcosystemGrid />
+        <EcosystemGrid className="eco-below" />
         </div>
       </div>
 
@@ -219,9 +286,16 @@ function LoginPage() {
           animation:ijidiRise .7s var(--ease) both}
         /* Card and "The IJIDI Ecosystem" grid: side by side on wide screens, the
            grid below the card on narrower ones. The card itself is unchanged. */
+        /* The card in the middle. Wide screens: three Ecosystem tiles on each side.
+           Narrower screens: the card first, the six tiles in a grid below it. */
         .login-layout{width:100%;display:flex;flex-direction:column;align-items:center;gap:48px}
         .login-layout>.login-main{flex:0 1 420px}
-        @media (min-width:1024px){.login-layout{flex-direction:row;justify-content:center;gap:72px}}
+        .login-layout>.eco-side{display:none}
+        @media (min-width:1200px){
+          .login-layout{flex-direction:row;justify-content:center;align-items:center;gap:56px}
+          .login-layout>.eco-side{display:flex;flex:0 1 280px;max-width:280px}
+          .login-layout>.eco-below{display:none}
+        }
         @keyframes ijidiRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
         /* Logo and portal name pinned to the top-left corner of the page */
@@ -288,7 +362,10 @@ function LoginPage() {
         .card-foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;
           gap:8px;align-items:center;text-align:center;font:500 10px/1.5 var(--mono);letter-spacing:.1em;
           color:rgba(245,241,232,.6)}
-        .card-foot b{color:var(--gold);font-weight:600}
+        .card-foot b,.card-foot a{color:var(--gold);font-weight:600;text-decoration:none}
+        .card-foot a:hover{text-decoration:underline;text-underline-offset:3px}
+        .auth-note{padding:10px 13px;border-radius:8px;border:1px solid rgba(94,155,255,.4);
+          background:rgba(79,134,247,.1);font:500 13px/1.5 var(--mono);color:#cfe0ff}
 
         /* Phones: same layout as desktop — logo in the top-left corner, form centred */
         @media (max-width:520px){

@@ -322,10 +322,25 @@ chrome surface with the highlight**; sidebar and tabs stay flat.
 - **If it isn't available** (e.g. a build with no git): the tag is **left out**, not faked.
 - It replaces the hard-coded `Build / 01` label in the status bar.
 
-### Sign-in page (built in Group 5)
+### Sign-in page
 
-Built in `src/components/LoginChrome.tsx`, placed by `src/routes/login.tsx`. **The sign-in card stays exactly as it is**
-(form, wording, Authenticate button, layout).
+Built in `src/components/LoginChrome.tsx`, placed by `src/routes/login.tsx`.
+
+**Layout (Governor's request, after Group 5):** the sign-in card sits in the **middle** of the
+page, with three Ecosystem tiles on each side (left: Group, Atelier, IGX AI; right: Foundation,
+Media, Mandela) from 1200 px wide. Narrower: the card first, the six tiles in a grid below.
+
+**Sign-in options on the card**, under Authenticate, after an "OR" divider:
+- **Email link**: a one-time sign-in link by email (`signInWithOtp` with
+  `shouldCreateUser: false`), so it only ever works for an existing account. The page shows the
+  same message whether or not the account exists.
+- **Google** and **GitHub**: each button appears **only when Supabase confirms on page load**
+  (`/auth/v1/settings`) that the provider is enabled **and new sign-ups are disabled**. Until both
+  are true the button stays hidden, so no Google or GitHub account can create a session.
+
+**Sign up:** there is **no public sign-up** (Governor's decision). "Sign up", in the top bar and
+in the card footer, opens an email to **ijidigroup@gmail.com** to ask for an account; the
+Governor creates accounts. "Contact the Governor" uses the same address.
 
 **Top bar**, left to right:
 
@@ -336,12 +351,12 @@ Built in `src/components/LoginChrome.tsx`, placed by `src/routes/login.tsx`. **T
 | 3 | **What we do** | Link target to be confirmed before Group 5 is built. |
 | 4 | **Ecosystem** dropdown | Group, Foundation, Atelier, Media, Mandela: same links and "Coming soon" rules as the tiles below. |
 | 5 | **Sign in** | Scrolls to the card and focuses the Access ID field. |
-| 6 | **Request access** | A `mailto:` link. **The address is to be confirmed** before Group 5 is built. |
+| 6 | **Sign up** | Opens an email to ijidigroup@gmail.com (no public sign-up). |
 
 Below 1024 px the top bar collapses to a single menu button; the same items open from it.
 
-**Hidden until confirmed:** Home, What we do and Request access are built but stay hidden until
-`HOME_URL`, `WHAT_WE_DO_URL` and `REQUEST_ACCESS_EMAIL` are set at the top of `LoginChrome.tsx`.
+**Hidden until confirmed:** Home and What we do are built but stay hidden until
+`HOME_URL` and `WHAT_WE_DO_URL` are set at the top of `LoginChrome.tsx`.
 Each appears as soon as its value is filled in; there are no placeholder links.
 
 **"The IJIDI Ecosystem" grid**: six tiles to the right of the card; on mobile they stack
@@ -361,10 +376,8 @@ Rules:
   plain text, never a dead or placeholder link.
 - **Descriptions come from the KB / brand guide only.** Where none is supplied, the tile shows
   its name alone; nothing is invented.
-- **Not on the page:** no status badges, no Sign up, no apps list or tech-stack mention
-  (KB-LGL-003), no marketing copy duplicated from the Group site, and **no OAuth buttons**
-  (`OAUTH_ENABLED = false` in `login.tsx` stays until the providers are enabled and sign-ups
-  restricted in Supabase).
+- **Not on the page:** no status badges, no self-service sign-up form, no apps list or
+  tech-stack mention (KB-LGL-003), and no marketing copy duplicated from the Group site.
 - Tiles are `GlassCard` (default variant); "Coming soon" and "Governor access" use the muted
   grey, not a status colour. Neutral borders, gold only for focus, 44 px touch targets on mobile.
 - **Changed from the earlier plan:** Atelier and Media now appear as grey "Coming soon" items
