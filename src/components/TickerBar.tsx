@@ -1,13 +1,15 @@
 // src/components/TickerBar.tsx
 // The activity ticker at the top of every governor page.
 // Reads the real activity_log (same query as the data-link status in the shell).
-// Each entry gets its own lead dot colour, cycling gold / blue / violet / sky / amber.
-// The entry's text stays one consistent, readable colour.
+// Every entry has the same neutral lead dot: the ticker is not a status, so its
+// dots carry no colour meaning (DESIGN.md: gold only for selected, focus,
+// governor-only and the corner arcs). The text stays one readable colour.
+// 32 px tall (DESIGN.md §4 Shell); pauses while the pointer is over it.
 import { useQuery } from "@tanstack/react-query";
 import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
 
-const DOT_COLORS = ["#C6A15B", "#6BA4F7", "#9B8FE0", "#5EC8E0", "#D9A441"]; // gold, blue, violet, sky, amber
+const DOT_COLOR = "#5c6476"; // neutral grey (--not-connected-dot)
 const TEXT_COLOR = "#EAF1FF"; // ice-white, constant
 
 export function TickerBar() {
@@ -39,9 +41,9 @@ export function TickerBar() {
   );
 
   return (
-    <div className="sticky top-0 z-50 h-6 overflow-hidden border-b border-border bg-black/25 backdrop-blur-[3px]">
+    <div className="sticky top-0 z-50 h-8 overflow-hidden border-b border-border bg-black/25 backdrop-blur-[3px]">
       <div
-        className="ticker-track flex h-6 items-center hover:[animation-play-state:paused]"
+        className="ticker-track flex h-8 items-center hover:[animation-play-state:paused]"
         style={{ animationDuration: `${durationSeconds}s` }}
       >
         {loop.map((item, i) => (
@@ -49,7 +51,7 @@ export function TickerBar() {
             key={i}
             className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-xs font-normal uppercase tracking-[0.12em]"
           >
-            <span style={{ color: DOT_COLORS[i % DOT_COLORS.length] }}>◆</span>{" "}
+            <span aria-hidden="true" style={{ color: DOT_COLOR }}>◆</span>{" "}
             <span style={{ color: TEXT_COLOR }}>{item.text}</span>
           </span>
         ))}

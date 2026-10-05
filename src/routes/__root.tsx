@@ -1048,7 +1048,7 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
             className={cn(
               "fixed inset-y-0 left-0 z-[60] w-[244px] lg:z-40 border-r border-border/60 bg-black/75 backdrop-blur-xl backdrop-saturate-150 transition-[transform,width] duration-200 ease-out",
               SHELL_TEXT,
-              "lg:sticky lg:top-6 lg:h-[calc(100vh-1.5rem)] lg:shrink-0 lg:translate-x-0 lg:bg-black/[0.06] lg:backdrop-blur-[3px]",
+              "lg:sticky lg:top-8 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0 lg:bg-black/[0.06] lg:backdrop-blur-[3px]",
               collapsed ? "lg:w-[76px]" : "lg:w-[244px]",
               railOpen ? "translate-x-0" : "-translate-x-full"
             )}
