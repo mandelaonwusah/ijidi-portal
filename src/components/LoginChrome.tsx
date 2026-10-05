@@ -25,7 +25,11 @@ import { cn } from "@/lib/utils";
 // ---------------------------------------------------------------------------
 const HOME_URL: string | null = null;
 const WHAT_WE_DO_URL: string | null = null;
-const REQUEST_ACCESS_EMAIL: string | null = null;
+
+// There is no public sign-up: "Sign up" opens an email to this address to ask
+// for an account, and the Governor creates accounts.
+export const ACCESS_EMAIL = "ijidigroup@gmail.com";
+export const SIGN_UP_HREF = `mailto:${ACCESS_EMAIL}?subject=${encodeURIComponent("IJIDI Portal account request")}`;
 
 type EcosystemEntry = {
   /** Id in brand-assets.ts, for the approved logo and tagline. */
@@ -115,14 +119,13 @@ export function LoginTopBar({ onSignIn }: { onSignIn: () => void }) {
         <button type="button" onClick={onSignIn} className={NAV_LINK}>
           Sign in
         </button>
-        {REQUEST_ACCESS_EMAIL && (
-          <a
-            href={`mailto:${REQUEST_ACCESS_EMAIL}`}
-            className="ml-2 inline-flex h-11 items-center rounded-lg border border-border bg-black/25 px-4 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong"
-          >
-            Request access
-          </a>
-        )}
+        <a
+          href={SIGN_UP_HREF}
+          title={`Ask for an account by email (${ACCESS_EMAIL})`}
+          className="ml-2 inline-flex h-11 items-center rounded-lg border border-border bg-black/25 px-4 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-colors hover:border-border-strong"
+        >
+          Sign up
+        </a>
       </div>
 
       {/* Mobile and tablet: one menu button with the same items */}
@@ -146,11 +149,9 @@ export function LoginTopBar({ onSignIn }: { onSignIn: () => void }) {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onSelect={onSignIn}>Sign in</DropdownMenuItem>
-            {REQUEST_ACCESS_EMAIL && (
-              <DropdownMenuItem asChild>
-                <a href={`mailto:${REQUEST_ACCESS_EMAIL}`}>Request access</a>
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem asChild>
+              <a href={SIGN_UP_HREF}>Sign up (by email)</a>
+            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuLabel className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
               Ecosystem
@@ -194,9 +195,48 @@ function TileBody({ entry }: { entry: EcosystemEntry }) {
   );
 }
 
-export function EcosystemGrid() {
+// Left and right columns beside the centred card; on narrower screens the
+// combined grid sits under the card instead.
+const LEFT = ["group", "atelier", "igx"];
+const RIGHT = ["foundation", "media", "mandela"];
+
+function Tile({ entry, index }: { entry: EcosystemEntry; index: number }) {
+  return entry.href ? (
+    <a
+      href={entry.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block h-full rounded-xl"
+      aria-label={`${entry.name}, opens ${hostOf(entry.href)} in a new tab`}
+    >
+      <GlassCard index={index} className="h-full">
+        <TileBody entry={entry} />
+      </GlassCard>
+    </a>
+  ) : (
+    <GlassCard index={index} className="h-full hover:border-border">
+      <TileBody entry={entry} />
+    </GlassCard>
+  );
+}
+
+export function EcosystemColumn({ side, className }: { side: "left" | "right"; className?: string }) {
+  const ids = side === "left" ? LEFT : RIGHT;
+  const entries = ids.map((id) => ECOSYSTEM.find((e) => e.brandId === id)).filter((e): e is EcosystemEntry => !!e);
   return (
-    <section aria-labelledby="ijidi-ecosystem-heading" className="w-full max-w-[520px]">
+    <ul aria-label={side === "left" ? "The IJIDI Ecosystem" : undefined} className={cn("flex w-full flex-col gap-3", className)}>
+      {entries.map((entry, i) => (
+        <li key={entry.brandId}>
+          <Tile entry={entry} index={i + (side === "right" ? 3 : 0)} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function EcosystemGrid({ className }: { className?: string }) {
+  return (
+    <section aria-labelledby="ijidi-ecosystem-heading" className={cn("w-full max-w-[520px]", className)}>
       <h2
         id="ijidi-ecosystem-heading"
         className="mb-4 font-mono text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground"
@@ -206,23 +246,7 @@ export function EcosystemGrid() {
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {ECOSYSTEM.map((entry, i) => (
           <li key={entry.brandId}>
-            {entry.href ? (
-              <a
-                href={entry.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block h-full rounded-xl"
-                aria-label={`${entry.name}, opens ${hostOf(entry.href)} in a new tab`}
-              >
-                <GlassCard index={i} className="h-full">
-                  <TileBody entry={entry} />
-                </GlassCard>
-              </a>
-            ) : (
-              <GlassCard index={i} className="h-full hover:border-border">
-                <TileBody entry={entry} />
-              </GlassCard>
-            )}
+            <Tile entry={entry} index={i} />
           </li>
         ))}
       </ul>
