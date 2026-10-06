@@ -227,7 +227,7 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" })
       : "Redirecting to secure access…";
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-[#111111] p-6 text-[#F5F1E8]"
+      className="flex min-h-screen items-center justify-center bg-[#03050a] p-6 text-[#F5F1E8]"
       role="status"
       aria-live="polite"
     >
@@ -254,6 +254,14 @@ function AccessCheckScreen({ status }: { status: "checking" | "anon" | "tier" })
 // real enforcement. Any failure while checking falls back to the member shell.
 function ChromeGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  // The page actually on screen. The address changes to /login as soon as the
+  // redirect starts, but the sign-in page appears only once it has loaded; until
+  // then the old page is still the one rendered. Opening the gate on the address
+  // alone showed that old page bare (no shell, no background) for a moment: the
+  // dark-blue flash before sign-in.
+  const showingLogin = useRouterState({
+    select: (state) => state.matches.some((match) => match.routeId === "/login"),
+  });
   const navigate = useNavigate();
   const auth = useAuthState();
   const isLogin = pathname === "/login";
@@ -283,7 +291,7 @@ function ChromeGate({ children }: { children: ReactNode }) {
     }
   }, [auth.status, isLogin, navigate]);
 
-  if (isLogin) {
+  if (showingLogin) {
     return <>{children}</>;
   }
   if (auth.status !== "authed") {
