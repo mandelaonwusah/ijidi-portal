@@ -51,7 +51,7 @@ type EcosystemEntry = {
 
 const ECOSYSTEM: EcosystemEntry[] = [
   { brandId: "group", name: "IJIDI Group", href: "https://www.ijidigroup.com", note: null },
-  { brandId: "foundation", name: "IJIDI Foundation", href: "https://ijidi.org", note: null },
+  { brandId: "foundation", name: "IJIDI Foundation", href: "https://www.ijidi.org", note: null },
   { brandId: "atelier", name: "IJIDI Atelier", href: null, note: "Coming soon" },
   { brandId: "media", name: "IJIDI Media", href: null, note: "Coming soon", description: "Original by Design." },
   {
@@ -64,7 +64,7 @@ const ECOSYSTEM: EcosystemEntry[] = [
   {
     brandId: "mandela",
     name: "Mandela Onwusah",
-    href: "https://mandelaonwusah.com",
+    href: "https://www.mandelaonwusah.com",
     note: null,
     description: "Founder and governor of the IJIDI ecosystem.",
   },

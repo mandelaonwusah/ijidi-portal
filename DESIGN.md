@@ -363,11 +363,11 @@ below the card.
 | Tile | Link | One-line description (approved source) |
 |---|---|---|
 | IJIDI Group | `https://www.ijidigroup.com` | "Converging Capital \| Building legacy" (`brand-assets.ts`) |
-| IJIDI Foundation | `https://ijidi.org` | "Empowering Communities \| Restoring Hope" (`brand-assets.ts`) |
+| IJIDI Foundation | `https://www.ijidi.org` | "Empowering Communities \| Restoring Hope" (`brand-assets.ts`) |
 | IJIDI Atelier | **No link.** Grey, labelled "Coming soon" | "Designed for Distinction." (`brand-assets.ts`) |
 | IJIDI Media | **No link.** Grey, labelled "Coming soon" | "Original by Design." (Governor) |
 | IGX AI | **No link.** Labelled "Governor access" | "The executive intelligence layer of the IJIDI ecosystem." (Governor) |
-| Mandela Onwusah | `https://mandelaonwusah.com` | "Founder and governor of the IJIDI ecosystem." (Governor) |
+| Mandela Onwusah | `https://www.mandelaonwusah.com` | "Founder and governor of the IJIDI ecosystem." (Governor) |
 
 Rules:
 - **Live links only** for ijidigroup.com, ijidi.org and mandelaonwusah.com. Every other item is
