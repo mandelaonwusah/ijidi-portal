@@ -11,9 +11,10 @@
 // self-adjusting quality level. Driven by useVisualState() (section brightness
 // and pulse count). Reduced motion: one still frame, no movement.
 // Decoration only: it never claims a system state.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useVisualState } from "@/lib/visual-state";
 import {
+  CIRCUIT_BACKGROUND_HEX,
   resolveCircuitBackground,
   useUiPrefs,
   type CircuitMotion,
@@ -739,12 +740,13 @@ export function createCircuitEngine(canvas: HTMLCanvasElement, getControl: () =>
   function currentBgRGB(): RGB {
     return bgT >= 1 ? bgToRGB : lerpRGB(bgFromRGB, bgToRGB, bgT);
   }
-  function setBackground(hex: string) {
+  /** `instant` skips the crossfade (page load); otherwise it fades (a change in Settings). */
+  function setBackground(hex: string, instant = false) {
     if (hex === bgHex) return;
-    bgFromRGB = currentBgRGB();
+    bgFromRGB = instant ? hexRgb(hex) : currentBgRGB();
     bgToRGB = hexRgb(hex);
     bgHex = hex;
-    bgT = 0;
+    bgT = instant ? 1 : 0;
   }
 
   /* ---------- static layer (lines, nodes, chip, frames) ---------- */
@@ -1287,10 +1289,34 @@ export function circuitDimMult(dimming: number): number {
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
-export function CircuitBackground() {
+export function CircuitBackground({ useDefaultBackground = false }: {
+  /** The sign-in page: always the default dark background, whatever Settings holds
+   *  (Settings is a personal choice inside the Portal; sign-in is the same for everyone). */
+  useDefaultBackground?: boolean;
+} = {}) {
   const { activeSection, circuitIntensity, ambientOpacity, reducedMotion } = useVisualState();
   const prefs = useUiPrefs();
-  const backgroundHex = resolveCircuitBackground(prefs);
+  const backgroundHex = useDefaultBackground
+    ? CIRCUIT_BACKGROUND_HEX.obsidian
+    : resolveCircuitBackground(prefs);
+  // The saved background applies instantly while the page loads; only a later
+  // change (in Settings) crossfades. Enabled two frames after mount, by which
+  // point the saved settings have replaced the server's defaults.
+  const [fadeBackground, setFadeBackground] = useState(false);
+  const fadeBackgroundRef = useRef(false);
+  useEffect(() => {
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        fadeBackgroundRef.current = true;
+        setFadeBackground(true);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, []);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<ReturnType<typeof createCircuitEngine> | null>(null);
   const controlRef = useRef<EngineControl>({ intensity: circuitIntensity, reduced: reducedMotion });
@@ -1309,7 +1335,7 @@ export function CircuitBackground() {
     // frame already matches the saved settings (default = original look).
     engine.applyMotion(prefs.circuitMotion);
     engine.applyPalette(PALETTE_SETS[prefs.circuitPalette]);
-    engine.setBackground(backgroundHex);
+    engine.setBackground(backgroundHex, true);
 
     const fit = () => {
       const w = window.innerWidth;
@@ -1369,9 +1395,9 @@ export function CircuitBackground() {
     engineRef.current?.applyMotion(prefs.circuitMotion);
   }, [prefs.circuitMotion]);
 
-  // Studio: background colour — crossfades smoothly inside the engine.
+  // Studio: background colour. Instant on load; crossfades when changed in Settings.
   useEffect(() => {
-    engineRef.current?.setBackground(backgroundHex);
+    engineRef.current?.setBackground(backgroundHex, !fadeBackgroundRef.current);
   }, [backgroundHex]);
 
   return (
@@ -1385,7 +1411,7 @@ export function CircuitBackground() {
         pointerEvents: "none",
         overflow: "hidden",
         background: backgroundHex,
-        transition: "background-color 0.6s ease",
+        transition: fadeBackground ? "background-color 0.6s ease" : "none",
       }}
     >
       <canvas

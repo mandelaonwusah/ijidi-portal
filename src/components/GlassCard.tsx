@@ -13,11 +13,12 @@
 //
 // The circuit background shows through the glass, so the text stays strong:
 // brighter text colours, a dark text halo, and a heavier weight on small grey labels.
-// Entrance: fade, scale from 0.96, rise, and unblur, staggered by `index`.
-// Skipped entirely when the visitor prefers reduced motion.
-import { useEffect, useRef, type HTMLAttributes } from "react";
+// Entrance: fade, scale from 0.96, rise, and unblur, staggered by `index`. It is a
+// CSS animation (.glass-enter in styles.css), so it starts with the first paint
+// of the server-rendered page and plays once: hydration keeps the same element
+// and does not restart it. Off when the visitor prefers reduced motion.
+import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { useVisualState } from "@/lib/visual-state";
 
 export type GlassCardVariant = "default" | "elevated" | "metric" | "danger";
 
@@ -56,36 +57,13 @@ export function GlassCard({
   children,
   ...rest
 }: GlassCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { transitionMode } = useVisualState();
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || transitionMode === "instant" || typeof el.animate !== "function") return;
-
-    const animation = el.animate(
-      [
-        { opacity: 0, transform: "translateY(14px) scale(0.96)", filter: "blur(8px)" },
-        { opacity: 1, transform: "translateY(0) scale(1)", filter: "blur(0px)" },
-      ],
-      {
-        duration: 620,
-        delay: Math.min(index, 8) * 70,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-        fill: "backwards",
-      }
-    );
-    return () => animation.cancel();
-    // Plays once when the card mounts (a route change remounts it).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div
-      ref={ref}
       data-variant={variant}
+      {...rest}
+      style={{ animationDelay: `${Math.min(index, 8) * 70}ms`, ...rest.style }}
       className={cn(
-        "relative rounded-xl border backdrop-blur-[10px] backdrop-saturate-150 transition-colors",
+        "glass-enter relative rounded-xl border backdrop-blur-[10px] backdrop-saturate-150 transition-colors",
         VARIANTS[variant],
         selected && "border-border-gold hover:border-border-gold",
         // Strong text: cream base colour and a dark halo that lifts it off the lines.
@@ -94,7 +72,6 @@ export function GlassCard({
         "[&_[class*=text-muted-foreground]]:font-medium [&_[class*=text-muted-foreground]]:text-[#D8DCE8]",
         className
       )}
-      {...rest}
     >
       {variant !== "danger" &&
         CORNERS.map((corner) => (
