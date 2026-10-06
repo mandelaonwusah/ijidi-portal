@@ -51,7 +51,7 @@ export const modules = [
     state: "standby",
     to: "/ecosystem",
     handle: "@ijidigroup",
-    siteUrl: "https://ijidigroup.com",
+    siteUrl: "https://www.ijidigroup.com",
   },
   {
     name: "IJIDI Atelier",
@@ -75,7 +75,7 @@ export const modules = [
     state: "standby",
     to: "/foundation",
     handle: "@ijidifoundation",
-    siteUrl: "https://ijidi.org",
+    siteUrl: "https://www.ijidi.org",
   },
   {
     name: "IGX AI",
@@ -91,7 +91,7 @@ export const personalBrand = {
   code: "MDL-01",
   detail: "Founder & sole governor — personal brand",
   handle: "@mandelaonwusah1",
-  siteUrl: "https://mandelaonwusah.com",
+  siteUrl: "https://www.mandelaonwusah.com",
 } as const;
 
 export const activity = [

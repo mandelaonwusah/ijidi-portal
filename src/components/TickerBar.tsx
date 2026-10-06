@@ -10,7 +10,7 @@ import { getActivity } from "@/lib/portal-queries";
 import { TICKER_PX_PER_SEC, useUiPrefs } from "@/lib/ui-prefs";
 
 const DOT_COLOR = "#5c6476"; // neutral grey (--not-connected-dot)
-const TEXT_COLOR = "#EAF1FF"; // ice-white, constant
+const TEXT_COLOR = "#9aa3b5"; // muted grey (--muted-foreground): ambient, quieter than page text
 
 export function TickerBar() {
   const { tickerSpeed } = useUiPrefs();
@@ -21,15 +21,15 @@ export function TickerBar() {
   });
 
   const rawItems = isLoading
-    ? [{ actor: undefined, action: "LOADING ACTIVITY LOG…" }]
+    ? [{ actor: undefined, action: "Loading activity log…" }]
     : isError || !activity
-    ? [{ actor: undefined, action: "ACTIVITY LOG UNAVAILABLE" }]
+    ? [{ actor: undefined, action: "Activity log unavailable" }]
     : activity.length > 0
     ? activity.map((a) => ({ actor: a.actor, action: a.action }))
-    : [{ actor: undefined, action: "NO VERIFIED ENTRIES" }];
+    : [{ actor: undefined, action: "No verified entries" }];
 
   const items = rawItems.map((a) => ({
-    text: `${a.actor?.toUpperCase() ?? "SYSTEM"} · ${a.action}`,
+    text: `${a.actor ?? "System"} · ${a.action}`,
   }));
 
   const loop = [...items, ...items];
@@ -49,7 +49,7 @@ export function TickerBar() {
         {loop.map((item, i) => (
           <span
             key={i}
-            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-xs font-normal uppercase tracking-[0.12em]"
+            className="mx-5 flex shrink-0 items-center gap-2 whitespace-nowrap font-mono text-xs font-normal tracking-[0.02em]"
           >
             <span aria-hidden="true" style={{ color: DOT_COLOR }}>◆</span>{" "}
             <span style={{ color: TEXT_COLOR }}>{item.text}</span>
