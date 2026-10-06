@@ -164,7 +164,7 @@ function LoginPage() {
   return (
     <div className="ijidi-login">
       {/* The same living circuit board as the rest of the portal */}
-      <CircuitBackground />
+      <CircuitBackground useDefaultBackground />
 
       <div className="login-stage">
         <div className="brand">
