@@ -301,7 +301,7 @@ function ChromeGate({ children }: { children: ReactNode }) {
 // ---------------------------------------------------------------------------
 // LIVE CLOCK — real UTC time, rendered on the client only.
 // ---------------------------------------------------------------------------
-const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function formatUtc(d: Date) {
   const hh = String(d.getUTCHours()).padStart(2, "0");
@@ -318,7 +318,7 @@ function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="tabular-nums text-blue" suppressHydrationWarning>
+    <span className="tabular-nums" suppressHydrationWarning>
       {now ? formatUtc(now) : "UTC --:-- · -- --- ----"}
     </span>
   );
@@ -1277,7 +1277,9 @@ function PortalShell({ children, session }: { children: ReactNode; session: Sess
           </aside>
           <div className="min-w-0 flex-1">
             <div className={cn(
-                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-xs uppercase tracking-[0.14em] text-[#D8DCE8] sm:px-6",
+                // Quiet like the ticker: normal case, tight spacing, muted grey. The
+                // data-link status keeps its honest-state colour (it is a real check).
+                "flex h-8 items-center justify-between border-b border-border/60 bg-black/[0.08] backdrop-blur-[3px] px-4 font-mono text-xs tracking-[0.02em] text-muted-foreground sm:px-6",
                 SHELL_TEXT,
                 isIgxAi && "hidden"
               )}>
